@@ -14,11 +14,14 @@ export function createHeadwaterFall(scene: THREE.Scene, environment?: THREE.Text
   const clock = { value: 0 }, textures: THREE.Texture[] = [], materials: THREE.Material[] = [];
   const geometries: THREE.BufferGeometry[] = [];
   const normalMap = createWaterNormalTexture(8129); textures.push(normalMap);
-  const material = new THREE.MeshPhysicalMaterial({color: 0x9adbd1, roughness: .19, metalness: 0,
-    transmission: .48, thickness: .22, ior: 1.333, envMap: environment ?? null, envMapIntensity: .65,
-    transparent: true, opacity: .94, side: THREE.DoubleSide, depthWrite: false});
+  // One sheet material carries the whole fall: a glassy tongue at the lip, corded aerated white
+  // through the middle, and a torn, holed tail; base colour is driven entirely in the shader.
+  const material = new THREE.MeshPhysicalMaterial({color: 0xffffff, roughness: .09, metalness: 0,
+    transmission: .12, thickness: .3, ior: 1.333, attenuationColor: 0x0d5c55, attenuationDistance: 1.4,
+    envMap: environment ?? null, envMapIntensity: .6, specularColor: 0xbfe8e2,
+    transparent: true, opacity: 1, side: THREE.DoubleSide, depthWrite: false});
   materials.push(material);
-  material.customProgramCacheKey = () => 'headwater-sheet-v1';
+  material.customProgramCacheKey = () => 'headwater-sheet-v2';
   material.onBeforeCompile = shader => {
     shader.uniforms.uFallTime = clock; shader.uniforms.uFallNormal = {value: normalMap};
     shader.vertexShader = 'uniform float uFallTime; varying vec2 vFallUv;\n' + WATER_WAVE_GLSL + shader.vertexShader;
@@ -27,37 +30,74 @@ export function createHeadwaterFall(scene: THREE.Scene, environment?: THREE.Text
         float lipWidth=${sampleCourse(HEADWATER.lip).width.toFixed(8)};
         float lateral=(uv.x-.5)*lipWidth;
         transformed.y += riverSurfaceWave(${HEADWATER.lip.toFixed(1)},lateral,min(uv.x,1.-uv.x)*lipWidth,uFallTime)*pow(1.-uv.y,2.);
-        transformed.y += sin(uv.x*61.+uv.y*24.-uFallTime*8.)*.035*sin(uv.y*3.14159265);
+        // Three out-of-phase trains: the fold travels downwards, neighbouring strands diverge.
+        float amp=.12*smoothstep(.02,.5,uv.y)*(.55+.45*uv.y);
+        transformed.y += amp*(sin(uv.x*9.4+uv.y*7.5-uFallTime*2.6)*.5
+          +sin(uv.x*4.1-uv.y*11.-uFallTime*3.9+1.7)*.3+sin(uv.x*21.+uv.y*13.-uFallTime*5.2+4.1)*.16);
+        transformed += objectNormal*(sin(uv.x*6.3+uv.y*9.-uFallTime*3.1)*.045*uv.y);
       `);
     shader.fragmentShader = `uniform float uFallTime; uniform sampler2D uFallNormal; varying vec2 vFallUv;
-      float fallNoise(vec2 p) {return texture2D(uFallNormal,p).r;}
+      float fallHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float fallNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+        return mix(mix(fallHash(i),fallHash(i+vec2(1,0)),f.x),mix(fallHash(i+vec2(0,1)),fallHash(i+vec2(1,1)),f.x),f.y);}
+      float fallFbm(vec2 p){return fallNoise(p)*.57+fallNoise(p*2.03+7.1)*.28+fallNoise(p*4.17+3.3)*.15;}
     ` + shader.fragmentShader;
     shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
-      // Two scales of elongated water fingers, with irregular aeration towards impact.
-      vec2 p = vec2(vFallUv.x * 5.2, vFallUv.y * .92 - uFallTime * .55);
-      float broad = fallNoise(p + vec2(fallNoise(p*.6)*.18,0.));
-      float fine = fallNoise(p * vec2(4.3, 1.9) - vec2(0.,uFallTime*.24));
-      float finger = smoothstep(.49,.69,broad*.55+fine*.45);
-      float aeration = smoothstep(.13,.94,vFallUv.y);
-      float whitewater = clamp(finger * (.22 + aeration*.66),0.,.92);
-      diffuseColor.rgb=mix(vec3(.19,.57,.55),vec3(.91,.98,.95),whitewater);
-      diffuseColor.a *= mix(1., .62 + finger*.38, aeration);
-    `).replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = .16 + whitewater*.38;')
+      // uv.y is flight time: aerated white is keyed on it, and cords only drift in uv.y.
+      float y=vFallUv.y, tongue=1.-smoothstep(.04,.24,y);
+      // Cords are near-vertical filaments: little variation along uv.y, drifting sideways as they fall.
+      float drift=(fallNoise(vec2(vFallUv.x*2.2,vFallUv.y*.3-uFallTime*.3))-.5)*1.4;
+      float cord=fallNoise(vec2(vFallUv.x*3.4+drift*.6,vFallUv.y*.3-uFallTime*.34));
+      float fil=fallNoise(vec2(vFallUv.x*31.+drift*1.6,vFallUv.y*2.-uFallTime*1.2));
+      float fil2=fallNoise(vec2(vFallUv.x*37.+3.1,vFallUv.y*2.4-uFallTime*1.5));
+      float churn=smoothstep(.05,.42,y),aerated=smoothstep(.22,.58,y);
+      // Ropes carry white first; by mid-fall the whole width aerates. Thin bright filaments and thin
+      // dark seams ride on top, so the tail is grainy churn instead of a soft-edged sheet.
+      float filament=smoothstep(.46,.66,fil),seam=smoothstep(.55,.74,fil2);
+      float white=clamp(max(aerated*aerated*.62,smoothstep(.44,.66,cord)*(churn*.7+aerated*.34))
+        +filament*(churn*.14+aerated*.5)+(fil-.5)*(churn*.06+aerated*.16)-seam*(churn*.05+aerated*.42),0.,1.);
+      // Linear working-space versions of #2f6b63 / #4d8c84 and the grey-green gap they open onto.
+      vec3 core=mix(mix(vec3(.016,.058,.049),vec3(.036,.104,.091),smoothstep(0.,.4,y)),vec3(.09,.135,.125),smoothstep(.25,.62,y));
+      diffuseColor.rgb=mix(core,vec3(1.,1.08,1.05),white);
+      float graze=1.-clamp(abs(dot(normalize(vNormal),normalize(vViewPosition))),0.,1.);
+      diffuseColor.rgb+=vec3(.025,.035,.033)*pow(graze,4.)*(1.-white*.85)
+        +vec3(.09,.12,.115)*exp(-pow((y-.045)/.04,2.))*mix(.25,1.,graze*graze);
+      // Edges fray into separate strands, widening with height fallen.
+      float edge=min(vFallUv.x,1.-vFallUv.x),fray=.02+.075*y;
+      float strand=fallNoise(vec2(vFallUv.x*22.,vFallUv.y*.6-uFallTime*.5));
+      // Just above the pool each strand reaches its own depth: some run on, others tear off early.
+      float tear=smoothstep(.72,1.,y);
+      float reach=.74+.26*fallNoise(vec2(vFallUv.x*7.3,uFallTime*.35));
+      float holes=smoothstep(.5,.62,fallFbm(vec2(vFallUv.x*7.+drift*1.4,vFallUv.y*5.-uFallTime*.5)));
+      diffuseColor.a*=mix(1.,smoothstep(fray*.08,fray,edge)*smoothstep(.24,.7,strand+edge*3.-.26*y),smoothstep(.04,.42,y));
+      diffuseColor.a*=mix(1.,.93+.07*smoothstep(.3,.72,cord),churn)
+        *(1.-smoothstep(reach-.012,reach,y)*(.8+.2*fil))*(1.-holes*tear*.8);
+    `).replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=.07+.16*smoothstep(.04,.34,y)+white*.34;')
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-        vec2 ripple=texture2D(uFallNormal,p*vec2(2.,.7)).rg*2.-1.;
-        normal=normalize(normal+vec3(ripple.x*.16,ripple.y*.08,0.));
-      `);
+        vec2 ripple=texture2D(uFallNormal,vec2(vFallUv.x*3.2+drift,vFallUv.y*.62-uFallTime*.5)).rg*2.-1.;
+        // Sharp filaments jitter the normal too, so white water glitters instead of blurring.
+        vec2 spark=vec2(filament-.5,seam-.5)*1.8*aerated;
+        normal=normalize(normal+vec3(ripple.x*.22+spark.x*.24,ripple.y*.07+spark.y*.14,0.)*(1.-white*.7)*smoothstep(0.,.08,y));
+      `).replace('#include <lights_physical_fragment>', `#include <lights_physical_fragment>
+        // Aerated water is rough and matte, so it reflects far less than the glassy tongue.
+        material.specularColor *= mix(1., .28, aerated); material.specularF90 *= mix(1., .55, aerated);
+      `).replace('#include <transmission_fragment>', THREE.ShaderChunk.transmission_fragment
+        .replace('material.transmission = transmission;','material.transmission = transmission * (1.0 - aerated * .85) * mix(.35, 1.0, 1.0 - tongue);')
+        .replace('material.thickness = thickness;','material.thickness = thickness * mix(1.0, .35, white);'));
   };
   const upper = sampleCourse(HEADWATER.lip), lower = sampleCourse(HEADWATER.impact);
   const drop = upper.y-lower.y;
   const positions: number[] = [], uv: number[] = [], indices: number[] = [];
-  const columns=36, rows=64;
+  const columns=56, rows=96;
+  // The jet necks just under the lip, then spreads; every column leaves the lip at its own angle.
+  const profile=(t:number)=>1-.07*THREE.MathUtils.smoothstep(t,0,.17)*(1-THREE.MathUtils.smoothstep(t,.17,.8))
+    +.055*THREE.MathUtils.smoothstep(t,.4,1);
   for(let row=0;row<=rows;row++) {
     const t=row/rows,s=THREE.MathUtils.lerp(HEADWATER.lip,HEADWATER.impact,t),f=sampleCourse(s);
     for(let col=0;col<=columns;col++) {
-      const u=col/columns, lateral=(u-.5)*upper.width*(1-.04*Math.sin(t*Math.PI));
-      const fold=Math.sin(u*49+t*15)*Math.sin(Math.PI*t)*.055;
-      positions.push(f.x+f.nx*lateral,upper.y+.035-drop*t*t+fold,f.z+f.nz*lateral);
+      const u=col/columns, jitter=(Math.sin(col*.73)*.55+Math.sin(col*2.17+1.3)*.45)*t*t*.09;
+      const lateral=(u-.5)*upper.width*profile(t)+jitter, forward=Math.sin(col*.63+t*2.2)*t*t*.06;
+      positions.push(f.x+f.nx*lateral+f.tx*forward,upper.y+.035-drop*t*t,f.z+f.nz*lateral+f.tz*forward);
       uv.push(u,t);
       if(row<rows&&col<columns){const a=row*(columns+1)+col,b=a+columns+1;indices.push(a,b,a+1,a+1,b,b+1);}
     }
@@ -65,17 +105,6 @@ export function createHeadwaterFall(scene: THREE.Scene, environment?: THREE.Text
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
   geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();geometries.push(geometry);
   const sheet=new THREE.Mesh(geometry,material);sheet.name='free-falling-water-sheet';sheet.renderOrder=1;root.add(sheet);
-  // A narrow side wall gives the sheet a readable edge thickness at grazing angles.
-  const edgeMaterial=new THREE.MeshPhysicalMaterial({color:0x7bc8be,roughness:.2,transmission:.4,thickness:.16,ior:1.333,envMap:environment ?? null,side:THREE.DoubleSide});materials.push(edgeMaterial);
-  for(const side of [-1,1]) {
-    const points:number[]=[],triangles:number[]=[];
-    for(let row=0;row<=rows;row++) {
-      const col=side<0?0:columns,index=(row*(columns+1)+col)*3;
-      points.push(positions[index],positions[index+1],positions[index+2],positions[index],positions[index+1]-.13,positions[index+2]);
-      if(row<rows){const a=row*2;triangles.push(a,a+2,a+1,a+1,a+2,a+3);}
-    }
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setIndex(triangles);g.computeVertexNormals();geometries.push(g);root.add(new THREE.Mesh(g,edgeMaterial));
-  }
   // The cliff stays behind the free jet, exposing air between rock and falling water.
   const rockMaterial=new THREE.MeshStandardMaterial({color:0x697d72,roughness:.89});materials.push(rockMaterial);
   const rockGeo=new THREE.IcosahedronGeometry(1,2);
