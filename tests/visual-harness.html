@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>River scene visual checks</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#eef1e6;font:13px system-ui;color:#284432}#scene{position:absolute;inset:52px 0 0}nav{height:52px;display:flex;align-items:center;gap:10px;padding:8px 16px}button,input,select{font:inherit;padding:6px 9px}#result{margin-left:auto;font-variant-numeric:tabular-nums}</style></head>
+<body><nav><strong>Visual checks</strong><label>Checkpoint <select id="checkpoint"><option value="0">Start</option><option value="34">Waterfall lip</option><option value="36">Waterfall flight</option><option value="38">Headwater cascade</option><option value="40">Waterfall entry</option><option value="92">First split</option><option value="121">First merge</option><option value="153">Pendulums</option><option value="185">Narrow cascade</option><option value="241">Second split</option><option value="270">Second merge</option><option value="292">Lower cascade</option><option value="321">Gates</option><option value="348">Finish</option></select></label><button id="jump">Simulate to checkpoint</button><label>Duck <select id="duck"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option><option value="4">5</option></select></label><button id="overview">Overview</button><button id="motion">Animate water</button><button id="play">Play from here</button><output id="result"></output></nav><div id="scene"></div>
+<script type="module">
+import {createRaceScene} from '/src/scene.ts';
+import {createDucks, step} from '/src/simulation.ts';
+let ducks=createDucks(42), time=0, followId=0, overview=true, moving=false, playing=false, accumulator=0, fpsFrames=0, fpsTime=0, fps=0;
+// A graphics-clock offset makes long-running texture regressions reproducible without fast-forwarding GPU frames.
+const waterAge=Number(new URLSearchParams(location.search).get('waterAge')||0);
+const scene=createRaceScene(document.getElementById('scene'),{onSelect:id=>{followId=id;document.getElementById('duck').value=String(id)},onError:(kind,error)=>{console.error(kind,error);document.getElementById('result').textContent=kind}},Number.isFinite(waterAge)?Math.max(0,waterAge):0);
+document.getElementById('jump').onclick=()=>{
+ ducks=createDucks(42);time=0;accumulator=0;const target=Number(document.getElementById('checkpoint').value);let tick=0;
+ while(ducks[followId].s<target&&tick<120*180){tick++;time=tick/120;step(ducks,time,1/120)}
+ overview=target===0;location.hash=`${target},${followId}`;
+};
+document.getElementById('duck').onchange=event=>{followId=Number(event.target.value);overview=false};
+document.getElementById('overview').onclick=()=>{overview=!overview};
+document.getElementById('motion').onclick=()=>{moving=!moving;document.getElementById('motion').textContent=moving?'Freeze water':'Animate water'};
+document.getElementById('play').onclick=()=>{playing=!playing;document.getElementById('play').textContent=playing?'Pause race':'Play from here'};
+const saved=location.hash.slice(1).split(',').map(Number);
+if(saved[0]){document.getElementById('checkpoint').value=String(saved[0]);followId=saved[1]||0;document.getElementById('duck').value=String(followId);document.getElementById('jump').click()}
+let last=performance.now();
+function frame(now){
+ const delta=Math.max(0,Math.min(.1,(now-last)/1000));last=now;
+ if(playing){accumulator+=delta;while(accumulator>=1/120){time+=1/120;step(ducks,time,1/120);accumulator-=1/120}}
+ scene.update(ducks,time,delta,{followId,overview,phase:moving||playing?'running':'paused',countdown:0,waterfallPreview:new URLSearchParams(location.search).has('waterfall')});
+ fpsFrames++;fpsTime+=delta;if(fpsTime>=1){fps=Math.round(fpsFrames/fpsTime);fpsFrames=0;fpsTime=0}
+ const stats=scene.stats();document.getElementById('result').textContent=`t ${time.toFixed(2)} · s ${ducks[followId].s.toFixed(2)} · ${fps} fps · ${stats.drawCalls} calls · ${ducks[followId].airborne?'airborne':'floating'} · y ${(ducks[followId].elevation??0).toFixed(2)}`;
+ requestAnimationFrame(frame)
+}
+requestAnimationFrame(frame);
+window.addEventListener('pagehide',()=>scene.dispose());
+</script></body></html>

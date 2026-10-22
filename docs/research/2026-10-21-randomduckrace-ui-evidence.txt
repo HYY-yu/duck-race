@@ -1,0 +1,7 @@
+Browser tab: 1, Title: "Opportunity Radar", URL: "http://localhost:5173/research?radar=2&tab=competitors&target=randomduckrace.com".
+There has been no change in the accessibility tree.
+The focused UI element is 29 button 关键词
+
+Browser tab: 1, Title: "Opportunity Radar", URL: "http://localhost:5173/research?radar=2&tab=competitors&target=randomduckrace.com".
+There has been no change in the accessibility tree.
+The focused UI element is 29 button 排名页面

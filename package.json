@@ -1,0 +1,1 @@
+{"name":"duck-obstacle-race","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1 --port 5181","build":"tsc --noEmit && vite build","test":"node --test tests/*.test.mjs"},"dependencies":{"three":"0.186.1","three.quarks":"0.17.1"},"devDependencies":{"@types/three":"0.186.0","typescript":"^5.9.3","vite":"^7.1.12"}}
