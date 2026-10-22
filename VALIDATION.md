@@ -1,5 +1,28 @@
 # 0.2 验证记录 · 2026-10-22
 
+## 起点泉眼 · 2026-10-22
+
+- 起点后方的装饰旗和旗杆替换为苔藓岩缝泉眼、流动水片与起跑池，保留 START 起跑门。
+- 泉水复用河道水材质，四个固定容量涟漪随水面时钟扩散；仅调整展示，不修改竞速物理。
+- 开发入口 `/?inspect=spring` 提供源头近景。桌面浏览器确认水材质与岩缝衔接，日志未发现 Warn/Error；生产构建通过，保留既有 chunk 体积提醒。
+- [泉眼近景](docs/screenshots/headwater-spring.png)。
+
+## 湖中岛屿外观 · 2026-10-22
+
+- 山坡条纹修复：河道距离改用连续线段投影；规则正弦高度/色差改为平滑确定性噪声；地形采用插值顶点法线光照。生产构建通过，桌面检视日志无 Warn/Error。[修复后截图](docs/screenshots/island-smooth.png)。
+
+- 将矩形地形边缘改为不规则椭圆轮廓，增加环岛缓坡、浅色岸滩和沿岸散石；全景镜头拉远以显示完整岛屿。
+- 删除独立圆锥装饰山与雪帽，保留连续岛屿山体、树林及赛道。
+- 生产构建通过（保留既有 chunk 体积提醒）；桌面浏览器确认岛屿轮廓及圆锥山删除效果，检查日志无 Warn/Error。此轮仅调整展示，未重复运行竞速仿真测试。
+- [岛屿全景截图](docs/screenshots/island-overview.png)。
+
+## 镜头与山脚湖泊 · 2026-10-22
+
+- `npm test`：14/14 通过；新增完赛漂流但计时/名次不变、已完赛鸭子随比赛暂停冻结、河口湖面高度连续三项约定。
+- `npm run build`：类型检查与生产构建通过，保留 Three.js chunk 超过 500 kB 的既有提醒。
+- 桌面浏览器检查全景、起跑池跟随、seed=42 完整仿真后的入湖跟随；检视页面日志未发现 Warn/Error。未新增移动真机验收。
+- 截图：[山脚湖泊](docs/screenshots/lake-overview.png)、[较远跟随](docs/screenshots/follow-wide.png)、[完赛入湖](docs/screenshots/lake-follow.png)。
+
 ## 主项目迁移 · 2026-10-22
 
 - Duck Rush 从 `packages/duck-rush` 移至仓库根目录；旧版完整归档至 `archive/duck-circuit`。

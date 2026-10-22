@@ -7,7 +7,9 @@ const raw:Point[]=[];
 for(let i=0;i<=700;i++){const u=i/700*(anchors.length-1),j=Math.min(anchors.length-2,Math.floor(u)),t=u-j;const a=anchors[Math.max(0,j-1)],b=anchors[j],c=anchors[j+1],d=anchors[Math.min(anchors.length-1,j+2)];raw.push({x:cubic(a.x,b.x,c.x,d.x,t),y:cubic(a.y,b.y,c.y,d.y,t),z:cubic(a.z,b.z,c.z,d.z,t)});}
 const lengths=[0];for(let i=1;i<raw.length;i++) lengths.push(lengths[i-1]+Math.hypot(raw[i].x-raw[i-1].x,raw[i].z-raw[i-1].z));
 export const TRACK_LENGTH=lengths.at(-1)!;
-export function sample(s:number){s=Math.max(0,Math.min(TRACK_LENGTH,s));let lo=0,hi=lengths.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(lengths[m]<s)lo=m;else hi=m}const t=(s-lengths[lo])/(lengths[hi]-lengths[lo]);const a=raw[lo],b=raw[hi];const dx=b.x-a.x,dz=b.z-a.z,n=Math.hypot(dx,dz);const y=a.y+(b.y-a.y)*t;return {x:a.x+dx*t,y:10.3+(y-2)*18.7/27-drop(s),z:a.z+dz*t,tx:dx/n,tz:dz/n,width:width(s)};}
+export const LAKE_LEVEL=1.65;
+export const RUNOUT_LENGTH=32;
+export function sample(s:number):Point & {tx:number;tz:number;width:number}{if(s>TRACK_LENGTH){const end=sample(TRACK_LENGTH),distance=s-TRACK_LENGTH,t=1-Math.exp(-distance/4);return {...end,x:end.x+end.tx*distance,z:end.z+end.tz*distance,y:end.y+(LAKE_LEVEL-end.y)*t,width:end.width+Math.min(distance*.45,16)};}s=Math.max(0,Math.min(TRACK_LENGTH,s));let lo=0,hi=lengths.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(lengths[m]<s)lo=m;else hi=m}const t=(s-lengths[lo])/(lengths[hi]-lengths[lo]);const a=raw[lo],b=raw[hi];const dx=b.x-a.x,dz=b.z-a.z,n=Math.hypot(dx,dz);const y=a.y+(b.y-a.y)*t;return {x:a.x+dx*t,y:10.3+(y-2)*18.7/27-drop(s)-.35*smooth(TRACK_LENGTH-10,TRACK_LENGTH,s),z:a.z+dz*t,tx:dx/n,tz:dz/n,width:width(s)};}
 function smooth(a:number,b:number,x:number){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)}
 // Two short, steep reaches form actual drops in the channel surface.
 export const FALLS=[{lip:53,impact:56.2,depth:4.8},{lip:133,impact:136.2,depth:3.5}] as const;

@@ -1,4 +1,4 @@
-import {TRACK_LENGTH,flow,width,obstacles,sample} from './track';
+import {TRACK_LENGTH,RUNOUT_LENGTH,flow,width,obstacles,sample} from './track';
 import {createMotion,stepMotion,contactImpulse,type Motion} from './dynamics';
 export const COLORS=['#ffcf42','#f492aa','#7f8cdd','#68cbb1','#ef8c42','#6db9e6','#a8cb57','#c995d9','#f5edcb','#eb6b61','#55b9b4','#b79877'];
 export const NAMES=[['蛋黄','Sunny'],['桃桃','Peaches'],['蓝莓','Blueberry'],['薄荷','Mint'],['橘子','Mango'],['泡泡','Bubbles'],['青柠','Lime'],['葡萄','Grape'],['奶油','Cream'],['珊瑚','Coral'],['海盐','Sea Salt'],['可可','Cocoa']];
@@ -7,11 +7,11 @@ export interface PhysicsEvent {seq:number;kind:'takeoff'|'landing'|'contact';duc
 export type RaceState='ready'|'countdown'|'racing'|'paused'|'finished';
 export class Race {
  ducks:Duck[]=[];state:RaceState='ready';time=0;countdown=3;results:Duck[]=[];seed:number;previous:RaceState='racing';
- events:PhysicsEvent[]=[];generation=0;private seq=0;
+ events:PhysicsEvent[]=[];generation=0;floatTime=0;private seq=0;
  constructor(count=6,seed=42){this.seed=seed;this.reset(count,seed)}
  reset(count:number,seed=Date.now()){
   if(!Number.isInteger(count)||count<3||count>12)throw new RangeError('Duck count must be 3–12');
-  this.seed=seed>>>0;this.time=0;this.countdown=3;this.results=[];this.events=[];this.seq=0;this.generation++;this.state='ready';
+  this.seed=seed>>>0;this.time=0;this.floatTime=0;this.countdown=3;this.results=[];this.events=[];this.seq=0;this.generation++;this.state='ready';
   let rng=this.seed;const random=()=>{rng=(Math.imul(rng,1664525)+1013904223)>>>0;return rng/4294967296;};
   const slots=Array.from({length:count},(_,i)=>i);
   for(let i=count-1;i>0;i--){const j=Math.floor(random()*(i+1));[slots[i],slots[j]]=[slots[j],slots[i]];}
@@ -61,7 +61,10 @@ export class Race {
  step(dt:number){
   if(!(dt>0)||dt>.051)throw new RangeError('Use a fixed simulation step <= 50 ms');
   if(this.state==='countdown'){this.countdown-=dt;if(this.countdown<=0){this.state='racing';console.info('[race] started',{seed:this.seed});}return;}
-  if(this.state!=='racing')return;
+  if(this.state!=='racing'&&this.state!=='finished')return;
+  this.floatTime+=dt;
+  for(const d of this.ducks)if(d.finish!==null)this.drift(d,dt);
+  if(this.state==='finished')return;
   this.time+=dt;
   const previousS=this.ducks.map(d=>d.s);
   for(const d of this.ducks){
@@ -88,12 +91,24 @@ export class Race {
    const edge=width(d.s)-.65;
    if(Math.abs(d.lane)>edge){const side=Math.sign(d.lane);d.lane=side*edge;if(d.lv*side>0){const j=-d.lv*1.5;contactImpulse(d,-Math.abs(d.v)*.08,j);if(Math.abs(j)>1.8&&d.cooldown===0)this.registerContact(d,Math.abs(j));}}
    const motion=stepMotion(d,previousS[d.id],this.time,dt);if(motion)this.emit(d,motion.kind,motion.strength);
-   if(d.s>=TRACK_LENGTH-2){d.finish=this.time-dt+dt*((TRACK_LENGTH-2-previousS[d.id])/Math.max(.0001,d.s-previousS[d.id]));d.s=TRACK_LENGTH-2;crossed.push(d);}
+   if(d.s>=TRACK_LENGTH-2){d.finish=this.time-dt+dt*((TRACK_LENGTH-2-previousS[d.id])/Math.max(.0001,d.s-previousS[d.id]));crossed.push(d);}
   }
   crossed.sort((a,b)=>a.finish!-b.finish!||a.id-b.id);
   for(const d of crossed){this.results.push(d);console.info('[race] finish',{duck:d.id,place:this.results.length,time:d.finish,landings:d.landings,hits:d.hits});}
   if(this.results.length===this.ducks.length){this.state='finished';console.info('[race] complete',{duration:this.time});}
   // Telemetry integration point: race duration, impacts, flight/landing counts and energy.
+ }
+ /** Finished racers keep floating, without advancing the official race clock or results. */
+ private drift(d:Duck,dt:number){
+  const oldS=d.s,remaining=Math.max(0,TRACK_LENGTH+RUNOUT_LENGTH-d.s);
+  const current=.65+1.8*Math.exp(-Math.max(0,d.s-TRACK_LENGTH)/8);
+  d.v+=(Math.min(current,remaining*.25)-d.v)*1.4*dt;
+  d.s=Math.min(TRACK_LENGTH+RUNOUT_LENGTH,d.s+Math.max(0,d.v)*dt);
+  // Gentle lake eddies and local separation keep drifting finishers from piling up.
+  for(const other of this.ducks){if(other===d||other.finish===null)continue;const ds=d.s-other.s,dl=d.lane-other.lane,r=Math.hypot(ds,dl);if(r>0&&r<2.3){d.v+=ds/r*(2.3-r)*dt;d.lv+=dl/r*(2.3-r)*dt;}}
+  d.lv+=(Math.sin(this.floatTime*.3+d.s*.2)*.16+d.lane*.035-d.lv)*dt;
+  d.lane=Math.max(-16,Math.min(16,d.lane+d.lv*dt));
+  stepMotion(d,oldS,this.floatTime,dt);
  }
  ranking(){return [...this.ducks].sort((a,b)=>a.finish!==null&&b.finish!==null?a.finish-b.finish:a.finish!==null?-1:b.finish!==null?1:b.s-a.s)}
 }

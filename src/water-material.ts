@@ -102,13 +102,13 @@ export function createWaterMaterial(clock: { value: number }, environment?: THRE
       float riverFoam = clamp(shore * smoothstep(.25, .72, waterPattern.x) * .68 + max(riverRapid, vRiverImpact) * waterPattern.y * .94, 0.0, .9);
       diffuseColor.rgb = mix(vec3(.035, .32, .29), vec3(.88, .96, .91), riverFoam);
     `).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-      roughnessFactor = mix(.15 + riverRapid * .09, .62, riverFoam);
+      roughnessFactor = mix(mix(.24, .15, vRiverShore.x) + riverRapid * .09, .62, riverFoam);
     `).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
       vec3 flowNormal = normalize(mix(flowingNormal(flowUvB), flowingNormal(flowUvA), weightA));
       // Build the perturbation in view space, following each curved, sloping branch.
       vec3 across = normalize(vWaterAcross - normal * dot(vWaterAcross, normal));
       vec3 along = normalize(vWaterAlong - normal * dot(vWaterAlong, normal));
-      float normalStrength = (1.0 + riverRapid * .4) * (1.0 - riverFoam * .5);
+      float normalStrength = mix(.32, 1.0, vRiverShore.x) * (1.0 + riverRapid * .4) * (1.0 - riverFoam * .5);
       normal = normalize(normal * flowNormal.z + (across * flowNormal.x + along * flowNormal.y) * normalStrength);
     `).replace('#include <transmission_fragment>', THREE.ShaderChunk.transmission_fragment
       .replace('material.transmission = transmission;', 'material.transmission = transmission * (1.0 - riverFoam * .96);')

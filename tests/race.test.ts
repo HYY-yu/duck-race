@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Race} from '../src/simulation';
-import {TRACK_LENGTH,width,flow,world} from '../src/track';
+import {TRACK_LENGTH,RUNOUT_LENGTH,LAKE_LEVEL,width,flow,world} from '../src/track';
 const run=(n:number,seed:number)=>{const r=new Race(n,seed);r.start();for(let step=0;step<60*180&&r.state!=='finished';step++)r.step(1/60);return r;};
 test('only integral counts from 3 through 12 are accepted',()=>{for(const n of [0,2,13,3.5,NaN])assert.throws(()=>new Race(n));for(const n of [3,6,12])assert.equal(new Race(n).ducks.length,n)});
 test('ready, countdown and pause never advance duck positions',()=>{const r=new Race(6);const initial=r.ducks.map(d=>d.s);r.step(1/60);r.start();for(let i=0;i<60;i++)r.step(1/60);r.pause();const time=r.time;for(let i=0;i<60;i++)r.step(1/60);assert.deepEqual(r.ducks.map(d=>d.s),initial);assert.equal(r.time,time);assert.equal(r.state,'paused');r.pause();assert.equal(r.state,'countdown')});
@@ -19,4 +19,22 @@ test('pause freezes flight, angular velocities and the event queue',()=>{
  const r=new Race(6,42);r.start();for(let i=0;i<9000&&!r.ducks.some(d=>d.airborne);i++)r.step(1/60);
  assert.ok(r.ducks.some(d=>d.airborne));r.pause();const state=JSON.stringify({ducks:r.ducks,events:r.events,time:r.time});
  for(let i=0;i<180;i++)r.step(1/60);assert.equal(JSON.stringify({ducks:r.ducks,events:r.events,time:r.time}),state);
+});
+
+
+test('finished ducks float into the lake while official results and race time stay fixed',()=>{
+ const r=run(12,42),time=r.time,results=r.results.map(d=>({id:d.id,time:d.finish})),start=r.ducks.map(d=>d.s);
+ for(let i=0;i<60*90;i++)r.step(1/60);
+ assert.equal(r.state,'finished');assert.equal(r.time,time);
+ assert.deepEqual(r.results.map(d=>({id:d.id,time:d.finish})),results);
+ for(const d of r.ducks){assert.ok(d.s>start[d.id]);assert.ok(d.s>TRACK_LENGTH+20);assert.ok(d.s<=TRACK_LENGTH+RUNOUT_LENGTH);assert.ok(Math.abs(d.y-(LAKE_LEVEL-.19))<.3);assert.ok(Object.values(world(d.s,d.lane)).every(Number.isFinite));}
+ r.reset(6,42);assert.equal(r.floatTime,0);assert.ok(r.ducks.every(d=>d.finish===null));
+});
+test('pausing a race also freezes racers who have already finished',()=>{
+ const r=new Race(6,42);r.start();for(let i=0;i<10800&&!r.results.length;i++)r.step(1/60);
+ assert.ok(r.results.length>0&&r.results.length<6);r.pause();const before=JSON.stringify(r);
+ for(let i=0;i<180;i++)r.step(1/60);assert.equal(JSON.stringify(r),before);
+});
+test('river mouth joins the lake at the same level and continues beyond the finish',()=>{
+ const end=world(TRACK_LENGTH),after=world(TRACK_LENGTH+.001);assert.ok(Math.abs(end.y-LAKE_LEVEL)<1e-9);assert.ok(Math.hypot(after.x-end.x,after.z-end.z)<.002);assert.ok(Math.abs(after.y-end.y)<.001);
 });

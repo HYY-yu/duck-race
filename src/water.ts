@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {createWaterMaterial} from './water-material';
-import {FALLS,TRACK_LENGTH,flow,inFall,sample,world} from './track';
+import {FALLS,TRACK_LENGTH,LAKE_LEVEL,flow,inFall,sample,world} from './track';
 import {createFalls} from './waterfall';
 
 /** Adapted from the parent project's static canyon probe. A curved downhill river
@@ -50,11 +50,11 @@ export class WaterSystem {
   const floor=new THREE.Mesh(bed,bedMaterial);floor.receiveShadow=true;floor.name='submerged-riverbed';scene.add(floor);
  }
  private lake(scene:THREE.Scene){
-  const g=new THREE.CircleGeometry(1,100); // Subdivide into concentric rings for actual vertex waves.
-  g.dispose();const pos:number[]=[],uv:number[]=[],data:number[]=[],shore:number[]=[],axis:number[]=[],bank:number[]=[],norm:number[]=[],indices:number[]=[];const rings=36,segments=100;
+  // One continuous lake surrounds the mountain foot; exposed terrain forms its shoreline.
+  const pos:number[]=[],uv:number[]=[],data:number[]=[],shore:number[]=[],axis:number[]=[],bank:number[]=[],norm:number[]=[],indices:number[]=[];const rings=64,segments=160;
   for(let r=0;r<=rings;r++)for(let j=0;j<=segments;j++){
-   const radius=r/rings,angle=j/segments*Math.PI*2,x=Math.cos(angle)*radius*19.5,z=Math.sin(angle)*radius*15;
-   pos.push(-18+x,1.65,44+z);uv.push((x/19.5+1)*.5,z+50);data.push(.42,2.3,.015,39);shore.push(0,0,x);axis.push(0,1,-1,0);bank.push((1-radius)*15);norm.push(0,1,0);
+   const radius=r/rings,angle=j/segments*Math.PI*2,coast=1+.055*Math.sin(angle*3)+.035*Math.cos(angle*5),x=Math.cos(angle)*radius*180*coast,z=Math.sin(angle)*radius*200*coast;
+   pos.push(x,LAKE_LEVEL,12+z);uv.push((x/180+1)*.5,z+100);data.push(.32,3.2,.005,360);shore.push(0,0,x);axis.push(0,1,-1,0);bank.push((1-radius)*180);norm.push(0,1,0);
    if(r<rings&&j<segments){const a=r*(segments+1)+j,b=a+segments+1;indices.push(a,a+1,b,a+1,b+1,b);}
   }
   const geo=new THREE.BufferGeometry();for(const [k,arr,n]of [['position',pos,3],['uv',uv,2],['riverData',data,4],['riverShore',shore,3],['riverAxis',axis,4],['riverBankDistance',bank,1],['normal',norm,3],['riverImpact',bank.map(()=>0),1]]as [string,number[],number][])geo.setAttribute(k,new THREE.Float32BufferAttribute(arr,n));geo.setIndex(indices);

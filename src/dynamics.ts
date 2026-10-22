@@ -1,4 +1,4 @@
-import {FALLS,sample,width} from './track';
+import {FALLS,TRACK_LENGTH,world,sample,width} from './track';
 import {waterWave} from './water-wave';
 export const GRAVITY=9.81;
 export const FLOAT_OFFSET=-.19;
@@ -7,7 +7,7 @@ export interface Motion {
  airborne:boolean;lastFall:number;landings:number;lastLanding:number;entrySpeed:number;
 }
 export interface Body extends Motion {s:number;lane:number;v:number;lv:number;}
-export function waterline(s:number,lane:number,time:number){return sample(s).y+FLOAT_OFFSET+waterWave(s,lane,width(s)-Math.abs(lane),time);}
+export function waterline(s:number,lane:number,time:number){const p=world(s,lane);return p.y+FLOAT_OFFSET+(s>TRACK_LENGTH?waterWave(p.z+88,p.x,85,time):waterWave(s,lane,width(s)-Math.abs(lane),time));}
 export function createMotion(s:number,lane:number):Motion{return {y:waterline(s,lane,0),vy:0,pitch:0,pitchV:0,roll:0,rollV:0,yaw:0,yawV:0,airborne:false,lastFall:-1,landings:0,lastLanding:-1,entrySpeed:0};}
 const clamp=(v:number,min:number,max:number)=>Math.max(min,Math.min(max,v));
 /** Contact impulses affect translation and rotation, never an artificial racing boost. */
