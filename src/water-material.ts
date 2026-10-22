@@ -37,17 +37,17 @@ export function createWaterNormalTexture(seed: number, size = 256): THREE.DataTe
 
 /**
  * Flow-normal blending adapts Three.js r180 Water2 (MIT, three.js authors).
- * See public/licenses/three-water-MIT.txt and docs/research/water-rendering-open-source.md.
+ * See public/licenses/three-water-MIT.txt and docs/WATER-PHYSICS.md.
  * Water2's planar Reflector/Refractor are deliberately not used on descending river meshes.
  */
 export function createWaterMaterial(clock: { value: number }, environment?: THREE.Texture) {
   const normals = [createWaterNormalTexture(7201), createWaterNormalTexture(1949)];
   const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: .15,
-    transmission: .96, thickness: 1, ior: 1.333, attenuationColor: 0x09868e, attenuationDistance: 1.35,
+    transmission: .52, thickness: 1, ior: 1.333, attenuationColor: 0x09868e, attenuationDistance: 1.5,
     specularIntensity: 1, envMap: environment ?? null, envMapIntensity: .45,
     side: THREE.FrontSide, transparent: false, depthWrite: true });
   material.name = 'flowing-river-volume';
-  material.customProgramCacheKey = () => 'river-volume-v2-shoreline';
+  material.customProgramCacheKey = () => 'duck-rush-volume-v3';
   material.onBeforeCompile = shader => {
     shader.uniforms.uRiverTime = clock;
     shader.uniforms.uWaterNormal0 = { value: normals[0] };
@@ -100,9 +100,9 @@ export function createWaterMaterial(clock: { value: number }, environment?: THRE
       vec2 flowUvB = riverUv - vec2(0.0, phaseB * 4.0 * vRiverData.x);
       vec2 waterPattern = mix(waterFoam(flowUvB), waterFoam(flowUvA), weightA);
       float riverFoam = clamp(shore * smoothstep(.25, .72, waterPattern.x) * .68 + max(riverRapid, vRiverImpact) * waterPattern.y * .94, 0.0, .9);
-      diffuseColor.rgb = mix(vec3(.60, .87, .84), vec3(.88, .96, .91), riverFoam);
+      diffuseColor.rgb = mix(vec3(.035, .32, .29), vec3(.88, .96, .91), riverFoam);
     `).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-      roughnessFactor = mix(.17 + riverRapid * .09, .62, riverFoam);
+      roughnessFactor = mix(.15 + riverRapid * .09, .62, riverFoam);
     `).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
       vec3 flowNormal = normalize(mix(flowingNormal(flowUvB), flowingNormal(flowUvA), weightA));
       // Build the perturbation in view space, following each curved, sloping branch.

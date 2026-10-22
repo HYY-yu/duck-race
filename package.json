@@ -1,1 +1,27 @@
-{"name":"duck-obstacle-race","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1 --port 5181","build":"tsc --noEmit && vite build","test":"node --test tests/*.test.mjs"},"dependencies":{"three":"0.186.1","three.quarks":"0.17.1"},"devDependencies":{"@types/three":"0.186.0","typescript":"^5.9.3","vite":"^7.1.12"}}
+{
+  "name": "@duck-obstacle-race/duck-rush",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5183 --strictPort",
+    "build": "tsc && vite build",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "dev:rush": "npm run dev",
+    "build:rush": "npm run build",
+    "test:rush": "npm test",
+    "dev:legacy": "npm --prefix archive/duck-circuit run dev",
+    "build:legacy": "npm --prefix archive/duck-circuit run build",
+    "test:legacy": "npm --prefix archive/duck-circuit test"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/three": "^0.180.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7"
+  }
+}

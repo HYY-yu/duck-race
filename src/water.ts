@@ -1,193 +1,64 @@
 import * as THREE from 'three';
-import { CASCADES, RIVER_REACHES, channelAt, channelSpans, flowAt, sampleChannel, sampleCourse, sampleSurface, riverStations, bankDistanceAt, inWaterfallGap, HEADWATER, type Route } from './course.ts';
-import { createWaterMaterial } from './water-material.ts';
-import type { Duck } from './simulation.ts';
+import {Sky} from 'three/addons/objects/Sky.js';
+import {createWaterMaterial} from './water-material';
+import {FALLS,TRACK_LENGTH,flow,inFall,sample,world} from './track';
+import {createFalls} from './waterfall';
 
-type Reach = { start: number; end: number; route: Route };
-type WaterSample = { s: number; x: number; y: number; z: number; tx: number; tz: number; nx: number; nz: number; min: number; max: number; slope: number; speed: number };
-type FlowCache = Reach & { samples: WaterSample[] };
-type WakePoint = { s: number; lateral: number; born: number; cache: FlowCache };
-
-/** River surfaces and water effects share the exact open channels used by the simulation. */
-export function createRiverWater(scene: THREE.Scene, initialTime = 0, environment?: THREE.Texture) {
-  if (!Number.isFinite(initialTime) || initialTime < 0) throw new RangeError('Water clock must be a finite, non-negative number.');
-  const group = new THREE.Group();
-  group.name = 'river-water';
-  scene.add(group);
-  const geometries: THREE.BufferGeometry[] = [], materials: THREE.Material[] = [];
-  const clock = { value: initialTime };
-  // Static channel geometry is sampled once. Refresh a small slice of current speeds
-  // per frame; hundreds of foam flecks must not re-run the physics field every render.
-  const caches: FlowCache[] = RIVER_REACHES.map(reach => {
-    const count = Math.ceil((reach.end - reach.start) / .35);
-    const samples = Array.from({ length: count + 1 }, (_, i) => {
-      const s = reach.start + (reach.end - reach.start) * i / count, f = sampleCourse(s), span = sampleChannel(s, reach.route);
-      return { s, x: f.x, y: span.y, z: f.z, tx: f.tx, tz: f.tz, nx: f.nx, nz: f.nz,
-        min: span.min, max: span.max, slope: span.slope, speed: flowAt(s, (span.min + span.max) / 2, 0).forward };
-    });
-    return { ...reach, samples };
-  });
-  const currentSamples = caches.flatMap(cache => cache.samples);
-  let refreshIndex = 0;
-  const sampled: WaterSample = { s: 0, x: 0, y: 0, z: 0, tx: 0, tz: 0, nx: 0, nz: 0, min: 0, max: 0, slope: 0, speed: 0 };
-  const sampleKeys = Object.keys(sampled) as (keyof WaterSample)[];
-  const sampleCached = (cache: FlowCache, s: number) => {
-    const position = THREE.MathUtils.clamp((s - cache.start) / (cache.end - cache.start) * (cache.samples.length - 1), 0, cache.samples.length - 1);
-    const index = Math.min(Math.floor(position), cache.samples.length - 2), fraction = position - index;
-    const a = cache.samples[index], b = cache.samples[index + 1];
-    for (const key of sampleKeys) sampled[key] = a[key] + (b[key] - a[key]) * fraction;
-    return sampled;
-  };
-  const cacheAt = (s: number, route: Route) => caches.find(cache => s >= cache.start && s <= cache.end && (cache.route === route || cache.route === 'main')) ?? caches[0];
-  const waterMaterial = createWaterMaterial(clock, environment);
-  const surface = waterMaterial.material;
-  for (const reach of RIVER_REACHES) {
-    const columns=reach.route==='main'?18:9,rowS=riverStations(reach.start,reach.end),rows=rowS.length-1;
-    const normals: number[] = [], banks: number[] = [];
-    const positions: number[] = [], uv: number[] = [], data: number[] = [], shores: number[] = [], axes: number[] = [], impacts: number[] = [], indices: number[] = [];
-    for (let row = 0; row <= rows; row++) {
-      const s = rowS[row], f = sampleCourse(s), span = sampleChannel(s, reach.route);
-      
-      const spans = channelSpans(s), gap = spans.length === 2 ? spans[1].min - spans[0].max : 0;
-      const innerBank = THREE.MathUtils.smoothstep(gap, 0, 1.4);
-      const leftBank = reach.route === 'right' ? innerBank : 1, rightBank = reach.route === 'left' ? innerBank : 1;
-      for (let column = 0; column <= columns; column++) {
-        const lane = column / columns, lateral = span.min + (span.max - span.min) * lane;
-        positions.push(f.x + f.nx * lateral, span.y + .035, f.z + f.nz * lateral);
-        uv.push(lane, s);
-        banks.push(bankDistanceAt(s, lateral, reach.route));
-        const normal = new THREE.Vector3(f.tx * span.slope, 1, f.tz * span.slope).normalize();
-        normals.push(normal.x, normal.y, normal.z);
-        data.push(flowAt(s, lateral, 0).forward, span.depth, span.slope, span.max - span.min);
-        shores.push(leftBank, rightBank, lateral);
-        axes.push(f.tx, f.tz, f.nx, f.nz);
-        impacts.push(Math.max(...CASCADES.map(fall => Math.exp(-(((s - fall.end - 1.6) / 3.3) ** 2)))));
-      }
-      if (row < rows && !(inWaterfallGap((s + rowS[row+1]) * .5) && (s + rowS[row+1]) * .5 < HEADWATER.lip + 1.1)) for (let column = 0; column < columns; column++) {
-        const a = row * (columns + 1) + column, b = a + columns + 1;
-        indices.push(a, b, a + 1, a + 1, b, b + 1);
-      }
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    geometry.setAttribute('riverData', new THREE.Float32BufferAttribute(data, 4));
-    geometry.setAttribute('riverShore', new THREE.Float32BufferAttribute(shores, 3));
-    geometry.setAttribute('riverAxis', new THREE.Float32BufferAttribute(axes, 4));
-    geometry.setAttribute('riverImpact', new THREE.Float32BufferAttribute(impacts, 1));
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    geometry.setAttribute('riverBankDistance', new THREE.Float32BufferAttribute(banks, 1));
-    geometry.setIndex(indices); geometries.push(geometry);
-    const mesh = new THREE.Mesh(geometry, surface); mesh.name = `water-${reach.route}-${reach.start}`; mesh.receiveShadow = true; group.add(mesh);
+/** Adapted from the parent project's static canyon probe. A curved downhill river
+ * is not a planar mirror: capture scenery once, then use a filtered cubemap. */
+export function captureWaterEnvironment(renderer:THREE.WebGLRenderer,scene:THREE.Scene){
+ const previousTarget=renderer.getRenderTarget(),auto=renderer.shadowMap.autoUpdate;
+ const cube=new THREE.WebGLCubeRenderTarget(128,{type:THREE.HalfFloatType});
+ const probe=new THREE.CubeCamera(.5,350,cube);probe.position.set(-3,33,2);
+ const pmrem=new THREE.PMREMGenerator(renderer);const sky=new Sky();sky.scale.setScalar(1000);sky.material.uniforms.sunPosition.value.set(-35,70,30).normalize();sky.material.uniforms.turbidity.value=3;sky.material.uniforms.rayleigh.value=1.7;scene.add(sky);
+ try{renderer.shadowMap.autoUpdate=false;probe.update(renderer,scene);const target=pmrem.fromCubemap(cube.texture);console.info('[water] static environment ready',{resolution:128});return target;}
+ finally{scene.remove(sky);sky.geometry.dispose();sky.material.dispose();renderer.shadowMap.autoUpdate=auto;renderer.setRenderTarget(previousTarget);cube.dispose();pmrem.dispose();}
+}
+export class WaterSystem {
+ readonly clock={value:0};readonly surface:THREE.MeshPhysicalMaterial;private falls:ReturnType<typeof createFalls>;
+ constructor(scene:THREE.Scene,environment:THREE.Texture){
+  this.surface=createWaterMaterial(this.clock,environment).material;
+  this.river(scene);this.lake(scene);this.falls=createFalls(scene,this.clock,environment);
+ }
+ private river(scene:THREE.Scene){
+  const positions:number[]=[],uv:number[]=[],data:number[]=[],shores:number[]=[],axes:number[]=[],impacts:number[]=[],banks:number[]=[],normals:number[]=[],indices:number[]=[];
+  // Explicit lip/impact stations avoid triangles bridging the unsupported waterfall gap.
+  const stations=new Set<number>(Array.from({length:1001},(_,i)=>i/1000*TRACK_LENGTH));
+  FALLS.forEach(f=>{stations.add(f.lip);stations.add(f.impact)});
+  const values=[...stations].sort((a,b)=>a-b),cols=24;
+  for(let i=0;i<values.length;i++){
+   const s=values[i],f=sample(s),next=sample(Math.min(TRACK_LENGTH,s+.15));const slope=Math.max(0,(f.y-next.y)/.15);
+   for(let j=0;j<=cols;j++){
+    const u=j/cols,l=(u*2-1)*f.width,p=world(s,l);
+    positions.push(p.x,p.y+.035,p.z);uv.push(u,s);data.push(flow(s,l,0),.8+(1-(l/f.width)**2)*1.1,slope,2*f.width);shores.push(1,1,l);axes.push(f.tx,f.tz,-f.tz,f.tx);banks.push(f.width-Math.abs(l));
+    impacts.push(Math.max(...FALLS.map(fall=>Math.exp(-(((s-fall.impact-1.3)/3.5)**2)))));
+    const n=new THREE.Vector3(f.tx*slope,1,f.tz*slope).normalize();normals.push(n.x,n.y,n.z);
+   }
+   if(i<values.length-1&&!inFall((s+values[i+1])*.5))for(let j=0;j<cols;j++){const a=i*(cols+1)+j,b=a+cols+1;indices.push(a,a+1,b,a+1,b+1,b);}
   }
-
-  const foamPixels = new Uint8Array(64 * 64 * 4);
-  for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) {
-    const radius = Math.hypot((x + .5) / 32 - 1, (y + .5) / 32 - 1), offset = (y * 64 + x) * 4;
-    const grain = .7 + .3 * Math.sin(x * 1.7 + Math.sin(y * 2.3));
-    foamPixels[offset] = foamPixels[offset + 1] = foamPixels[offset + 2] = 255;
-    foamPixels[offset + 3] = Math.round(255 * (1 - THREE.MathUtils.smoothstep(radius, .25, 1)) * grain);
+  const geo=new THREE.BufferGeometry();for(const [key,arr,size]of [['position',positions,3],['uv',uv,2],['riverData',data,4],['riverShore',shores,3],['riverAxis',axes,4],['riverImpact',impacts,1],['riverBankDistance',banks,1],['normal',normals,3]]as [string,number[],number][])geo.setAttribute(key,new THREE.Float32BufferAttribute(arr,size));geo.setIndex(indices);
+  const mesh=new THREE.Mesh(geo,this.surface);mesh.name='river-water';mesh.receiveShadow=true;scene.add(mesh);
+  // A submerged bed gives transmission something spatial to refract. Depth varies
+  // across the channel; the bottom is distinct from both the bank and water sheet.
+  const bed=geo.clone(),pos=bed.attributes.position;const colors:number[]=[];
+  for(let i=0;i<pos.count;i++){const u=uv[i*2];pos.setY(i,pos.getY(i)-.55-1.0*Math.sin(u*Math.PI));const c=new THREE.Color('#769d83');c.offsetHSL(0,0,Math.sin(pos.getX(i)*5+pos.getZ(i)*7)*.055);colors.push(c.r,c.g,c.b);}
+  bed.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));bed.computeVertexNormals();
+  const bedMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.94});
+  bedMaterial.onBeforeCompile=shader=>{shader.uniforms.uTime=this.clock;shader.vertexShader='varying vec3 vBed;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBed=position;');shader.fragmentShader='uniform float uTime;varying vec3 vBed;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+   float a=sin(vBed.x*3.+sin(vBed.z*2.+uTime)*.7+uTime*.7),b=sin(vBed.z*3.7+cos(vBed.x*2.-uTime)*.8-uTime*.5);
+   float caustic=pow(1.-abs(a*b),18.);diffuseColor.rgb*=.82+caustic*.35;`);};
+  const floor=new THREE.Mesh(bed,bedMaterial);floor.receiveShadow=true;floor.name='submerged-riverbed';scene.add(floor);
+ }
+ private lake(scene:THREE.Scene){
+  const g=new THREE.CircleGeometry(1,100); // Subdivide into concentric rings for actual vertex waves.
+  g.dispose();const pos:number[]=[],uv:number[]=[],data:number[]=[],shore:number[]=[],axis:number[]=[],bank:number[]=[],norm:number[]=[],indices:number[]=[];const rings=36,segments=100;
+  for(let r=0;r<=rings;r++)for(let j=0;j<=segments;j++){
+   const radius=r/rings,angle=j/segments*Math.PI*2,x=Math.cos(angle)*radius*19.5,z=Math.sin(angle)*radius*15;
+   pos.push(-18+x,1.65,44+z);uv.push((x/19.5+1)*.5,z+50);data.push(.42,2.3,.015,39);shore.push(0,0,x);axis.push(0,1,-1,0);bank.push((1-radius)*15);norm.push(0,1,0);
+   if(r<rings&&j<segments){const a=r*(segments+1)+j,b=a+segments+1;indices.push(a,a+1,b,a+1,b+1,b);}
   }
-  const foamTexture = new THREE.DataTexture(foamPixels, 64, 64, THREE.RGBAFormat);
-  foamTexture.magFilter = THREE.LinearFilter; foamTexture.needsUpdate = true;
-  const foam = new THREE.MeshBasicMaterial({ map: foamTexture, color: 0xd8ece5, transparent: true, opacity: .43, depthWrite: false, side: THREE.DoubleSide });
-  const wakeMaterial = new THREE.MeshBasicMaterial({ map: foamTexture, color: 0xe5f0dd, transparent: true, opacity: .6, depthWrite: false, side: THREE.DoubleSide });
-  const sprayMaterial = new THREE.MeshBasicMaterial({ color: 0xe5f5e5, transparent: true, opacity: .58, depthWrite: false });
-  materials.push(foam, wakeMaterial, sprayMaterial);
-  let randomState = 3757;
-  const random = () => { randomState = (randomState * 1664525 + 1013904223) >>> 0; return randomState / 4294967296; };
-  const streakGeometry = new THREE.PlaneGeometry(1, 1); geometries.push(streakGeometry);
-  const particles = caches.flatMap(cache => Array.from({ length: Math.max(20, Math.round((cache.end - cache.start) * .95)) }, () =>
-    ({ cache, s: cache.start + random() * (cache.end - cache.start), lane: .04 + random() * .92, size: .45 + random() * .8 })));
-  const streaks = new THREE.InstancedMesh(streakGeometry, foam, particles.length); streaks.frustumCulled = false; group.add(streaks);
-  const splashGeometry = new THREE.IcosahedronGeometry(1, 0); geometries.push(splashGeometry);
-  const poolGeometry = new THREE.CircleGeometry(1, 7); geometries.push(poolGeometry);
-  const legacyCascades=CASCADES.slice(1); // The first fall owns quarks spray and pool foam.
-  const splashCount = legacyCascades.length * 64;
-  const poolFoam = new THREE.InstancedMesh(poolGeometry, foam, splashCount); poolFoam.frustumCulled = false; group.add(poolFoam);
-  const splashes = new THREE.InstancedMesh(splashGeometry, sprayMaterial, splashCount); splashes.frustumCulled = false; group.add(splashes);
-  const spraySeeds = Array.from({ length: splashCount }, (_, index) => ({ cascade: legacyCascades[Math.floor(index / 64)], phase: random(), lane: random(), side: random() > .5 ? 1 : 0, strength: .6 + random() * .5 }));
-  const wakeLimit = 24;
-  const wakes: WakePoint[][] = Array.from({ length: 5 }, () => []);
-  const wakeMesh = new THREE.InstancedMesh(streakGeometry, wakeMaterial, 5 * wakeLimit * 2); wakeMesh.frustumCulled = false; group.add(wakeMesh);
-  const transform = new THREE.Object3D(), tangent = new THREE.Vector3(), normal = new THREE.Vector3(), side = new THREE.Vector3(), basis = new THREE.Matrix4();
-  const color = new THREE.Color(), fadedWake = new THREE.Color(0x498f80);
-  let lastRaceTime = -1, lastWakeSample = -1;
-  function orient(f: WaterSample, lateral: number, width: number, length: number, lift = .06) {
-    transform.position.set(f.x + f.nx * lateral, f.y + lift, f.z + f.nz * lateral);
-    tangent.set(f.tx, -f.slope, f.tz).normalize(); side.set(f.nx, 0, f.nz).normalize(); normal.crossVectors(side, tangent).normalize();
-    basis.makeBasis(side, tangent, normal); transform.quaternion.setFromRotationMatrix(basis);
-    transform.scale.set(width, length, 1); transform.updateMatrix();
-  }
-  function update(ducks: Duck[], raceTime: number, delta: number, paused: boolean, running: boolean) {
-    if (!paused) {
-      clock.value += Math.min(delta, .1);
-      for (let i = 0; i < 32; i++) {
-        const f = currentSamples[refreshIndex++ % currentSamples.length];
-        f.speed = flowAt(f.s, (f.min + f.max) / 2, raceTime).forward;
-      }
-    }
-    particles.forEach((particle, index) => {
-      const f0 = sampleCached(particle.cache, particle.s), speed = f0.speed * (1 - .16 * (particle.lane * 2 - 1) ** 2);
-      if (!paused) particle.s = particle.cache.start + (particle.s - particle.cache.start + speed * delta) % (particle.cache.end - particle.cache.start);
-      const f = sampleCached(particle.cache, particle.s), lateral = f.min + (f.max - f.min) * particle.lane;
-      const rapid = THREE.MathUtils.smoothstep(f.slope, .22, .85);
-      const displaySpeed = f.speed * (1 - .16 * (particle.lane * 2 - 1) ** 2);
-      orient(f, lateral, (.022 + rapid * .045) * particle.size, (.18 + Math.min(displaySpeed, 8) * .055) * particle.size);
-      if (inWaterfallGap(particle.s)) { transform.scale.setScalar(0); transform.updateMatrix(); }
-      streaks.setMatrixAt(index, transform.matrix);
-      color.setHex(rapid > .4 ? 0xd5e6d7 : 0xa5cfc1); streaks.setColorAt(index, color);
-    });
-    streaks.instanceMatrix.needsUpdate = true; if (streaks.instanceColor) streaks.instanceColor.needsUpdate = true;
-    spraySeeds.forEach((seed, index) => {
-      const age = (clock.value * .72 + seed.phase) % 1, s = seed.cascade.end - 1.6 + age * 3;
-      const spans = channelSpans(s), span = spans[seed.side % spans.length];
-      const lateral = span.min + (span.max - span.min) * (.1 + seed.lane * .8), f = sampleSurface(s, lateral);
-      transform.position.set(f.x + f.nx * lateral, f.y + .08 + Math.sin(age * Math.PI) * seed.strength * 1.35, f.z + f.nz * lateral);
-      transform.rotation.set(age * 3, seed.phase, age * 2);
-      const scale = (.035 + seed.strength * .075) * Math.sin(age * Math.PI);
-      transform.scale.set(scale, scale * 1.8, scale); transform.updateMatrix(); splashes.setMatrixAt(index, transform.matrix);
-      const poolS = seed.cascade.end + age * 7, poolSpan = channelAt(poolS, lateral), cache = cacheAt(poolS, poolSpan.route);
-      const poolFrame = sampleCached(cache, poolS), poolLateral = THREE.MathUtils.clamp(lateral, poolFrame.min + .15, poolFrame.max - .15);
-      const patch = (.20 + seed.strength * .2) * Math.sin(age * Math.PI);
-      orient(poolFrame, poolLateral, patch * 1.3, patch * 2.2, .065); poolFoam.setMatrixAt(index, transform.matrix);
-    });
-    splashes.instanceMatrix.needsUpdate = true; poolFoam.instanceMatrix.needsUpdate = true;
-    if (raceTime < lastRaceTime) { wakes.forEach(wake => wake.splice(0)); lastWakeSample = -1; }
-    if (running && raceTime - lastWakeSample > .10) {
-      for (const duck of ducks) if (duck.vs > .2 && !duck.airborne) {
-        const trail = wakes[duck.id], cache = cacheAt(duck.s, channelAt(duck.s, duck.lateral).route); trail.unshift({ s: duck.s, lateral: duck.lateral, born: raceTime, cache }); if (trail.length > wakeLimit) trail.pop();
-      }
-      lastWakeSample = raceTime;
-    }
-    lastRaceTime = raceTime;
-    let instance = 0;
-    for (let duckId = 0; duckId < 5; duckId++) for (let i = 0; i < wakeLimit; i++) {
-      const wake = wakes[duckId][i], age = wake ? raceTime - wake.born : 10;
-      for (const direction of [-1, 1]) {
-        if (!wake || age > 1.9 || !running && !paused) {
-          transform.scale.setScalar(0); transform.updateMatrix(); wakeMesh.setMatrixAt(instance++, transform.matrix); continue;
-        }
-        // Foam is carried by the same current. Leaving it at historical duck
-        // positions made rigid parallel rails anchored to the riverbed.
-        const origin = sampleCached(wake.cache, wake.s);
-        const driftS = Math.min(wake.cache.end, wake.s + origin.speed * age * .65);
-        const f = sampleCached(wake.cache, driftS);
-        const spread = .38 + age * .38, wobble = Math.sin(age * 7 + wake.born * 3) * .035;
-        const lateral = THREE.MathUtils.clamp(wake.lateral + direction * spread + wobble, f.min + .06, f.max - .06);
-        orient(f, lateral, .14 * (1 - age / 1.9) ** .7, .28 + age * .12, .075);
-        wakeMesh.setMatrixAt(instance, transform.matrix);
-        color.setHex(0xe1edda).lerp(fadedWake, age / 1.9); wakeMesh.setColorAt(instance++, color);
-      }
-    }
-    wakeMesh.instanceMatrix.needsUpdate = true; if (wakeMesh.instanceColor) wakeMesh.instanceColor.needsUpdate = true;
-  }
-  let disposed = false;
-  function dispose() {
-    if (disposed) return;
-    disposed = true;
-    scene.remove(group); waterMaterial.dispose(); foamTexture.dispose(); geometries.forEach(geometry => geometry.dispose()); materials.forEach(material => material.dispose());
-    streaks.dispose(); splashes.dispose(); poolFoam.dispose(); wakeMesh.dispose();
-  }
-  return { update, dispose, get time() { return clock.value; } };
+  const geo=new THREE.BufferGeometry();for(const [k,arr,n]of [['position',pos,3],['uv',uv,2],['riverData',data,4],['riverShore',shore,3],['riverAxis',axis,4],['riverBankDistance',bank,1],['normal',norm,3],['riverImpact',bank.map(()=>0),1]]as [string,number[],number][])geo.setAttribute(k,new THREE.Float32BufferAttribute(arr,n));geo.setIndex(indices);
+  const lake=new THREE.Mesh(geo,this.surface);lake.name='river-water-lake';scene.add(lake);
+ }
+ update(time:number){this.clock.value=time;this.falls.update(time);}
 }

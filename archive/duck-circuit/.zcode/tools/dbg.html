@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Waterfall impact debug</title>
+<style>html,body{margin:0;background:#e3eade}canvas{display:block;width:100vw;height:100vh}</style></head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { createHeadwaterFall } from '/src/waterfall.ts';
+import { createDucks } from '/src/simulation.ts';
+import { HEADWATER, sampleCourse } from '/src/course.ts';
+
+const params = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.debug.checkShaderErrors = true;
+renderer.debug.onShaderError = (gl, program, vs, fs) => {
+  console.error('SHADER_ERROR', gl.getProgramInfoLog(program), gl.getShaderInfoLog(vs), gl.getShaderInfoLog(fs));
+  throw new Error('shader failed');
+};
+renderer.setPixelRatio(1);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.08;
+renderer.shadowMap.enabled = true;
+document.body.append(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe3eade);
+scene.add(new THREE.HemisphereLight(0xfff7dd, 0x6b8878, 2.3));
+const sun = new THREE.DirectionalLight(0xffefd3, 3.3);
+sun.position.set(-55, 120, 65);
+sun.target.position.set(6, 62, -48.5);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 60, bottom: -60, near: 1, far: 400 });
+sun.shadow.bias = -.0004; sun.shadow.normalBias = .07;
+scene.add(sun, sun.target);
+
+const camera = new THREE.PerspectiveCamera(43, window.innerWidth / window.innerHeight, .1, 700);
+const f = sampleCourse(HEADWATER.lip + 2.6), lip = sampleCourse(HEADWATER.lip);
+const look = new THREE.Vector3(f.x, lip.y - 3.4, f.z);
+const views = {
+  preview: look.clone().add(new THREE.Vector3(f.nx * 18 + f.tx * 23, 10, f.nz * 18 + f.tz * 23)),
+  near: look.clone().add(new THREE.Vector3(f.nx * 9 + f.tx * 11, 5, f.nz * 9 + f.tz * 11)),
+  low: look.clone().add(new THREE.Vector3(f.nx * 13 + f.tx * 15, 1.5, f.nz * 13 + f.tz * 15)),
+  side: look.clone().add(new THREE.Vector3(f.nx * 20 + f.tx * 6, 4, f.nz * 20 + f.tz * 6)),
+};
+camera.position.copy(views[params.get('view') || 'preview']);
+camera.lookAt(look);
+
+const fall = createHeadwaterFall(scene);
+const root = scene.getObjectByName('headwater-waterfall');
+const foam = root.getObjectByName('plunge-pool-aeration');
+const batch = root.getObjectByName('quarks-waterfall-spray');
+const hide = (params.get('hide') || '').split(',');
+if (hide.includes('foam')) foam.visible = false;
+if (hide.includes('particles')) batch.visible = false;
+if (hide.includes('sheet')) root.getObjectByName('free-falling-water-sheet').visible = false;
+
+const ducks = createDucks(42);
+window.__dbg = { scene, camera, root, foam, batch, fall, THREE };
+const waterTime = Number(params.get('t') || 6);
+let frames = 0;
+function frame() {
+  // A few fixed steps so prewarmed systems settle and the advection has moved.
+  fall.update(ducks, waterTime, waterTime, 1 / 60, false);
+  renderer.render(scene, camera);
+  if (++frames === Number(params.get('frames') || 90)) document.title = 'ready';
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__redraw = () => renderer.render(scene, camera);
+window.addEventListener('pagehide', () => fall.dispose());
+</script></body></html>
