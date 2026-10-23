@@ -1,0 +1,145 @@
+{
+  "budget_usd": 2,
+  "prior_samples_usd": 0.124,
+  "batch_spent_usd": 1.7,
+  "total_spent_usd": 1.824,
+  "remaining_usd": 0.176,
+  "items": [
+    {
+      "asset": "audience-bear",
+      "prediction_id": "aabd8960484a45a1b3865978dd21e952",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:43:12.487Z"
+    },
+    {
+      "asset": "audience-bear-v2",
+      "prediction_id": "81155674321a4924bab29206421dd481",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:51:11.28Z"
+    },
+    {
+      "asset": "audience-fox",
+      "prediction_id": "750fafffaa734f30a827c45e2a8ddb64",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:43:54.801Z"
+    },
+    {
+      "asset": "audience-gray-rabbit",
+      "prediction_id": "f31996e6666d4ad1bd746b04bc1e0954",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:44:25.412Z"
+    },
+    {
+      "asset": "audience-white-rabbit",
+      "prediction_id": "1bfd5c8bd7494f83a5cf3bbae87ce6d3",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:42:27.249Z"
+    },
+    {
+      "asset": "bird",
+      "prediction_id": "27eafa3409c64c0fb33c5e23feff2bf0",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:40:22.704Z"
+    },
+    {
+      "asset": "bird-v2",
+      "prediction_id": "c7e0c2e1fdce4f51b902a4df39968cc4",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:50:51.72Z"
+    },
+    {
+      "asset": "glasses",
+      "prediction_id": "ba5541d702324bc5862225e396b02918",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:41:09.803Z"
+    },
+    {
+      "asset": "knight-helmet",
+      "prediction_id": "fd2ce947169047c58b98ac28ceb7be89",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:40:37.2Z"
+    },
+    {
+      "asset": "pirate-hat",
+      "prediction_id": "0b4ace8bd4f544ac81da3a05929f398c",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:39:51.584Z"
+    },
+    {
+      "asset": "rabbit",
+      "prediction_id": "a57f308f29724bf9b11e31b4c448fe06",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:44:45.133Z"
+    },
+    {
+      "asset": "rabbit-v2",
+      "prediction_id": "86a49d60aa7d415c88429070e91e42a1",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:52:19.704Z"
+    },
+    {
+      "asset": "scarf",
+      "prediction_id": "4525df11b26d40efb69faa498d902b97",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:41:37.182Z"
+    },
+    {
+      "asset": "scarf-v2",
+      "prediction_id": "9cbd7ec27f6846ae8edeba8d5acdd088",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:51:36.432Z"
+    },
+    {
+      "asset": "tree-broadleaf",
+      "prediction_id": "0cce24695f47418e98fe44f0673c7bfe",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:38:13.485Z"
+    },
+    {
+      "asset": "tree-broadleaf-v2",
+      "prediction_id": "cf485214068b4713aef219f1ab60eab2",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:49:56.676Z"
+    },
+    {
+      "asset": "tree-pine",
+      "prediction_id": "ea375b00330b4389a208ac205e6c89cc",
+      "model": "wavespeed-ai/trellis-2/image-to-3d",
+      "cost_usd": 0.1,
+      "state": "done",
+      "created_at": "2026-10-22T10:39:43.376Z"
+    }
+  ]
+}

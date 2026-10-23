@@ -1,0 +1,28 @@
+{
+  "id": "0b4ace8bd4f544ac81da3a05929f398c",
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "outputs": [
+    "https://d2h7xmz5gqybh9.cloudfront.net/output/4a689f0c-f8ff-4341-b15d-fff2e3cc7faf-u2_1d913ac065524a2a8ab8d9b80bff4373.glb"
+  ],
+  "saved": [
+    "/Volumes/GW/codes/duck-obstacle-race/assets/generated/remaining-v1/pirate-hat/raw/1.glb"
+  ],
+  "elapsed_ms": 39429,
+  "raw": {
+    "id": "0b4ace8bd4f544ac81da3a05929f398c",
+    "model": "wavespeed-ai/trellis-2/image-to-3d",
+    "outputs": [
+      "https://d2h7xmz5gqybh9.cloudfront.net/output/4a689f0c-f8ff-4341-b15d-fff2e3cc7faf-u2_1d913ac065524a2a8ab8d9b80bff4373.glb"
+    ],
+    "urls": {
+      "get": "https://api.wavespeed.ai/api/v3/predictions/0b4ace8bd4f544ac81da3a05929f398c/result"
+    },
+    "status": "completed",
+    "created_at": "2026-10-22T10:39:51.582773391Z",
+    "code": 0,
+    "error": "",
+    "timings": {
+      "inference": 34200
+    }
+  }
+}

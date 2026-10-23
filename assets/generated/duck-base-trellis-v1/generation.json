@@ -1,0 +1,28 @@
+{
+  "id": "a6c276b4b4bc4fa380c71585657504eb",
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "outputs": [
+    "https://d2h7xmz5gqybh9.cloudfront.net/output/ffaa4ced-6dab-4ee2-9e5f-45505318bc03-u2_70a10ed7893d4b61b84ef0f568def814.glb"
+  ],
+  "saved": [
+    "/Volumes/GW/codes/duck-obstacle-race/assets/generated/duck-base-trellis-v1/raw/1.glb"
+  ],
+  "elapsed_ms": 38472,
+  "raw": {
+    "id": "a6c276b4b4bc4fa380c71585657504eb",
+    "model": "wavespeed-ai/trellis-2/image-to-3d",
+    "outputs": [
+      "https://d2h7xmz5gqybh9.cloudfront.net/output/ffaa4ced-6dab-4ee2-9e5f-45505318bc03-u2_70a10ed7893d4b61b84ef0f568def814.glb"
+    ],
+    "urls": {
+      "get": "https://api.wavespeed.ai/api/v3/predictions/a6c276b4b4bc4fa380c71585657504eb/result"
+    },
+    "status": "completed",
+    "created_at": "2026-10-22T10:24:53.437830616Z",
+    "code": 0,
+    "error": "",
+    "timings": {
+      "inference": 33317
+    }
+  }
+}

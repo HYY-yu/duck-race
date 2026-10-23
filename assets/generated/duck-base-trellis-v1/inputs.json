@@ -1,0 +1,12 @@
+{
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "image_local": "../duck-base-sam-v1/reference.png",
+  "resolution": "512",
+  "texture_size": 1024,
+  "target_face_count": 10000,
+  "remove_background": true,
+  "seed": 42,
+  "expected_cost_usd": 0.1,
+  "batch_budget_usd": 1,
+  "prior_spent_usd": 0.024
+}

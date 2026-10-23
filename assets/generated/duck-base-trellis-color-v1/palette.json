@@ -1,0 +1,36 @@
+{
+  "body": {
+    "srgb": [
+      254,
+      215,
+      51
+    ],
+    "hex": "#fed733",
+    "referencePatch": [
+      650,
+      260
+    ]
+  },
+  "bill": {
+    "srgb": [
+      244,
+      106,
+      20
+    ],
+    "hex": "#f46a14",
+    "referencePatch": [
+      380,
+      460
+    ]
+  },
+  "bodyPixels": 956657,
+  "billPixels": 72050,
+  "bytes": 311880,
+  "triangles": 10000,
+  "geometryAndUVs": "byte-for-byte preserved",
+  "material": {
+    "metallic": 0,
+    "roughness": 0.65
+  },
+  "additionalCostUsd": 0
+}

@@ -1,0 +1,28 @@
+{
+  "id": "0cce24695f47418e98fe44f0673c7bfe",
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "outputs": [
+    "https://d2h7xmz5gqybh9.cloudfront.net/output/8e1d9bef-a3a7-4f0d-8320-1581fc5577d2-u2_77d7e06507dd47f59a6a7853f7e2621e.glb"
+  ],
+  "saved": [
+    "/Volumes/GW/codes/duck-obstacle-race/assets/generated/remaining-v1/tree-broadleaf/raw/1.glb"
+  ],
+  "elapsed_ms": 84908,
+  "raw": {
+    "id": "0cce24695f47418e98fe44f0673c7bfe",
+    "model": "wavespeed-ai/trellis-2/image-to-3d",
+    "outputs": [
+      "https://d2h7xmz5gqybh9.cloudfront.net/output/8e1d9bef-a3a7-4f0d-8320-1581fc5577d2-u2_77d7e06507dd47f59a6a7853f7e2621e.glb"
+    ],
+    "urls": {
+      "get": "https://api.wavespeed.ai/api/v3/predictions/0cce24695f47418e98fe44f0673c7bfe/result"
+    },
+    "status": "completed",
+    "created_at": "2026-10-22T10:38:13.484214248Z",
+    "code": 0,
+    "error": "",
+    "timings": {
+      "inference": 80038
+    }
+  }
+}

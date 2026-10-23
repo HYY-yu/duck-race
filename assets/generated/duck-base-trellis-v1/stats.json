@@ -1,0 +1,28 @@
+{
+  "bytes": 1111944,
+  "triangles": 10000,
+  "vertices": 7096,
+  "images": [
+    {
+      "mimeType": "image/png",
+      "bytes": 428954,
+      "dimensions": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "mimeType": "image/png",
+      "bytes": 419461,
+      "dimensions": [
+        1024,
+        1024
+      ]
+    }
+  ],
+  "materials": 1,
+  "has_uv": true,
+  "has_normals": false,
+  "sha256": "1e812998345c8a9a5f5c912546ee5912b303121bc6a4c26c245221378b23b22b",
+  "glb_structure_index_bounds_png_headers": "passed"
+}

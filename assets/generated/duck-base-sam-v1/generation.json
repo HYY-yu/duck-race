@@ -1,0 +1,29 @@
+{
+  "id": "3fbda8ba97104d52aa605a6dcb975a0f",
+  "model": "wavespeed-ai/sam-3d-objects",
+  "prompt": "A single complete cute yellow rubber duck toy with an orange bill, black eyes, small wings and an upturned tail, without legs, without background.",
+  "outputs": [
+    "https://d2h7xmz5gqybh9.cloudfront.net/output/a132681a-af2b-42b6-959a-59b79dab9b55.glb"
+  ],
+  "saved": [
+    "/Volumes/GW/codes/duck-obstacle-race/assets/generated/duck-base-sam-v1/raw/1.glb"
+  ],
+  "elapsed_ms": 40009,
+  "raw": {
+    "id": "3fbda8ba97104d52aa605a6dcb975a0f",
+    "model": "wavespeed-ai/sam-3d-objects",
+    "outputs": [
+      "https://d2h7xmz5gqybh9.cloudfront.net/output/a132681a-af2b-42b6-959a-59b79dab9b55.glb"
+    ],
+    "urls": {
+      "get": "https://api.wavespeed.ai/api/v3/predictions/3fbda8ba97104d52aa605a6dcb975a0f/result"
+    },
+    "status": "completed",
+    "created_at": "2026-10-22T10:19:01.309442989Z",
+    "code": 0,
+    "error": "",
+    "timings": {
+      "inference": 23763
+    }
+  }
+}

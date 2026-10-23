@@ -1,0 +1,16 @@
+{
+  "raw": {
+    "bytes": 17484844,
+    "triangles": 874180,
+    "vertices": 437106,
+    "textures": 0
+  },
+  "reduced": {
+    "bytes": 81612,
+    "triangles": 4000,
+    "vertices": 2016,
+    "textures": 0,
+    "simplifierError": 0.007652818690985441
+  },
+  "note": "Sample only; vertex colors, no UV textures, rig or animation. Source coordinate system retained. Reduced GLB includes smooth vertex normals."
+}

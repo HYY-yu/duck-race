@@ -1,0 +1,43 @@
+{
+  "triangles": 10000,
+  "vertices": 7096,
+  "weldedVertices": 5002,
+  "sharpEdgesDamped": 153,
+  "boundaryEdgesLocked": 1,
+  "verticesRestoredForFaceOrientation": 3,
+  "taubin": {
+    "lambda": 0.35,
+    "mu": -0.36,
+    "cycles": 12,
+    "maxMove": 0.014
+  },
+  "maxDisplacement": 0.01399999999999999,
+  "rmsDisplacement": 0.004044456977518185,
+  "onlyNormals": {
+    "bytes": 397184,
+    "min": [
+      -0.4041571021080017,
+      -0.41640567779541016,
+      -0.501144528388977
+    ],
+    "max": [
+      0.40379467606544495,
+      0.4147188663482666,
+      0.5012438297271729
+    ]
+  },
+  "smoothed": {
+    "bytes": 397184,
+    "min": [
+      -0.40448495546512503,
+      -0.4165919756398978,
+      -0.5014452224621629
+    ],
+    "max": [
+      0.40392809633423105,
+      0.41475119801539834,
+      0.5011113094234494
+    ]
+  },
+  "additionalCostUsd": 0
+}

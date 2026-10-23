@@ -1,0 +1,10 @@
+{
+  "budget_usd": 1,
+  "sample_cost_usd": 0.1,
+  "total_spent_usd": 0.124,
+  "remaining_usd": 0.876,
+  "prediction_id": "a6c276b4b4bc4fa380c71585657504eb",
+  "billing_state": "done",
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "created_at": "2026-10-22T10:24:53.439Z"
+}

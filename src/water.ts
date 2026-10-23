@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {createWaterMaterial} from './water-material';
-import {FALLS,TRACK_LENGTH,LAKE_LEVEL,flow,inFall,sample,world} from './track';
+import {FALLS,TRACK_LENGTH,LAKE_LEVEL,flow,inFall,sample,world,COURSE_SCALE,bankWidth,bankDistance} from './track';
 import {createFalls} from './waterfall';
 
 /** Adapted from the parent project's static canyon probe. A curved downhill river
@@ -29,8 +29,8 @@ export class WaterSystem {
   for(let i=0;i<values.length;i++){
    const s=values[i],f=sample(s),next=sample(Math.min(TRACK_LENGTH,s+.15));const slope=Math.max(0,(f.y-next.y)/.15);
    for(let j=0;j<=cols;j++){
-    const u=j/cols,l=(u*2-1)*f.width,p=world(s,l);
-    positions.push(p.x,p.y+.035,p.z);uv.push(u,s);data.push(flow(s,l,0),.8+(1-(l/f.width)**2)*1.1,slope,2*f.width);shores.push(1,1,l);axes.push(f.tx,f.tz,-f.tz,f.tx);banks.push(f.width-Math.abs(l));
+    const u=j/cols,l=(u*2-1)*bankWidth(s,u*2-1),p=world(s,l);
+    positions.push(p.x,p.y+.035,p.z);uv.push(u,s);data.push(flow(s,l,0),.8+(1-(l/f.width)**2)*1.1,slope,2*f.width);shores.push(1,1,l);axes.push(f.tx,f.tz,-f.tz,f.tx);banks.push(bankDistance(s,l));
     impacts.push(Math.max(...FALLS.map(fall=>Math.exp(-(((s-fall.impact-1.3)/3.5)**2)))));
     const n=new THREE.Vector3(f.tx*slope,1,f.tz*slope).normalize();normals.push(n.x,n.y,n.z);
    }
@@ -53,7 +53,7 @@ export class WaterSystem {
   // One continuous lake surrounds the mountain foot; exposed terrain forms its shoreline.
   const pos:number[]=[],uv:number[]=[],data:number[]=[],shore:number[]=[],axis:number[]=[],bank:number[]=[],norm:number[]=[],indices:number[]=[];const rings=64,segments=160;
   for(let r=0;r<=rings;r++)for(let j=0;j<=segments;j++){
-   const radius=r/rings,angle=j/segments*Math.PI*2,coast=1+.055*Math.sin(angle*3)+.035*Math.cos(angle*5),x=Math.cos(angle)*radius*180*coast,z=Math.sin(angle)*radius*200*coast;
+   const radius=r/rings,angle=j/segments*Math.PI*2,coast=1+.055*Math.sin(angle*3)+.035*Math.cos(angle*5),x=Math.cos(angle)*radius*180*COURSE_SCALE*coast,z=Math.sin(angle)*radius*200*COURSE_SCALE*coast;
    pos.push(x,LAKE_LEVEL,12+z);uv.push((x/180+1)*.5,z+100);data.push(.32,3.2,.005,360);shore.push(0,0,x);axis.push(0,1,-1,0);bank.push((1-radius)*180);norm.push(0,1,0);
    if(r<rings&&j<segments){const a=r*(segments+1)+j,b=a+segments+1;indices.push(a,a+1,b,a+1,b+1,b);}
   }

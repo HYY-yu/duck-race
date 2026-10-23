@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {FALLS,sample,world} from './track';
+import {FALLS,sample,world,bankWidth} from './track';
 import {createWaterNormalTexture} from './water-material';
 import {ParticleField} from './particles';
 const noise=`float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}`;
@@ -39,14 +39,14 @@ export function createFalls(scene:THREE.Scene,clock:{value:number},environment:T
   const pos:number[]=[],uv:number[]=[],idx:number[]=[];const rows=48,cols=44;
   for(let r=0;r<=rows;r++)for(let c=0;c<=cols;c++){
    const t=r/rows,u=c/cols,s=fall.lip+(fall.impact-fall.lip)*t;
-   const lane=(u*2-1)*top.width*(1-.04*Math.sin(t*Math.PI)+.04*t*t),p=world(s,lane);
+   const lane=(u*2-1)*bankWidth(fall.lip,u*2-1)*(1-.04*Math.sin(t*Math.PI)+.04*t*t),p=world(s,lane);
    pos.push(p.x,top.y+.035-drop*t*t,p.z);uv.push(u,t);
    if(r<rows&&c<cols){const a=r*(cols+1)+c,b=a+cols+1;idx.push(a,a+1,b,a+1,b+1,b);}
   }
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();const sheet=new THREE.Mesh(geo,sheetMat);sheet.name=`free-waterfall-${fall.lip}`;sheet.renderOrder=2;scene.add(sheet);
   const fp:number[]=[],fu:number[]=[],fi:number[]=[];
   for(let r=0;r<=28;r++)for(let c=0;c<=28;c++){
-   const v=r/28,u=c/28,s=fall.impact-.12+v*7,p=sample(s),lane=(u*2-1)*(p.width-.15),w=world(s,lane);
+   const v=r/28,u=c/28,s=fall.impact-.12+v*7,p=sample(s),lane=(u*2-1)*(bankWidth(s,u*2-1)-.15),w=world(s,lane);
    const crest=Math.exp(-(((v-.10)/.10)**2))*.56*(.7+.3*Math.sin(u*Math.PI));
    fp.push(w.x,w.y+.10+crest,w.z);fu.push(u,v);if(r<28&&c<28){const a=r*29+c,b=a+29;fi.push(a,a+1,b,a+1,b+1,b);}
   }

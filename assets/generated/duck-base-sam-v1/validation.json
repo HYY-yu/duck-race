@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "file": "raw/1.glb",
+      "bytes": 17484844,
+      "triangles": 874180,
+      "vertices": 437106,
+      "sha256": "3272bde6bbb47bc4a1abe47c82fae25b7c168bc1dc0b834de17bc0f33c3940e4",
+      "glb_structure_and_index_bounds": "passed"
+    },
+    {
+      "file": "duck-base-4k.glb",
+      "bytes": 81612,
+      "triangles": 4000,
+      "vertices": 2016,
+      "sha256": "50757883f9a56744df0d28821cc52c8cda4950341a7f83676a21742a732719e7",
+      "glb_structure_and_index_bounds": "passed"
+    }
+  ],
+  "browser_visual_checks": [
+    "three-quarter",
+    "back",
+    "side"
+  ],
+  "browser_loader": "Three.js GLTFLoader; both loaded",
+  "not_checked": [
+    "formal Khronos validator",
+    "mobile GPU performance",
+    "game integration",
+    "rigging or animation"
+  ]
+}

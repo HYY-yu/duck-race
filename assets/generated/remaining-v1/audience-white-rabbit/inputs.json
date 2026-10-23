@@ -1,0 +1,10 @@
+{
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "image": "reference.png",
+  "resolution": "512",
+  "texture_size": 1024,
+  "target_face_count": 10000,
+  "remove_background": true,
+  "seed": 42,
+  "cost_usd": 0.1
+}

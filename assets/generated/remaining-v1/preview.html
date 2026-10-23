@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模型验收 / Asset review</title>
+<style>
+body{margin:0;background:#edf0ef;color:#24362f;font:15px system-ui}header{padding:22px 28px}h1{font-size:22px;margin:0 0 8px}p{margin:5px 0}main{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 20px 20px}section{min-width:0}h2{font-size:16px}img,.viewport{width:100%;height:440px;object-fit:contain;background:#fff;border-radius:12px}canvas{display:block;width:100%;height:100%}button{padding:8px 12px;margin:8px 5px 0 0;cursor:pointer}#status{padding:0 28px 24px}@media(max-width:900px){main{grid-template-columns:1fr}.viewport,img{height:360px}}
+</style>
+<header><h1>模型验收 / Asset review</h1><p>同一参考图、相同灯光 / Same reference and lighting. <a href="./integration.html">游戏装配 / In-game assembly</a></p><p>拖动旋转，滚轮缩放 / Drag to orbit, scroll to zoom. 本批含重试 / Batch including retries: $1.70 · 累计 / Total $1.824 · 剩余 / Remaining $0.176</p><button id="front">正面 / Front</button><button id="back">背面 / Back</button><button id="side">侧面 / Side</button><button id="quarter">斜前方 / Three-quarter</button></header>
+<main><section><h2>同一参考图 / Same reference</h2><img src="../duck-base-sam-v1/reference.png" alt="Asset reference image"></section><section><h2>生成原件 / Raw</h2><div class="viewport" id="raw"></div></section><section><h2 id="trellis-stats">游戏版 / Game asset</h2><div class="viewport" id="processed"></div></section></main>
+<div id="status">加载中 / Loading…</div>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const ids=['tree-broadleaf','tree-pine','bird','pirate-hat','knight-helmet','glasses','scarf','audience-white-rabbit','audience-bear','audience-fox','audience-gray-rabbit','rabbit'];const requested=new URLSearchParams(location.search).get('asset');const selectedAsset=ids.includes(requested)?requested:ids[0];const select=document.createElement('select');select.setAttribute('aria-label','模型 / Model');select.innerHTML=ids.map(v=>`<option ${v===selectedAsset?'selected':''}>${v}</option>`).join('');select.onchange=()=>location.search='?asset='+select.value;document.querySelector('header').append(select);const manifest=await fetch('./web-manifest.json').then(r=>r.json());const sourceAsset=new URLSearchParams(location.search).get('revision')==='2'?selectedAsset+'-v2':manifest.find(v=>v.id===selectedAsset).sourceId;document.querySelector('img').src=`./${sourceAsset}/reference.png`;const views=[];
+window.sampleValidation={models:[],errors:[]};
+for(const [id,url] of [['raw',`./${sourceAsset}/raw/1.glb`],['processed',`/models/${selectedAsset}.glb`]]){
+ const host=document.getElementById(id),scene=new THREE.Scene();scene.background=new THREE.Color('#ffffff');
+ const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));host.append(renderer.domElement);
+ const camera=new THREE.PerspectiveCamera(35,1,.01,100),controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;
+ scene.add(new THREE.HemisphereLight(0xffffff,0xc4bdac,2));const light=new THREE.DirectionalLight(0xffffff,2.5);light.position.set(3,5,4);scene.add(light);
+ const resize=()=>{renderer.setSize(host.clientWidth,host.clientHeight);camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(host);
+ try{
+  const gltf=await new GLTFLoader().loadAsync(url),root=gltf.scene;
+  // Keep the sample's native Y-up orientation for an equal comparison.
+  root.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(root),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+  const scale=1.8/Math.max(size.x,size.y,size.z);root.scale.multiplyScalar(scale);root.position.sub(center.multiplyScalar(scale));
+  let triangles=0,vertices=0;
+  root.traverse(o=>{if(o.isMesh){triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;vertices+=o.geometry.attributes.position.count;if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();for(const material of (Array.isArray(o.material)?o.material:[o.material])){material.flatShading=false;material.needsUpdate=true;}if(id==='sam')o.material=new THREE.MeshStandardMaterial({vertexColors:true,metalness:0,roughness:.65});}});
+  scene.add(root);camera.position.set(2.4,1.2,3.1);controls.update();
+  window.sampleValidation.models.push({id,triangles,vertices,bounds:size.toArray()});if(id==='processed')document.getElementById('trellis-stats').textContent='游戏版 / Game · '+triangles.toLocaleString()+' tris';console.info('[duck-sample] loaded',{id,triangles,vertices});
+ }catch(error){console.error('[duck-sample] loading failed',id,error);window.sampleValidation.errors.push({id,error:String(error)});}
+ views.push({camera,controls,renderer,scene});
+}
+const positions={front:[0,.35,4],back:[0,.35,-4],side:[4,.35,0],quarter:[2.4,1.2,3.1]};
+for(const [id,position] of Object.entries(positions))document.getElementById(id).onclick=()=>views.forEach(v=>{v.camera.position.set(...position);v.controls.target.set(0,0,0);v.controls.update()});
+document.getElementById('status').textContent=window.sampleValidation.errors.length?'加载失败，请查看控制台 / Load failed; see console.':'原始生成与游戏版均已加载；右侧为游戏实际使用的文件。 / Raw generation and shipped game asset loaded. Right: actual game file.';
+rendererLoop();function rendererLoop(){requestAnimationFrame(rendererLoop);for(const v of views){v.controls.update();v.renderer.render(v.scene,v.camera);}}
+</script>
+</html>

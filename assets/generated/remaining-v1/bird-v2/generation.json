@@ -1,0 +1,28 @@
+{
+  "id": "c7e0c2e1fdce4f51b902a4df39968cc4",
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "outputs": [
+    "https://d2h7xmz5gqybh9.cloudfront.net/output/78fc4e74-9e79-4d59-99e3-509132adf5d4-u2_ed23bb732ece45edbc224d6f02c4038d.glb"
+  ],
+  "saved": [
+    "/Volumes/GW/codes/duck-obstacle-race/assets/generated/remaining-v1/bird-v2/raw/1.glb"
+  ],
+  "elapsed_ms": 19224,
+  "raw": {
+    "id": "c7e0c2e1fdce4f51b902a4df39968cc4",
+    "model": "wavespeed-ai/trellis-2/image-to-3d",
+    "outputs": [
+      "https://d2h7xmz5gqybh9.cloudfront.net/output/78fc4e74-9e79-4d59-99e3-509132adf5d4-u2_ed23bb732ece45edbc224d6f02c4038d.glb"
+    ],
+    "urls": {
+      "get": "https://api.wavespeed.ai/api/v3/predictions/c7e0c2e1fdce4f51b902a4df39968cc4/result"
+    },
+    "status": "completed",
+    "created_at": "2026-10-22T10:50:51.719323083Z",
+    "code": 0,
+    "error": "",
+    "timings": {
+      "inference": 13146
+    }
+  }
+}

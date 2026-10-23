@@ -1,0 +1,28 @@
+{
+  "id": "86a49d60aa7d415c88429070e91e42a1",
+  "model": "wavespeed-ai/trellis-2/image-to-3d",
+  "outputs": [
+    "https://d2h7xmz5gqybh9.cloudfront.net/output/364aa8b2-1b3f-4472-9c37-f13973560b1e-u2_678d2d81c42a4e399b9fd13e182b271b.glb"
+  ],
+  "saved": [
+    "/Volumes/GW/codes/duck-obstacle-race/assets/generated/remaining-v1/rabbit-v2/raw/1.glb"
+  ],
+  "elapsed_ms": 24662,
+  "raw": {
+    "id": "86a49d60aa7d415c88429070e91e42a1",
+    "model": "wavespeed-ai/trellis-2/image-to-3d",
+    "outputs": [
+      "https://d2h7xmz5gqybh9.cloudfront.net/output/364aa8b2-1b3f-4472-9c37-f13973560b1e-u2_678d2d81c42a4e399b9fd13e182b271b.glb"
+    ],
+    "urls": {
+      "get": "https://api.wavespeed.ai/api/v3/predictions/86a49d60aa7d415c88429070e91e42a1/result"
+    },
+    "status": "completed",
+    "created_at": "2026-10-22T10:52:19.7031972Z",
+    "code": 0,
+    "error": "",
+    "timings": {
+      "inference": 19761
+    }
+  }
+}

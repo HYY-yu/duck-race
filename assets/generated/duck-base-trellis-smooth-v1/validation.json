@@ -1,0 +1,8 @@
+{
+  "glb_structure": "passed",
+  "indices_uv_texture_unchanged": "passed",
+  "normals_only_positions_unchanged": "passed",
+  "finite_positions_and_unit_normals": "passed",
+  "faces_rotated_over_90_degrees": 0,
+  "triangles": 10000
+}
