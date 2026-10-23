@@ -90,7 +90,12 @@ export class World {
    const box=new THREE.Box3().setFromObject(object).expandByScalar(.35);
    if(moving)this.movingCameraBoxes.push({mesh:object,box});this.cameraBoxes.push(box);
   });
-  void this.replaceGeneratedModels().catch(error=>{console.error('[assets] scene replacement failed',error);});
+  // Keep the procedural scene playable first; generated GLBs replace it during idle time.
+  // Metrics hook: compare first-interaction latency before and after the deferred model batch.
+  const loadGenerated=()=>void this.replaceGeneratedModels().catch(error=>{console.error('[assets] scene replacement failed',error);});
+  const browserWindow=window as Window&{requestIdleCallback?:(callback:()=>void,options?:{timeout:number})=>number};
+  if(browserWindow.requestIdleCallback)browserWindow.requestIdleCallback(loadGenerated,{timeout:2500});
+  else setTimeout(loadGenerated,700);
  }
  async replaceGeneratedModels(){
   const assets=this.generatedAssets;await assets.load();

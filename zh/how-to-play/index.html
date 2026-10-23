@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4f3e9">
+  <meta name="robots" content="index,follow">
+  <meta name="description" content="了解 Duck Rush 如何通过安全随机分配、无预设赢家的自动 3D 障碍竞速产生透明结果。">
+  <title>Duck Rush 公平边界、玩法与控制 – 3D 比赛如何产生结果</title>
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="canonical" href="__SITE_URL__/zh/how-to-play/">
+  <link rel="alternate" hreflang="en" href="__SITE_URL__/en/how-to-play/">
+  <link rel="alternate" hreflang="zh-CN" href="__SITE_URL__/zh/how-to-play/">
+  <link rel="alternate" hreflang="x-default" href="__SITE_URL__/en/how-to-play/">
+</head>
+<body class="document-page">
+  <header class="document-header"><a class="brand-name" href="/zh/">duck rush<span>.</span></a><nav class="document-nav" aria-label="主导航"><a href="/zh/">开始比赛</a><a href="/zh/privacy/">隐私说明</a><a href="/en/how-to-play/" hreflang="en">English</a></nav></header>
+  <main class="document-main">
+    <p class="section-kicker">玩法指南</p>
+    <h1>Duck Rush 玩法与规则</h1>
+    <p class="document-intro">Duck Rush 设置简单、赛道刺激，并明确说明结果如何产生。它把 2–12 个名字分配给小鸭，运行自动的实时 3D 山地河道竞速。</p>
+
+    <section><h2>1. 设置名单</h2><ol><li>打开<a href="/zh/">中文比赛页</a>，选择“编辑名单”。</li><li>每行输入一个名字。系统会移除空行，并拒绝重名、控制字符以及少于 2 人或多于 12 人的名单。</li><li>可以为每个名字指定小鸭颜色；留空则在本轮随机选择。</li><li>保存名单后开始抽签。比赛进行中名单会锁定。</li></ol></section>
+
+    <section><h2>2. 仅自动竞速与公平边界</h2><p>公开版本不接受任何能够控制小鸭或改变结果的玩家输入。浏览器安全随机源先把名字打乱并分配到小鸭物理编号，名字本身不改变赛道物理。没有预设赢家、基于姓名的加速、隐藏追赶加速，也不会先选结果再播放动画。所有小鸭没有自身向前动力，由赛道水流推动；弯道、窄道、碰撞、障碍、瀑布、腾空和落水都可能改变顺序。</p><p>系统按小鸭实际越过终点的顺序记录成绩；完赛后继续漂入湖中，但正式时间不再改变。</p><p class="notice">这是规则透明的休闲抽签，不是认证随机数服务，也不证明所有赛道与浏览器中每个物理编号的胜率完全相同。</p></section>
+
+    <section><h2>3. 镜头、暂停与结果</h2><ul><li><strong>全局：</strong>拖动旋转，滚轮或双指缩放。</li><li><strong>跟随：</strong>纯观看镜头位于选中小鸭后方，并尝试避开地形和场景物体，不会改变比赛。</li><li><strong>暂停：</strong>冻结仿真、动画、已完赛小鸭的漂流和入湖展示计时。</li><li><strong>结果：</strong>完赛后查看完整排名并复制文本，或使用同一名单再来一轮；上一轮第一名不会自动移除。</li></ul></section>
+
+    <section><h2>4. 赛道与可分享状态</h2><p>赛道菜单会设置 URL 中的 <code>track</code> 参数，生成雪山地形使用 <code>seed</code>。这些参数只是同一语言页的状态；canonical 与 sitemap 不会为每种组合创建独立收录 URL。仅用于开发的 <code>debug</code>、<code>inspect</code> 也不会进入 sitemap。</p></section>
+
+    <section><h2>5. 浏览器要求</h2><p>3D 比赛需要 JavaScript、WebGL 和足够的 GPU 内存来加载场景与模型。即使 WebGL 或资源加载失败，首页的可读说明和本页文档仍然可用。声音默认关闭，公开版本不会请求麦克风权限。</p><a class="text-link" href="/zh/">返回名单鸭子竞速器 →</a></section>
+  </main>
+</body>
+</html>

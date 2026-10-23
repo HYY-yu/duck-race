@@ -42,7 +42,7 @@
 - 38 项测试通过，包含 GLB 长度/索引/有限顶点/单位法线/下载预算、费用上限、观众蒙皮权重和暂停一致性。
 - 实际浏览器检查全部 13 个模型加载、逐项原件/成品对照、5 种鸭子装配、4 个观众、树/兔子/飞鸟，以及 `?inspect=audience`、`?inspect=fall` 游戏真实仿真检视；检视不写入抽签历史。
 - 截图：`docs/screenshots/generated-models-*.png`。
-- 游戏：`http://127.0.0.1:5183/`。
+- 游戏：`http://127.0.0.1:5183/zh/` 或 `/en/`。
 - 装配：`http://127.0.0.1:5183/assets/generated/remaining-v1/integration.html`。
 - 原件/成品：`http://127.0.0.1:5183/assets/generated/remaining-v1/preview.html`。
 

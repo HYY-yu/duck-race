@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {duckScarf} from './duck-scarf';
+import {trackEvent} from './observability';
 
 export const MODEL_IDS=['duck','tree-broadleaf','tree-pine','bird','pirate-hat','knight-helmet','glasses','scarf','audience-white-rabbit','audience-bear','audience-fox','audience-gray-rabbit','rabbit'] as const;
 export type ModelId=typeof MODEL_IDS[number];
@@ -24,9 +25,10 @@ export class GeneratedAssets {
    const mesh=new THREE.Mesh(geometry,material);mesh.name=`generated-${id}`;mesh.castShadow=true;mesh.receiveShadow=true;
    this.templates.set(id,mesh);this.diagnostics.loaded.push(id);console.debug('[assets] model loaded',{id,vertices:geometry.attributes.position.count});
   }));
-  results.forEach((result,i)=>{if(result.status==='rejected'){this.diagnostics.failed.push(MODEL_IDS[i]);console.error('[assets] model load failed',{id:MODEL_IDS[i],error:result.reason});}});
+  results.forEach((result,i)=>{if(result.status==='rejected'){const id=MODEL_IDS[i];this.diagnostics.failed.push(id);console.error('[assets] model load failed',{id,error:result.reason});trackEvent('asset_failed',{asset:id});}});
   this.diagnostics.milliseconds=performance.now()-start;
   console.info('[assets] library ready',this.diagnostics);
+  trackEvent('asset_load_finished',{loaded:this.diagnostics.loaded.length,failed:this.diagnostics.failed.length,durationMs:Math.round(this.diagnostics.milliseconds)});
   if(this.diagnostics.failed.length)console.warn('[assets] procedural fallbacks retained',{ids:this.diagnostics.failed});
  }
  has(id:ModelId){return this.templates.has(id);}

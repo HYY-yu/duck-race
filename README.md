@@ -1,6 +1,6 @@
 # Duck Rush
 
-可视化抽签工具：输入名单，让小鸭的真实冲线顺序揭晓完整排名。使用 TypeScript、Three.js 和 Vite。原 `packages/duck-rush` 已于 2026-10-22 提升到仓库根目录。
+设置简单的 3D 名单鸭子竞速工具：输入 2–12 个名字，观看急流、障碍、碰撞和瀑布形成真实冲线顺序。公开构建只有自动竞速，使用安全随机姓名分配且无预设赢家；姓名与历史默认只在当前浏览器，项目不内置账号、名单上传 API、远程名单数据库或已配置的分析目的地。使用 TypeScript、Three.js 和 Vite。原 `packages/duck-rush` 已于 2026-10-22 提升到仓库根目录。
 
 ## 启动 / Getting started
 
@@ -8,12 +8,39 @@
 
 ```bash
 npm ci
-npm run dev       # Duck Rush：http://127.0.0.1:5183
+npm run dev       # 语言入口：http://127.0.0.1:5183/
+                  # 英文游戏：http://127.0.0.1:5183/en/
+                  # 中文游戏：http://127.0.0.1:5183/zh/
+npm run dev:manual # 仅本机：启用键盘/语音人工模式
 npm test
+npm run build
+npm run preview   # 生产构建预览：http://127.0.0.1:5184/en/
+```
+
+`dist/` 可用于静态部署。保留 5183 端口及原有 localStorage 键，本机该 origin 的最近比赛记录继续可用。`dev:rush`、`build:rush`、`test:rush` 保留为主项目命令的兼容别名。
+
+## SEO 与生产配置
+
+中英文使用独立 URL：`/en/`、`/zh/`，玩法与隐私页也各有独立语言版本。根路径 `/` 是不按 IP 跳转的手动语言入口。
+
+生产构建必须配置真实 HTTPS origin：
+
+```bash
+cp .env.example .env
+# 编辑 .env，在 SITE_URL= 后填写实际生产 origin，例如你的真实 https 域名
 npm run build
 ```
 
-`dist/` 可用于静态部署。保留 5183 端口及原有 localStorage 键，本机该地址的最近比赛记录继续可用。`dev:rush`、`build:rush`、`test:rush` 保留为主项目命令的兼容别名。
+`npm run build` 始终按公开的纯自动模式构建。未设置 `SITE_URL` 时仍可本地构建和预览，但构建会 Warn，并主动省略 canonical、hreflang、absolute 分享图 URL 与 `sitemap.xml`，避免发布 localhost、示例域名或占位符。设置后，构建会生成同源的 `robots.txt`、`sitemap.xml`，并检查中英文元数据一致性。
+
+静态托管要求：
+
+- 支持目录索引，使 `/en/`、`/zh/`、`/en/how-to-play/`、`/zh/how-to-play/`、`/en/privacy/`、`/zh/privacy/` 可直接刷新；
+- 未知路径返回构建产物 `404.html`，HTTP 状态必须是 404，不要把所有未知路径以 200 重写到首页；
+- 带 hash 的 `/assets/` 可设置长期 immutable 缓存，HTML、`robots.txt`、`sitemap.xml` 使用可更新的短缓存；
+- 生产域名、托管商、运营主体、联系渠道、Search Console 和真机 Core Web Vitals 仍是上线必填/必测项。
+
+定位、关键词证据、URL/参数索引策略、性能基线、观测事件及完整上线清单见 [docs/SEO.md](docs/SEO.md)；偏好图形化阅读时打开 [SEO 上线作战图](docs/seo-launch-visual.html)。
 
 ## 旧版参考 / Archived reference
 
@@ -32,7 +59,7 @@ npm run build:legacy
 
 ## 长赛道 / Long course
 
-打开 `http://127.0.0.1:5183/?track=long`，体验约 423 米的 2.15 倍长赛道、彩虹拱门、滑梯水道和风车水车。右上角可新开另一版本，标准版保留。布局、状态与验证见 [长赛道说明](docs/LONG-COURSE.md)。
+打开 `http://127.0.0.1:5183/zh/?track=long` 或 `/en/?track=long`，体验约 423 米的 2.15 倍长赛道、彩虹拱门、滑梯水道和风车水车。赛道菜单可切换标准、长赛道和雪岭激流；`track`、`seed` 会在语言切换时保留，但不会作为独立页面进入 sitemap。布局、状态与验证见 [长赛道说明](docs/LONG-COURSE.md)。
 
 ## 已实现
 
@@ -46,8 +73,7 @@ npm run build:legacy
 - 水体透射与反射、流动法线、真实顶点起伏、水下河床与焦散、泡沫/水帘/喷雾。
 - 鸭子离水重力下落、入水回弹、惯性俯仰/侧摇、碰撞反弹/旋转、与冲击强度关联的飞溅。
 - 山脚连续湖面、自然地形岸线；完赛后继续漂流入湖，成绩与计时保持不变。
-- 全局和任选鸭子跟随；跟随镜头检测山体、树冠、岩石与机关遮挡，自动换侧或抬高。
-- 跟随一只鸭子后可开启语音控制，只需说“左”或“右”让当前鸭子短暂横向拨水；支持“向左、往左、左边、向右、往右、右边”和英文 left/right 表达。
+- 全局和任选鸭子跟随；公开构建中的跟随功能只改变观看镜头，不改变比赛。跟随镜头检测山体、树冠、岩石与机关遮挡，自动换侧或抬高。
 - 全部完赛后转为河口群体镜头，至少观看 9 秒且全部小鸭进入湖面后再弹出成绩；也可随时点击「查看结果」。
 - 双语 UI、实时名次、暂停/继续、最近 10 场本机记录。
 - 连续岛屿坡面、陡坡岩面、疏密变化的松林、飞鸟和兔子。
@@ -70,11 +96,20 @@ npm run build:legacy
 
 ### 雪山种子地图（2026-10-23）
 
-默认进入雪岭激流，`?seed=917` 可生成并复现另一条盘山河道；原赛道使用 `?track=standard` / `?track=long`。跟随小鸭时用 A/D 或左右键横向拨水，人工操作会在结果中标注。手感从 `src/tuning.ts` 调整，不新增设置界面。地图、水流近似、脱困机制和验证范围见 [雪岭激流说明](docs/MOUNTAIN-COURSE.md)。
+`/zh/` 与 `/en/` 默认进入雪岭激流，添加 `?seed=917` 可生成并复现另一条盘山河道；原赛道使用 `?track=standard` / `?track=long`。公开构建只有自动模式；跟随小鸭只是观看镜头。手感从 `src/tuning.ts` 调整，不新增公开设置界面。地图、水流近似、脱困机制和验证范围见 [雪岭激流说明](docs/MOUNTAIN-COURSE.md)。
 
 雪山第二轮改进：扩大高差与河道，增加主峰/支峰及远山；`src/tuning.ts` 的 `RAPIDS` 对照参考项目 CFG 调整漂流、拨水、重力与碰撞手感。跟随镜头改为低位近距离后跟、速度 FOV 与短促命中反馈；鸭头持续回正并左右游动，落水/受击增加独立水滴和金色碎光。验证详情见 `docs/MOUNTAIN-COURSE.md`，截图见 `docs/screenshots/rapids-v2-*.png`。
 
-### 语音控制 / Voice control
+### 本机人工模式 / Local manual mode
+
+人工拨水与语音控制由构建期变量 `VITE_ENABLE_MANUAL_MODE` 控制，默认值为 `false`。仓库忽略的 `.env.manual.local` 只在本机 `manual` mode 下读取：
+
+```bash
+npm run dev:manual
+npm run build:manual # 仅供本机验收，不得部署该 dist/
+```
+
+公开 `npm run build` 不渲染麦克风或语音日志，不注册 A/D、左右方向键的拨水输入；跟随镜头仍可用于纯观看。人工构建启动时会输出 Warn，`window.__DUCK_RUSH__.manualMode` 可用于验收当前构建开关。
 
 开始比赛并跟随一只鸭子后，点击右上角麦克风并允许浏览器使用麦克风。推荐说更容易识别的“向左转”“向右转”，同时兼容“左”“往左”“右边”等方向词；命令始终作用于当前跟随的鸭子，不识别姓名。识别成功时，当前鸭子的名字气泡会高亮并显示大号方向箭头；已开启声音时还会播放带左右声像区别的短提示音。每条有效命令施加约 1.2 秒横向拨水，不增加前进动力；键盘跟随控制优先于同一时刻的语音命令。
 

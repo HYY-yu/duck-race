@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5183 --strictPort",
-    "build": "tsc && vite build",
+    "dev:manual": "vite --mode manual --host 127.0.0.1 --port 5183 --strictPort",
+    "build": "tsc && vite build && node scripts/check-seo-build.mjs",
+    "build:manual": "tsc && vite build --mode manual && DUCK_RUSH_MANUAL_BUILD=true node scripts/check-seo-build.mjs",
+    "preview": "node scripts/preview.mjs",
     "test": "node --import tsx --test tests/*.test.ts",
     "dev:rush": "npm run dev",
     "build:rush": "npm run build",

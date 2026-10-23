@@ -1,4 +1,39 @@
-# 0.2 验证记录 · 2026-10-22
+# Duck Rush 验证记录
+
+## 公开纯自动构建与本机人工 Flag · 2026-10-23
+
+- 默认 `npm run build` 关闭 `VITE_ENABLE_MANUAL_MODE`：不渲染麦克风、语音日志或人工控制入口，不注册 A/D 与左右方向键的拨水输入；跟随小鸭保留为纯观看镜头。
+- Git 忽略的 `.env.manual.local` 仅由 `npm run dev:manual` / `npm run build:manual` 读取。本机人工构建会输出 Warn，并通过 `window.__DUCK_RUSH__.manualMode === true` 明确暴露验收状态；该产物不得上线。
+- 英文/中文主页、玩法页、隐私页、结构化数据与 SEO 上线作战图均改为“公开版本仅自动竞速”；公开隐私页明确不请求麦克风权限。
+- 构建检查会验证默认产物不包含人工模式 DOM 入口、语音命令处理器或拨水键码；浏览器生产预览已核对 `manualMode === false`、`#voice` / `#voice-log` 数量为 0，并在跟随镜头下按下 A 后确认 `controlled === false`。
+
+## 核心卖点与本地隐私 SEO 强化 · 2026-10-23
+
+- 英文/中文主页的 title、description、Open Graph、Twitter、H1 副标题、可见正文、FAQ 和 `WebApplication` JSON-LD 统一突出三点：设置简单、3D 赛道刺激、自动结果透明。
+- “公平”改成可验证规则：浏览器安全随机分配姓名；公开版本只有自动竞速，无预设赢家、无姓名偏置或隐藏追赶加速；赛道仿真产生实际冲线排名。不宣传认证公平或所有物理编号胜率完全一致。
+- 本地数据主张改成强但准确的边界：当前代码没有账号、内置名单上传 API、远程名单数据库或已配置的分析目的地；姓名与最近 10 场历史默认只在当前浏览器。仍不使用“所有数据永不离开设备”或“绝无后门”的不可验证绝对表述，因为托管商会处理常规请求。
+- SEO 上线作战图同步更新为“几秒设置 / 刺激赛道 / 透明结果”，并把“无预设赢家、无姓名偏置、名单默认不上传”的边界单独可视化。
+- SEO 定向测试与 `npm run build` 通过；生产预览实际检查 `/en/?track=mountain&seed=917`、`/zh/?track=mountain&seed=917`，中英文标题、首屏主张、可见事实列表、FAQ 和参数保留正确；390×844 布局无横向溢出。
+
+## ImageGen favicon 与 SEO 上线作战图 · 2026-10-23
+
+- 使用内置 ImageGen 生成透明背景的 3D 小鸭踏浪图标，源文件保存在 `assets/brand/favicon-imagegen-v1.png`；发布输出 16、32、180、256px PNG，并替换中英文主页、帮助、隐私、语言入口和 404 的 favicon 引用。实际检查 16/32px 缩略图，鸭头、橙色鸭嘴和蓝绿色急流仍可辨识。
+- 新增 `docs/seo-launch-visual.html`：以雪岭航线作战图呈现市场信号、产品定位、URL/索引架构、自动竞速与纯观看镜头、数据边界、性能加载路径和六项上线闸门。页面纯 HTML/CSS/少量 JS、无新增依赖，并声明 `noindex,nofollow`，不进入 Vite 多页面构建和 sitemap。
+- 浏览器检查 1285×1093 桌面和 390×844 手机布局；手机无横向溢出。实际点击验证关键词二维图详情切换与桌面/模拟移动性能切换；减少动态效果及手机布局不依赖 reveal 动画显示正文。
+- 当时 `npm test`：80/80 通过；当前加入公开自动模式构建边界测试后为 81/81。`npm run build` 与生产 HTML/JS 自检通过，发布产物包含新 PNG favicon；保留 Three.js 大 chunk 提示。
+
+## 第一轮上线 SEO · 2026-10-23
+
+- 新增独立 `/en/`、`/zh/` 游戏主页，以及对应玩法和隐私页；根路径为手动语言选择入口。语言切换保留 `track`、`seed` 等当前查询状态，不按 IP 跳转。
+- 中英文初始 HTML 包含各自 title、description、lang、H1、使用步骤、规则、FAQ、正常内部链接与 `WebApplication` JSON-LD。Three.js 只接管 `#app`，不会覆盖游戏下方静态正文。
+- `SITE_URL` 集中生成 canonical、双向 hreflang、x-default、absolute 分享图 URL、`robots.txt` 和 `sitemap.xml`。无域名构建会 Warn 并移除 absolute 标签；使用临时保留域名输出到 `/tmp` 的配置构建验证了 6 个收录 URL 一致，未把 `track`、`seed`、`debug`、`inspect` 或 404 写入 sitemap。
+- 增加 1200×630 真实游戏截图 JPEG 分享图、ImageGen 透明 PNG favicon（16/32/180/256px）、`noindex,follow` 404 页面和严格静态预览器。分享图使用 `.jpg`、`image/jpeg` 与 JPEG 文件魔数一致，并纳入构建检查。生产预览中主页/玩法/隐私页返回 200，未知路径返回自定义页面和 HTTP 404，不进行 SPA 200 回退。
+- 初始 entry 约 5.37 kB（gzip 2.36 kB）；144.80 kB 主游戏与 639.14 kB Three.js chunk 动态加载。13 个 GLB（约 7.2 MB）延后到程序化场景可玩后在 idle 阶段加载；移除 Google Fonts 外部请求。
+- 桌面生产预览 `/en/?track=mountain&seed=917`：FCP 约 116 ms、LCP 约 996 ms、CLS 0；13/13 模型成功，语言链接保留参数，浏览器未捕获 Runtime exception、Log error 或 Network loading failure。这是本机未限速结果，不是线上 Core Web Vitals。
+- 390×844、4× CPU、约 1.6 Mbps/100 ms 延迟的模拟移动环境：FCP 约 568 ms、LCP 约 2.32 s、CLS 0；程序化 3D 场景约 7.66 s 可用时 GLB 批次仍未完成，点击开始后约 37 ms 进入 countdown，证明模型延迟加载不阻止开赛。此为桌面浏览器模拟，不替代真实手机、发热和 GPU 测试。
+- 浏览器分别检查英文、中文直接 URL、刷新后的语言/赛道/种子、桌面 1285×1093、手机 390×844、实际开赛、玩法页、隐私页和自定义 404。禁用 JavaScript 后，H1、产品说明、步骤、规则、FAQ 与内部链接仍可阅读。
+- 当时 `npm test`：79/79 通过；favicon 与可视化检查后为 80/80；当前公开自动模式构建边界测试后为 81/81。覆盖语言 URL、参数保留、absolute SEO 输出开关、sitemap 边界和静态正文/结构化数据测试。`npm run build` 通过并执行生产 HTML/JS 自检；保留 Three.js chunk 超过 500 kB 的提示。
+- 未验证：真实 Android/iPhone、线上域名与托管规则、Search Console、社交平台线上抓图、真实用户数据、线上排名/流量和真实用户 Core Web Vitals。完整策略与上线清单见 `docs/SEO.md`。
 
 ## 移除中签人数 · 2026-10-22
 
