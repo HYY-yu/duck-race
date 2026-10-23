@@ -1,6 +1,6 @@
 import {paddleTarget} from './rapids-physics';
 import {FEEL,RAPIDS} from './tuning';
-import {TRACK_LENGTH,RUNOUT_LENGTH,flow,width,obstacles,sample,launchVelocity,FLOW_MULTIPLIER,bankWidth,blockers,TRACK_SEED,MOUNTAIN_COURSE} from './track';
+import {TRACK_LENGTH,RUNOUT_LENGTH,flow,width,obstacles,sample,FLOW_MULTIPLIER,bankWidth,blockers,TRACK_SEED,MOUNTAIN_COURSE} from './track';
 import {createMotion,stepMotion,contactImpulse,type Motion} from './dynamics';
 import {TrafficCone} from './traffic-cone';
 export {COLORS} from './duck-palette';
@@ -85,7 +85,7 @@ export class Race {
  private registerContact(d:Duck,strength:number,source?:string){d.cooldown=.35;d.hits++;this.emit(d,'contact',strength,source);}
  step(dt:number){
   if(!(dt>0)||dt>.051)throw new RangeError('Use a fixed simulation step <= 50 ms');
-  if(this.state==='countdown'){this.countdown-=dt;if(this.countdown<=0){this.state='racing';for(const d of this.ducks)d.v=launchVelocity(d.lane);console.info('[race] started',{seed:this.seed,flowMultiplier:FLOW_MULTIPLIER,launchAssisted:this.ducks.filter(d=>d.v>0).length});}return;}
+  if(this.state==='countdown'){this.countdown-=dt;if(this.countdown<=0){this.state='racing';console.info('[race] started',{seed:this.seed,flowMultiplier:FLOW_MULTIPLIER,motionModel:'snowpeak-rapids'});}return;}
   if(this.state!=='racing'&&this.state!=='finished')return;
   this.floatTime+=dt;
   this.cone.step(dt,this.ducks.some(d=>Math.hypot(d.s-this.cone.s,d.lane-this.cone.lane)<2.3&&Math.abs(d.y-sample(this.cone.s).y)<2));
@@ -98,10 +98,8 @@ export class Race {
    // Passive advection: only submerged ducks receive water drag. Airborne ducks
    // retain horizontal momentum; there is no propulsion or catch-up compensation.
    if(!d.airborne){
-    const drag=MOUNTAIN_COURSE?RAPIDS.waterDrag:FEEL.waterDrag;
-    d.v+=(flow(d.s,d.lane,this.time)-d.v)*(MOUNTAIN_COURSE?1-Math.exp(-drag*dt):drag*dt);
-    if(MOUNTAIN_COURSE){const target=paddleTarget(d,this.time,this.steering.duck===d.id?this.steering.axis:null);d.lv+=(target-d.lv)*(1-Math.exp(-RAPIDS.lateralDrag*dt));}
-    else {d.lv+=(Math.sin(d.s*.19+this.time*.9)*.8-d.lane*.14-d.lv*FEEL.lateralDrag)*dt;d.lv+=(this.steering.duck===d.id?this.steering.axis*FEEL.steerAcceleration:0)*dt;}
+    d.v+=(flow(d.s,d.lane,this.time)-d.v)*(1-Math.exp(-RAPIDS.waterDrag*dt));
+    const target=paddleTarget(d,this.time,this.steering.duck===d.id?this.steering.axis:null);d.lv+=(target-d.lv)*(1-Math.exp(-RAPIDS.lateralDrag*dt));
    }
    this.obstacleContact(d);
    // Detect lack of forward progress, including fast back-and-forth collisions.
@@ -118,7 +116,7 @@ export class Race {
    const a=this.ducks[i],b=this.ducks[j];if(a.finish!==null||b.finish!==null||Math.abs(a.y-b.y)>1.1)continue;
    const ds=a.s-b.s,dl=a.lane-b.lane,r=Math.hypot(ds,dl);if(r>=2.1)continue;
    const ns=r>.001?ds/r:0,nl=r>.001?dl/r:1;
-   const repulsion=(2.1-r)*(MOUNTAIN_COURSE?RAPIDS.repelStrength:FEEL.repulsion)*dt,along=MOUNTAIN_COURSE?RAPIDS.repelAlong:1;a.v+=ns*repulsion*along;b.v-=ns*repulsion*along;a.lv+=nl*repulsion;b.lv-=nl*repulsion;
+   const repulsion=(2.1-r)*RAPIDS.repelStrength*dt,along=RAPIDS.repelAlong;a.v+=ns*repulsion*along;b.v-=ns*repulsion*along;a.lv+=nl*repulsion;b.lv-=nl*repulsion;
    const relative=(a.v-b.v)*ns+(a.lv-b.lv)*nl;
    if(r<1.32&&relative<-.2){const j=-(1+.42)*relative*.5;contactImpulse(a,ns*j,nl*j);contactImpulse(b,-ns*j,-nl*j);if(j>1&&a.cooldown===0){this.registerContact(a,j);this.registerContact(b,j);}}
   }
@@ -126,10 +124,10 @@ export class Race {
   for(const d of this.ducks){
    if(d.finish!==null)continue;
    // Rebound can briefly reverse motion. Its energy then dissipates through water drag.
-   d.v=Math.max(-4,Math.min(MOUNTAIN_COURSE?32:12,d.v));d.lv=Math.max(-7,Math.min(7,d.lv));
+   d.v=Math.max(-4,Math.min(32,d.v));d.lv=Math.max(-7,Math.min(7,d.lv));
    d.s=Math.max(0,d.s+d.v*dt);d.lane+=d.lv*dt;
    const edge=bankWidth(d.s,d.lane)-.65;
-   if(Math.abs(d.lane)>edge){const side=Math.sign(d.lane);d.lane=side*edge;if(d.lv*side>0){const j=-d.lv*(1+(MOUNTAIN_COURSE?RAPIDS.wallRestitution:.5));contactImpulse(d,-Math.abs(d.v)*(MOUNTAIN_COURSE?1-RAPIDS.wallPenalty:.08),j);if(Math.abs(j)>1.8&&d.cooldown===0)this.registerContact(d,Math.abs(j));}}
+   if(Math.abs(d.lane)>edge){const side=Math.sign(d.lane);d.lane=side*edge;if(d.lv*side>0){const j=-d.lv*(1+RAPIDS.wallRestitution);contactImpulse(d,-Math.abs(d.v)*(1-RAPIDS.wallPenalty),j);if(Math.abs(j)>1.8&&d.cooldown===0)this.registerContact(d,Math.abs(j));}}
    const motion=stepMotion(d,previousS[d.id],this.time,dt);if(motion)this.emit(d,motion.kind,motion.strength);
    if(d.s>=TRACK_LENGTH-2){d.finish=this.time-dt+dt*((TRACK_LENGTH-2-previousS[d.id])/Math.max(.0001,d.s-previousS[d.id]));crossed.push(d);}
   }

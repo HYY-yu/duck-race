@@ -1,14 +1,8 @@
 /** Code-only feel controls. No duck ID, rank, or player input changes propulsion. */
 export const FEEL = {
- waterDrag: 1.4,
- lateralDrag: 1.8,
- steerAcceleration: 5.5,
- repulsion: 4.5,
- gravity: 9.81,
  launchSlope: .95,
  stuckSeconds: 2.5,
  escapeImpulse: 2.4,
- baseFlow: 3.8,
  bendNarrowing: .27,
 } as const;
 

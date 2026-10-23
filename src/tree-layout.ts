@@ -27,13 +27,13 @@ export function selectTreePlacements(candidates:readonly TreePlacement[],terrain
   const radius=treeRadius(tree),near=terrain.nearest(tree.x,tree.z);
   if(near.distance<near.p.width+radius+.9||tree.y<LAKE_LEVEL+.8){rejected.river++;continue;}
   if(reservations.some(p=>Math.hypot(tree.x-p.x,tree.z-p.z)<radius+p.radius)){rejected.reserved++;continue;}
-  let rootBase=tree.y;let uneven=terrain.slope(tree.x,tree.z)>1.35;
+  let rootBase=tree.y;let uneven=terrain.slope(tree.x,tree.z)>2.4;
   for(let i=0;i<8&&!uneven;i++){
    const a=i*Math.PI/4,dx=Math.cos(a),dz=Math.sin(a);
    const root=terrain.height(tree.x+dx*.45*tree.size,tree.z+dz*.45*tree.size);
    const crown=terrain.height(tree.x+dx*radius*.8,tree.z+dz*radius*.8);
    rootBase=Math.min(rootBase,root);
-   uneven=Math.abs(root-tree.y)>.65*tree.size||crown>tree.y+TREE_DIMENSIONS[tree.kind].canopyFloor*tree.size-.15;
+   uneven=Math.abs(root-tree.y)>1.15*tree.size||crown>tree.y+TREE_DIMENSIONS[tree.kind].canopyFloor*tree.size-.15;
   }
   if(uneven){rejected.slope++;continue;}
   // Slightly interlocking crowns form woodland; river/prop clearance uses full radii.

@@ -1,4 +1,4 @@
-import {alpineBiome,alpineTreeCandidates} from './alpine-biome';
+import {alpineBiome,alpineTreeCandidates,rockExposure} from './alpine-biome';
 import {addAlpineAtmosphere} from './alpine-atmosphere';
 import * as THREE from 'three';
 import {addLongCourseProps} from './course-props';
@@ -12,9 +12,37 @@ import {IslandTerrain,terrainNoise} from './island-terrain';
 import {BridgeAudience} from './bridge-audience';
 import {GeneratedAssets} from './generated-assets';
 import {selectTreePlacements,treeRadius,TREE_DIMENSIONS,type TreePlacement} from './tree-layout';
+const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 const mat=(color:THREE.ColorRepresentation,roughness=.82)=>new THREE.MeshStandardMaterial({color,roughness});
 const grass=mat('#92b88a'),wood=mat('#976c48'),ivory=mat('#fff9e7'),dark=mat('#263d3a'),orange=mat('#f2a04c');
 const sphere=new THREE.SphereGeometry(1,20,14);
+/** Angular, flat-topped slab for bedded outcrops. A low-poly polyhedron has round
+ * silhouette edges; real exposed bedding has straight fracture planes and sharp rims. */
+const slabGeometry=(()=>{
+ const g=new THREE.BoxGeometry(1,1,1,1,1,1),p=g.attributes.position;
+ for(let i=0;i<p.count;i++){
+  // Break the box out of axis alignment so no two slabs share a silhouette.
+  const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+  p.setXYZ(i,x+(y>0?.06:-.05)*Math.sin(i*2.1),y+(z>0?.08:-.06),z+(x>0?.07:-.05)*Math.cos(i*1.7));
+ }
+ g.computeVertexNormals();return g;
+})();
+/** Irregular boulder: a subdivided icosahedron with deterministic vertex jitter, so
+ * instances read as broken rock rather than as a faceted ball. */
+const blockGeometry=(()=>{
+ const g=new THREE.IcosahedronGeometry(1,1),p=g.attributes.position,done=new Map<string,[number,number,number]>();
+ for(let i=0;i<p.count;i++){
+  const key=`${p.getX(i).toFixed(4)},${p.getY(i).toFixed(4)},${p.getZ(i).toFixed(4)}`;
+  let v=done.get(key);
+  if(!v){
+   const seed=Math.sin(p.getX(i)*12.9+p.getY(i)*78.2+p.getZ(i)*37.7)*43758.5453;
+   const n=seed-Math.floor(seed),m=seed*1.7-Math.floor(seed*1.7);
+   v=[1+(n-.5)*.34,1+(m-.5)*.30,1+(n+m-1)*.28];done.set(key,v);
+  }
+  p.setXYZ(i,p.getX(i)*v[0],p.getY(i)*v[1],p.getZ(i)*v[2]);
+ }
+ g.computeVertexNormals();return g;
+})();
 function mesh(g:THREE.BufferGeometry,m:THREE.Material,p:THREE.Vector3|number[]=[0,0,0],scale?:number[]){const o=new THREE.Mesh(g,m);o.position.fromArray(Array.isArray(p)?p:p.toArray());if(scale)o.scale.fromArray(scale);o.castShadow=true;o.receiveShadow=true;return o;}
 function ball(parent:THREE.Object3D,m:THREE.Material,p:number[],scale:number[]){const o=mesh(sphere,m,p,scale);parent.add(o);return o;}
 function box(parent:THREE.Object3D,m:THREE.Material,p:number[],scale:number[]){const o=mesh(new THREE.BoxGeometry(1,1,1),m,p,scale);parent.add(o);return o;}
@@ -120,38 +148,127 @@ export class World {
   const field=this.terrainField,positions:number[]=[],colors:number[]=[],indices:number[]=[],color=new THREE.Color(),rock=new THREE.Color('#a5aaa0');
   for(let j=0;j<=field.rows;j++)for(let i=0;i<=field.cols;i++){
    const x=field.minX+i*field.step,z=field.minZ+j*field.step,h=field.heights[j*(field.cols+1)+i],slope=field.slope(x,z);
-   positions.push(x,h,z);color.set(h<LAKE_LEVEL-.5?'#8aa99b':h<LAKE_LEVEL+.9?'#d9cfaa':h<LAKE_LEVEL+2.4?'#b7c195':'#91b682');
-   const exposure=Math.max(0,Math.min(.75,(slope-.8)*.6))*(h>5?1:0);
-   color.lerp(rock,exposure);if(MOUNTAIN_COURSE){
-    const {patch,steep,bare,snow}=alpineBiome(x,z,h,slope);
-    color.set('#537c50');color.lerp(new THREE.Color('#88ab68'),.5+patch*.25);color.lerp(new THREE.Color('#8e887b'),Math.max(steep*.62,bare));color.lerp(new THREE.Color('#625e54'),steep*.13);color.lerp(new THREE.Color('#f3f7fa'),snow);
-    if(field.bankDistances[j*(field.cols+1)+i]<3)color.lerp(new THREE.Color('#6d6554'),.35);
-   }const variation=terrainNoise(x*.18+7,z*.18)*.024;color.offsetHSL(variation*.3,variation,variation);colors.push(color.r,color.g,color.b);
+   positions.push(x,h,z);
+   if(MOUNTAIN_COURSE){
+    // Layered alpine ground: meadow -> grass -> scree -> rock -> snow, with the
+    // transitions driven by slope and noise so no band reads as a painted stripe.
+    const biome=alpineBiome(x,z,h,slope),mass=smooth(18,96,h);
+    const exposure=rockExposure(x,z,h,slope,mass);
+    const strata=Math.sin((h*.85+terrainNoise(x*.06,z*.06)*3.4)*.9)*.5+.5;
+    const scree=Math.max(0,Math.min(1,smooth(52,86,h)*(.25+terrainNoise(x*.13+5,z*.13-2)*.4+.35)));
+    color.set('#4e7a45');                                        // sheltered alpine meadow
+    color.lerp(new THREE.Color('#6f9558'),.30+biome.patch*.22);   // sunlit grass
+    color.lerp(new THREE.Color('#8a9a68'),Math.max(0,scree*.5));  // dry turf above the treeline
+    color.lerp(new THREE.Color('#8d8b80'),exposure*.72);          // scree fans and bare faces
+    color.lerp(new THREE.Color('#736f65'),exposure*strata*.5);    // bedding shadow in the rock
+    color.lerp(new THREE.Color('#5d5a52'),Math.max(0,(slope-1.9)*.42)); // near-vertical faces stay dark
+    color.lerp(new THREE.Color('#f2f6fa'),biome.snow);            // snow, last so it caps everything
+    if(field.bankDistances[j*(field.cols+1)+i]<3)color.lerp(new THREE.Color('#6d6554'),.30); // wet bank
+   }else{
+    color.set(h<LAKE_LEVEL-.5?'#8aa99b':h<LAKE_LEVEL+.9?'#d9cfaa':h<LAKE_LEVEL+2.4?'#b7c195':'#91b682');
+    const exposure=Math.max(0,Math.min(.75,(slope-.8)*.6))*(h>5?1:0);
+    color.lerp(rock,exposure);
+   }
+   const variation=terrainNoise(x*.18+7,z*.18)*.024;color.offsetHSL(variation*.3,variation,variation);colors.push(color.r,color.g,color.b);
    if(i<field.cols&&j<field.rows){const a=j*(field.cols+1)+i,b=a+field.cols+1;indices.push(a,b,a+1,a+1,b,b+1);}
   }
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();
   const terrain=mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));terrain.name='island-terrain';this.scene.add(terrain);
+  if(MOUNTAIN_COURSE)this.surroundings();
   console.info('[world] terrain ready',{vertices:positions.length/3,smoothingPasses:7});
  }
+ /** Ring skirt carrying the valley floor and foothills beyond the baked grid.
+  * It is built from the grid's own boundary vertices outward, so the shared edge is
+  * vertex-for-vertex identical to the terrain mesh and no seam can appear. */
+ private surroundings(){
+  const field=this.terrainField,rings=22,maxOut=980;
+  const x0=field.minX,x1=field.minX+field.cols*field.step,z0=field.minZ,z1=field.minZ+field.rows*field.step;
+  const cx=(x0+x1)/2,cz=(z0+z1)/2;
+  const positions:number[]=[],colors:number[]=[],indices:number[]=[];
+  const color=new THREE.Color();
+  const paint=(x:number,z:number,h:number)=>{
+   const slope=field.slope(x,z);
+   color.set('#4e7a45').lerp(new THREE.Color('#6f9558'),.26+terrainNoise(x*.02,z*.02)*.16);
+   color.lerp(new THREE.Color('#8d8b80'),Math.max(0,Math.min(1,(slope-1.1)*.4)));
+   color.lerp(new THREE.Color('#f2f6fa'),smooth(114,152,h)*(1-Math.min(.6,slope*.2)));
+   // Shallow water near the shoreline reads as a beach shelf rather than a cut edge.
+   color.lerp(new THREE.Color('#5f7c72'),Math.max(0,Math.min(.55,(LAKE_LEVEL-h)*.16)));
+   return color;
+  };
+  // Ring 0 is the terrain boundary itself; the perimeter vertices must match exactly.
+  const perimeter:{x:number;z:number;h:number}[]=[];
+  for(let i=0;i<=field.cols;i++)perimeter.push({x:x0+i*field.step,z:z0,h:field.heights[i]});
+  for(let j=1;j<=field.rows;j++)perimeter.push({x:x1,z:z0+j*field.step,h:field.heights[j*(field.cols+1)+field.cols]});
+  for(let i=field.cols-1;i>=0;i--)perimeter.push({x:x0+i*field.step,z:z1,h:field.heights[field.rows*(field.cols+1)+i]});
+  for(let j=field.rows-1;j>=1;j--)perimeter.push({x:x0,z:z0+j*field.step,h:field.heights[j*(field.cols+1)]});
+  const count=perimeter.length;
+  const scale:number[]=[1];
+  for(let r=1;r<=rings;r++){
+   // Push outward from the centre so the skirt grows without self-intersecting.
+   const grow=Math.pow(r/rings,1.55);
+   scale.push(1+grow*maxOut/Math.max(x1-cx,z1-cz));
+  }
+  for(let r=0;r<=rings;r++){
+   const s=scale[r];
+   for(let i=0;i<count;i++){
+    const p=perimeter[i];
+    const x=cx+(p.x-cx)*s,z=cz+(p.z-cz)*s;
+    // Outer rings use the procedural landscape; the innermost keeps the grid height.
+    const h=r===0?p.h:this.height(x,z);
+    positions.push(x,h,z);
+    paint(x,z,h);colors.push(color.r,color.g,color.b);
+   }
+   if(r<rings)for(let i=0;i<count;i++){
+    const a=r*count+i,b=r*count+(i+1)%count,c=(r+1)*count+i,d=(r+1)*count+(i+1)%count;
+    indices.push(a,c,b,b,c,d);
+   }
+  }
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();
+  const skirt=mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));skirt.name='valley-surroundings';skirt.castShadow=false;skirt.receiveShadow=true;this.scene.add(skirt);
+  console.info('[world] valley surroundings ready',{vertices:positions.length/3,rings,perimeter:count});
+ }
  coast(){
-  // Scattered shoreline rocks sit on the same height field as the beach.
-  const limit=MOUNTAIN_COURSE?34:88;
-  const geometry=new THREE.DodecahedronGeometry(1,0),rocks=new THREE.InstancedMesh(geometry,mat('#a3aaa0'),limit),dummy=new THREE.Object3D();
+  // Shoreline boulders: a ring of tumbled, mostly-buried blocks where land meets water.
+  // The mountain course has a bounded outwash lake, so the ring follows the lake instead.
+  const limit=MOUNTAIN_COURSE?70:88;
+  const rocks=new THREE.InstancedMesh(blockGeometry,mat('#9fa49a'),limit),dummy=new THREE.Object3D();
   let count=0;
-  for(let i=0;i<limit;i++){
-   const angle=i/limit*Math.PI*2+.035*Math.sin(i*2.7),cx=Math.cos(angle),sz=Math.sin(angle);
-   let lo=.52,hi=1.2;
-   for(let step=0;step<15;step++){const r=(lo+hi)/2;if(this.height(cx*53*COURSE_SCALE*r,sz*65*COURSE_SCALE*r-7*COURSE_SCALE)>LAKE_LEVEL+.2)lo=r;else hi=r;}
-   const r=(lo+hi)/2,x=cx*53*COURSE_SCALE*r,z=sz*65*COURSE_SCALE*r-7*COURSE_SCALE,near=this.nearest(x,z);
-   if(near.distance<near.p.width+1.8)continue;
-   const size=.35+this.random()*.75;dummy.position.set(x,this.height(x,z)-.05,z);dummy.rotation.set(this.random(),this.random()*6,this.random());dummy.scale.set(size*1.5,size*.65,size);dummy.updateMatrix();rocks.setMatrixAt(count++,dummy.matrix);
+  if(MOUNTAIN_COURSE){
+   for(let i=0;i<2600&&count<limit;i++){
+    const x=(this.random()-.5)*760,z=(this.random()-.5)*760,h=this.height(x,z);
+    // Only place where the ground sits right at the waterline and nothing blocks the view.
+    if(Math.abs(h-LAKE_LEVEL)>.55)continue;
+    const near=this.nearest(x,z);if(near.distance<near.p.width+1.4)continue;
+    const size=.5+this.random()*1.5;
+    dummy.position.set(x,h-size*.36,z);dummy.rotation.set((this.random()-.5)*.6,this.random()*Math.PI*2,(this.random()-.5)*.6);
+    dummy.scale.set(size*1.5,size*.62,size*(.9+this.random()*.5));dummy.updateMatrix();rocks.setMatrixAt(count++,dummy.matrix);
+   }
+  }else{
+   for(let i=0;i<limit;i++){
+    const angle=i/limit*Math.PI*2+.035*Math.sin(i*2.7),cx=Math.cos(angle),sz=Math.sin(angle);
+    let lo=.52,hi=1.2;
+    for(let step=0;step<15;step++){const r=(lo+hi)/2;if(this.height(cx*53*COURSE_SCALE*r,sz*65*COURSE_SCALE*r-7*COURSE_SCALE)>LAKE_LEVEL+.2)lo=r;else hi=r;}
+    const r=(lo+hi)/2,x=cx*53*COURSE_SCALE*r,z=sz*65*COURSE_SCALE*r-7*COURSE_SCALE,near=this.nearest(x,z);
+    if(near.distance<near.p.width+1.8)continue;
+    const size=.35+this.random()*.75;dummy.position.set(x,this.height(x,z)-.05,z);dummy.rotation.set(this.random(),this.random()*6,this.random());dummy.scale.set(size*1.5,size*.65,size);dummy.updateMatrix();rocks.setMatrixAt(count++,dummy.matrix);
+   }
   }
   rocks.count=count;rocks.receiveShadow=true;rocks.castShadow=true;rocks.name='island-shore-rocks';this.scene.add(rocks);
-  console.info('[world] island coast ready',{rocks:count,waterLevel:LAKE_LEVEL});
+  console.info('[world] coast ready',{rocks:count,waterLevel:LAKE_LEVEL});
  }
  river(){
- // Rounded stones and pale banks make the channel readable from the overview.
- const limit=MOUNTAIN_COURSE?110:330,rockGeo=new THREE.DodecahedronGeometry(1,0);const rocks=new THREE.InstancedMesh(rockGeo,mat('#b5b9a2'),limit);const dummy=new THREE.Object3D();let rockCount=0;for(let i=0;i<limit;i++){const s=(i+(MOUNTAIN_COURSE?this.random()*.65:0))/limit*TRACK_LENGTH;if(LONG_COURSE&&s>SLIDE.start-1&&s<SLIDE.end+1)continue;const p=sample(s),side=i%2?1:-1,v=world(s,side*(bankWidth(s,side)+.45));dummy.position.set(v.x,v.y-.12,v.z);dummy.rotation.set(this.random(),this.random()*6,this.random());dummy.scale.set(.55+this.random()*.55,.4+this.random()*.35,.65+this.random()*.6);dummy.updateMatrix();rocks.setMatrixAt(rockCount++,dummy.matrix);}rocks.count=rockCount;rocks.castShadow=true;rocks.receiveShadow=true;rocks.name='river-bank-stones';this.scene.add(rocks);console.info('[world] river scenery ready',{rocks:rockCount});
+ // Rounded stones and pale banks make the channel readable from the overview. Stones
+ // are seated on the bank at their own size, never on a fixed offset.
+ const limit=MOUNTAIN_COURSE?150:330,rocks=new THREE.InstancedMesh(blockGeometry,mat('#a9ad9c'),limit);const dummy=new THREE.Object3D();let rockCount=0;
+ for(let i=0;i<limit;i++){
+  const s=(i+(MOUNTAIN_COURSE?this.random()*.65:0))/limit*TRACK_LENGTH;if(LONG_COURSE&&s>SLIDE.start-1&&s<SLIDE.end+1)continue;
+  const p=sample(s),side=i%2?1:-1,v=world(s,side*(bankWidth(s,side)+.25+this.random()*.8));
+  const size=.5+this.random()*.75,h=this.height(v.x,v.z);
+  dummy.position.set(v.x,h-size*.34,v.z);
+  dummy.rotation.set((this.random()-.5)*.45,this.random()*Math.PI*2,(this.random()-.5)*.45);
+  dummy.scale.set(size*1.5,size*.6,size*(.9+this.random()*.55));dummy.updateMatrix();rocks.setMatrixAt(rockCount++,dummy.matrix);
+ }
+ rocks.count=rockCount;rocks.castShadow=true;rocks.receiveShadow=true;rocks.name='river-bank-stones';this.scene.add(rocks);console.info('[world] river scenery ready',{rocks:rockCount});
  }
  decorate(){
  const trunks:THREE.Matrix4[]=[],crowns:THREE.Matrix4[]=[],rounds:THREE.Matrix4[]=[],candidates:TreePlacement[]=[];const dummy=new THREE.Object3D();
@@ -198,14 +315,53 @@ export class World {
  }
  private naturalObstacles(){
   if(MOUNTAIN_COURSE){
-   const rocks=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),mat('#969f9b'),36),caps=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),ivory,36),dummy=new THREE.Object3D();let count=0,snow=0;
-   for(let i=0;i<180&&count<36;i++){
-    const x=(this.random()-.5)*95*COURSE_SCALE,z=(this.random()-.5)*110*COURSE_SCALE,h=this.height(x,z),near=this.nearest(x,z);
-    if(h<9||near.distance<near.p.width+2.2||terrainNoise(x*.045+8,z*.045)<.12)continue;
-    const size=.45+this.random()*1.2;dummy.position.set(x,h-.2,z);dummy.rotation.set(this.random()*.35,this.random()*6,0);dummy.scale.set(size*1.5,size*.9,size);dummy.updateMatrix();rocks.setMatrixAt(count++,dummy.matrix);
-    if(alpineBiome(x,z,h,this.terrainField.slope(x,z)).snow>.35){dummy.position.y+=size*.55;dummy.scale.set(size*1.25,size*.3,size*.85);dummy.updateMatrix();caps.setMatrixAt(snow++,dummy.matrix);}
+   // Bedded outcrops, not scattered polyhedra. Each cluster shares a strike and dip, and
+   // every stone is sunk into the ground, so rock reads as exposed bedrock.
+   const slabs=new THREE.InstancedMesh(slabGeometry,mat('#9a978e'),96);
+   const blocks=new THREE.InstancedMesh(blockGeometry,mat('#8e9188'),150);
+   const caps=new THREE.InstancedMesh(blockGeometry,ivory,120),dummy=new THREE.Object3D();
+   let slabCount=0,blockCount=0,snowCount=0;
+   const clusters=MOUNTAIN_COURSE?34:0;
+   for(let c=0;c<clusters;c++){
+    const angle=this.random()*Math.PI*2,radius=(.30+Math.pow(this.random(),.7)*.62)*COURSE_SCALE;
+    const cx=Math.cos(angle)*radius*62,cz=Math.sin(angle)*73*radius-7*COURSE_SCALE;
+    const centerH=this.height(cx,cz),centerSlope=this.terrainField.slope(cx,cz),near=this.nearest(cx,cz);
+    // Outcrops live on steep, exposed ground only: the same rule the surface colour uses.
+    const exposure=rockExposure(cx,cz,centerH,centerSlope,smooth(18,96,centerH));
+    if(exposure<.30||centerH<LAKE_LEVEL+4||near.distance<near.p.width+3)continue;
+    const strike=this.random()*Math.PI*2,dip=.16+this.random()*.34;
+    const spread=2.2+this.random()*4.6;
+    for(let i=0;i<3+Math.floor(this.random()*4)&&slabCount<96;i++){
+     const ox=(this.random()-.5)*spread,oz=(this.random()-.5)*spread;
+     const x=cx+ox,z=cz+oz,h=this.height(x,z);
+     if(exposure<.22||h<LAKE_LEVEL+3.5)continue;
+     const size=.5+this.random()*1.15;
+     // Sunk proportionally to size and to how flat the ground is, so stones never float.
+     dummy.position.set(x,h-size*.34,z);
+     dummy.rotation.set(dip*(this.random()-.5)*.5,strike+(this.random()-.5)*.3,dip);
+     dummy.scale.set(size*1.55,size*.44,size*(.85+this.random()*.5));
+     dummy.updateMatrix();slabs.setMatrixAt(slabCount++,dummy.matrix);
+    }
+    for(let i=0;i<2+Math.floor(this.random()*4)&&blockCount<150;i++){
+     const ox=(this.random()-.5)*spread*1.5,oz=(this.random()-.5)*spread*1.5;
+     const x=cx+ox,z=cz+oz,h=this.height(x,z);
+     if(h<LAKE_LEVEL+2.5)continue;
+     const size=.35+Math.pow(this.random(),1.6)*1.5;
+     dummy.position.set(x,h-size*(.30+this.random()*.22),z);
+     dummy.rotation.set((this.random()-.5)*.5,this.random()*Math.PI*2,(this.random()-.5)*.5);
+     dummy.scale.set(size*(1+this.random()*.5),size*(.68+this.random()*.42),size*(.8+this.random()*.45));
+     dummy.updateMatrix();blocks.setMatrixAt(blockCount++,dummy.matrix);
+     // Snow only stays on the flat tops of perched blocks above the snowline.
+     if(this.random()<(alpineBiome(x,z,h,this.terrainField.slope(x,z)).snow-.30)/.6&&snowCount<120){
+      dummy.position.y+=size*.42;dummy.scale.set(size*1.16,size*.20,size*.9);
+      dummy.rotation.set(0,dummy.rotation.y,0);dummy.updateMatrix();caps.setMatrixAt(snowCount++,dummy.matrix);
+     }
+    }
    }
-   rocks.count=count;caps.count=snow;rocks.castShadow=true;rocks.receiveShadow=true;caps.castShadow=true;rocks.name='alpine-boulders';caps.name='alpine-snowcaps';this.scene.add(rocks,caps);console.info('[world] alpine scenery ready',{rocks:count,snowcaps:snow});
+   slabs.count=slabCount;blocks.count=blockCount;caps.count=snowCount;
+   for(const m of [slabs,blocks,caps]){m.castShadow=true;m.receiveShadow=true;m.computeBoundingSphere();this.scene.add(m);}
+   slabs.name='alpine-bedrock-slabs';blocks.name='alpine-boulders';caps.name='alpine-snowcaps';
+   console.info('[world] alpine rock ready',{slabs:slabCount,boulders:blockCount,snowcaps:snowCount});
   }
   for(const b of blockers){
    const root=new THREE.Group(),p=world(b.s,b.lane);root.name=`natural-${b.kind}`;root.position.set(p.x,p.y-.25,p.z);root.rotation.y=Math.atan2(sample(b.s).tx,sample(b.s).tz);

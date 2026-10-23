@@ -4,7 +4,7 @@ import {IslandTerrain,terrainNoise} from '../src/island-terrain';
 import {sample,TRACK_LENGTH,FALLS} from '../src/track';
 import {Race} from '../src/simulation';
 import {RaceFeedback} from '../src/race-feedback';
-import {noiseSamples,soundGain} from '../src/audio-scene';
+import {noiseSamples,soundGain,voiceCue} from '../src/audio-scene';
 
 const terrain=new IslandTerrain();
 test('island terrain is finite, submerged at its boundary, and continuous across grid diagonals',()=>{
@@ -41,4 +41,7 @@ test('audio sources are bounded and reproducible; distance attenuates rather tha
  assert.ok(a.every(v=>Number.isFinite(v)&&Math.abs(v)<=.65));
  assert.ok(Math.abs(a.reduce((sum,v)=>sum+v,0)/a.length)<.01);
  assert.equal(soundGain(0),1);assert.equal(soundGain(28),.5);assert.ok(soundGain(100)<soundGain(20));assert.equal(soundGain(Infinity),0);
+});
+test('voice acknowledgements distinguish left and right without excessive pan',()=>{
+ const left=voiceCue(-1),right=voiceCue(1);assert.ok(left.startHz<right.startHz);assert.ok(left.endHz<right.endHz);assert.ok(left.pan<0&&right.pan>0);assert.ok(Math.abs(left.pan)<=1&&Math.abs(right.pan)<=1);
 });

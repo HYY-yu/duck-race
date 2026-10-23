@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {FALLS,sample,world} from './track';
 import type {Race} from './simulation';
 export function soundGain(distance:number,range=28){return 1/(1+(Math.max(0,distance)/range)**2);}
+export function voiceCue(direction:-1|1){return direction<0?{startHz:560,endHz:360,pan:-.65}:{startHz:760,endHz:520,pan:.65};}
 /** Deterministic procedural source, generated locally without media downloads. */
 export function noiseSamples(size:number,seed=1949){
  const data=new Float32Array(size);let state=seed>>>0;
@@ -35,6 +36,15 @@ export class AudioScene {
   if(!this.context)return;
   try{if(!visible)await this.context.suspend();else if(this.enabled)await this.context.resume();}
   catch(error){console.warn('[audio] visibility update failed',error);}
+ }
+ command(direction:-1|1){
+  const context=this.context;if(!this.enabled||context?.state!=='running'||!this.master||this.voices.size>=12)return;
+  const cue=voiceCue(direction),now=context.currentTime,duration=.22,oscillator=context.createOscillator(),gain=context.createGain(),pan=context.createStereoPanner();
+  oscillator.type='triangle';oscillator.frequency.setValueAtTime(cue.startHz,now);oscillator.frequency.exponentialRampToValueAtTime(cue.endHz,now+duration);
+  gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.16,now+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);pan.pan.value=cue.pan;
+  oscillator.connect(gain);gain.connect(pan);pan.connect(this.master);this.voices.add(oscillator);
+  oscillator.onended=()=>{this.voices.delete(oscillator);oscillator.disconnect();gain.disconnect();pan.disconnect();};oscillator.start(now);oscillator.stop(now+duration+.02);
+  console.debug('[audio] voice acknowledgement',{direction:direction<0?'left':'right'});
  }
  private spatial(position:THREE.Vector3,camera:THREE.Camera){
   this.direction.subVectors(position,camera.position);const distance=this.direction.length();this.right.setFromMatrixColumn(camera.matrixWorld,0);

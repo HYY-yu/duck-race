@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {createWaterMaterial} from './water-material';
-import {FALLS,TRACK_LENGTH,LAKE_LEVEL,flow,inFall,sample,world,COURSE_SCALE,bankWidth,bankDistance} from './track';
+import {LAKE_CENTER} from './island-terrain';
+import {FALLS,TRACK_LENGTH,LAKE_LEVEL,flow,inFall,sample,world,COURSE_SCALE,MOUNTAIN_COURSE,bankWidth,bankDistance} from './track';
 import {createFalls} from './waterfall';
 
 /** Adapted from the parent project's static canyon probe. A curved downhill river
@@ -50,11 +51,14 @@ export class WaterSystem {
   const floor=new THREE.Mesh(bed,bedMaterial);floor.receiveShadow=true;floor.name='submerged-riverbed';scene.add(floor);
  }
  private lake(scene:THREE.Scene){
-  // One continuous lake surrounds the mountain foot; exposed terrain forms its shoreline.
-  const pos:number[]=[],uv:number[]=[],data:number[]=[],shore:number[]=[],axis:number[]=[],bank:number[]=[],norm:number[]=[],indices:number[]=[];const rings=64,segments=160;
+  // One continuous outwash lake below the river mouth. The surrounding valley is solid
+  // ground now, so the lake is bounded scenery rather than a world ocean.
+  const center=MOUNTAIN_COURSE?LAKE_CENTER:{x:0,z:12-7*COURSE_SCALE,radius:0};
+  const radius=MOUNTAIN_COURSE?LAKE_CENTER.radius*1.30:200*COURSE_SCALE;
+  const pos:number[]=[],uv:number[]=[],data:number[]=[],shore:number[]=[],axis:number[]=[],bank:number[]=[],norm:number[]=[],indices:number[]=[];const rings=72,segments=176;
   for(let r=0;r<=rings;r++)for(let j=0;j<=segments;j++){
-   const radius=r/rings,angle=j/segments*Math.PI*2,coast=1+.055*Math.sin(angle*3)+.035*Math.cos(angle*5),x=Math.cos(angle)*radius*180*COURSE_SCALE*coast,z=Math.sin(angle)*radius*200*COURSE_SCALE*coast;
-   pos.push(x,LAKE_LEVEL,12+z);uv.push((x/180+1)*.5,z+100);data.push(.32,3.2,.005,360);shore.push(0,0,x);axis.push(0,1,-1,0);bank.push((1-radius)*180);norm.push(0,1,0);
+   const t=r/rings,angle=j/segments*Math.PI*2,coast=1+.035*Math.sin(angle*3)+.022*Math.cos(angle*5),x=center.x+Math.cos(angle)*t*radius*coast,z=center.z+Math.sin(angle)*t*radius*coast;
+   pos.push(x,LAKE_LEVEL,z);uv.push((x/radius+1)*.5,z*.5);data.push(.32,3.2,.005,radius*2);shore.push(0,0,x);axis.push(0,1,-1,0);bank.push((1-t)*radius);norm.push(0,1,0);
    if(r<rings&&j<segments){const a=r*(segments+1)+j,b=a+segments+1;indices.push(a,a+1,b,a+1,b+1,b);}
   }
   const geo=new THREE.BufferGeometry();for(const [k,arr,n]of [['position',pos,3],['uv',uv,2],['riverData',data,4],['riverShore',shore,3],['riverAxis',axis,4],['riverBankDistance',bank,1],['normal',norm,3],['riverImpact',bank.map(()=>0),1]]as [string,number[],number][])geo.setAttribute(k,new THREE.Float32BufferAttribute(arr,n));geo.setIndex(indices);

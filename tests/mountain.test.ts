@@ -20,7 +20,7 @@ test('paddling changes only lateral input and accepts bounded finite controls',(
  const a=new Race(2,42),b=new Race(2,42);for(const r of [a,b]){r.start();while(r.state==='countdown')r.step(1/60);}
  b.setSteering(0,100);a.step(1/60);b.step(1/60);
  assert.equal(a.ducks[0].v,b.ducks[0].v);assert.equal(a.ducks[0].s,b.ducks[0].s);
- assert.ok(Math.abs(b.ducks[0].lv-a.ducks[0].lv-FEEL.steerAcceleration/60)<1e-9);
+ assert.ok(b.ducks[0].lv>a.ducks[0].lv);assert.ok(Math.abs(b.ducks[0].lv)<=4.6);
  assert.equal(b.controlled,true);assert.equal(a.controlled,false);b.setSteering(0,NaN);assert.equal(b.steering.axis,0);
  b.pause();const state=JSON.stringify(b.ducks);b.step(1/60);assert.equal(JSON.stringify(b.ducks),state);
  b.reset(2,42);assert.equal(b.controlled,false);assert.equal(b.steering.axis,0);

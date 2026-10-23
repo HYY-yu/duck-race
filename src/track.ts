@@ -34,7 +34,7 @@ export function world(s:number,lane=0){const p=sample(s);return {x:p.x-p.tz*lane
 export const obstacles=MOUNTAIN_COURSE?[{kind:'pendulum',s:TRACK_LENGTH*.15},{kind:'bars',s:TRACK_LENGTH*.28},{kind:'wheel',s:TRACK_LENGTH*.53},{kind:'fan',s:TRACK_LENGTH*.71},{kind:'pendulum',s:TRACK_LENGTH*.88},{kind:'bars',s:TRACK_LENGTH*.94}] as const:[{kind:'pendulum',s:36*COURSE_SCALE},{kind:'wheel',s:77*COURSE_SCALE},{kind:'bars',s:118*COURSE_SCALE},{kind:'fan',s:157*COURSE_SCALE},...(LONG_COURSE?[{kind:'windmill' as const,s:WINDMILL_S}]:[])] as const;
 /** Signed curvature is d(tangent)/ds along the left normal. */
 export function curvature(s:number){const a=sample(s-.6),b=sample(s+.6);return (a.tx*b.tz-a.tz*b.tx)/1.2;}
-export function bankWidths(s:number):{left:number;right:number}{if(s>TRACK_LENGTH){const b=bankWidths(TRACK_LENGTH),extra=Math.min((s-TRACK_LENGTH)*.45,16);return {left:b.left+extra,right:b.right+extra};}const w=width(s);if(!MOUNTAIN_COURSE)return {left:w,right:w};const bend=Math.max(-1,Math.min(1,curvature(s)*18))*FEEL.bendNarrowing;return {left:w*(1-bend),right:w*(1+bend)};}
+export function bankWidths(s:number):{left:number;right:number}{if(s>TRACK_LENGTH){const b=bankWidths(TRACK_LENGTH),extra=Math.min((s-TRACK_LENGTH)*.45,16);return {left:b.left+extra,right:b.right+extra};}const w=width(s),bend=Math.max(-1,Math.min(1,curvature(s)*18))*FEEL.bendNarrowing;return {left:w*(1-bend),right:w*(1+bend)};}
 export function bankWidth(s:number,side:number){const banks=bankWidths(s);return side>=0?banks.left:banks.right;}
 export function bankDistance(s:number,lane:number){return bankWidth(s,lane)-Math.abs(lane);}
 export const blockers=MOUNTAIN_COURSE?[
@@ -44,20 +44,11 @@ export const blockers=MOUNTAIN_COURSE?[
  {s:TRACK_LENGTH*.9,lane:4.8,length:3.6,radius:1.9,kind:'rock'},
 ]:[];
 export function flow(s:number,lane:number,time:number){
- if(MOUNTAIN_COURSE){
-  const half=bankWidth(s,lane),slope=Math.max(0,(sample(s).y-sample(s+.5).y)/.5);
-  // Continuity in each half-channel: Q=A*v, with a depth response softening acceleration.
-  let speed=RAPIDS.baseFlow*Math.pow(3.8*COURSE_SCALE/half,.3)*(1+Math.min(.6,slope)*.6);
-  const island=blockers[0];if(Math.abs(s-island.s)<island.length/2+2){const b=bankWidths(s),gap=lane<island.lane?b.right+island.lane-island.radius:b.left-island.lane-island.radius;speed*=Math.pow(half/Math.max(.8,gap),.45);}
-  const fan=obstacles.find(o=>o.kind==='fan')!;speed+=2.2*Math.exp(-(((s-fan.s-3)/5)**2));
-  return speed+.16*Math.sin(s*.23+time*.8);
- }
-const a=sample(s),b=sample(s+1);const bend=(b.tx*a.tz-b.tz*a.tx);const slope=Math.min(.6,Math.max(0,a.y-b.y));return FLOW_MULTIPLIER*Math.max(1.5,3.3+slope*4+lane*bend*17+.28*Math.sin(s*.23+time*.8)+(s>150*COURSE_SCALE&&s<171*COURSE_SCALE?3.8:0));}
-
-/** The first bend defines the inside starting lane for every grid row.
- * Apply this once at launch, never as an ongoing catch-up force. */
-export function launchVelocity(lane:number){
- if(!LONG_COURSE)return 0;
- const a=sample(1.3),b=sample(2.3),inside=-Math.sign(b.tx*a.tz-b.tz*a.tx);
- return 1.2*Math.max(0,Math.min(1,lane*inside/1.6));
+ const half=bankWidth(s,lane),slope=Math.max(0,(sample(s).y-sample(s+.5).y)/.5);
+ // Every course uses the snowpeak continuity model. Course geometry owns the
+ // current; ducks never receive a separate propulsion or rank-based boost.
+ let speed=RAPIDS.baseFlow*FLOW_MULTIPLIER*Math.pow(3.8*COURSE_SCALE/half,.3)*(1+Math.min(.6,slope)*.6);
+ const island=blockers[0];if(island&&Math.abs(s-island.s)<island.length/2+2){const b=bankWidths(s),gap=lane<island.lane?b.right+island.lane-island.radius:b.left-island.lane-island.radius;speed*=Math.pow(half/Math.max(.8,gap),.45);}
+ const fan=obstacles.find(o=>o.kind==='fan');if(fan)speed+=2.2*Math.exp(-(((s-fan.s-3)/5)**2));
+ return speed+.16*Math.sin(s*.23+time*.8);
 }

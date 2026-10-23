@@ -9,7 +9,7 @@ test('tree crowns clear each other, the river and scene reservations determinist
  const candidates:TreePlacement[]=Array.from({length:1200},(_,i)=>{const x=(random()-.5)*80,z=(random()-.5)*92-2;return {x,y:field.height(x,z),z,size:.65+random()*.7,kind:i%4===0?'tree-broadleaf':'tree-pine'};});
  const before=JSON.stringify(candidates),layout=selectTreePlacements(candidates,field);assert.deepEqual(selectTreePlacements(candidates,field),layout);assert.equal(JSON.stringify(candidates),before);assert.ok(layout.trees.length>12,'forest should retain useful coverage');
  for(const [i,t]of layout.trees.entries()){
-  const near=field.nearest(t.x,t.z);assert.ok(near.distance>=near.p.width+treeRadius(t)+.9);assert.ok(field.slope(t.x,t.z)<=1.35);
+  const near=field.nearest(t.x,t.z);assert.ok(near.distance>=near.p.width+treeRadius(t)+.9);assert.ok(field.slope(t.x,t.z)<=2.4,'no tree on a cliff face');
   for(const reserve of treeReservations())assert.ok(Math.hypot(t.x-reserve.x,t.z-reserve.z)>=treeRadius(t)+reserve.radius);
   for(const other of layout.trees.slice(i+1))assert.ok(Math.hypot(t.x-other.x,t.z-other.z)>=treeRadius(t)+treeRadius(other)+TREE_GAP);
  }
@@ -25,7 +25,15 @@ test('placement radii enclose the actual shipped tree geometry at its displayed 
 
 test('canopies on rising terrain and exposed roots are rejected',()=>{
  const tree:TreePlacement={x:100,y:10,z:100,size:1,kind:'tree-broadleaf'};
- const field={nearest:()=>({distance:100,p:{width:4}}),slope:()=>0,height:(x:number,z:number)=>Math.hypot(x-100,z-100)<1?10:14};
- assert.equal(selectTreePlacements([tree],field).rejected.slope,1);
- assert.equal(selectTreePlacements([tree],{...field,height:()=>11}).rejected.slope,1);
+ const base={nearest:()=>({distance:100,p:{width:4}}),slope:()=>0};
+ const at=(x:number,z:number)=>Math.hypot(x-100,z-100);
+ // Crown sweeps into rising ground: the canopy would grow through the slope.
+ const rising={...base,height:(x:number,z:number)=>at(x,z)<1.5?10:16};
+ assert.equal(selectTreePlacements([tree],rising).rejected.slope,1);
+ // Roots left hanging over a drop: the trunk would stand in mid-air.
+ const dropping={...base,height:(x:number,z:number)=>at(x,z)<.4?10:2};
+ assert.equal(selectTreePlacements([tree],dropping).rejected.slope,1);
+ // Ground that is level under both roots and crown still accepts the tree.
+ const level={...base,height:()=>10.2};
+ assert.equal(selectTreePlacements([tree],level).trees.length,1,'gently rising ground still accepts a tree');
 });

@@ -17,6 +17,7 @@ export function layoutNameBubbles(anchors:readonly BubbleAnchor[],height:number)
 /** DOM labels stay sharp at every zoom; no canvas textures or extra WebGL draws. */
 export class DuckNameBubbles {
  private layer?:HTMLDivElement;private labels:HTMLDivElement[]=[];private widths:number[]=[];
+ private commandUntil:number[]=[];
  private head=new THREE.Vector3();
  bind(scene:HTMLElement,names:readonly string[],colors:readonly string[]){
   this.layer?.remove();this.layer=document.createElement('div');this.layer.className='duck-name-layer';this.layer.setAttribute('aria-hidden','true');scene.appendChild(this.layer);
@@ -26,17 +27,25 @@ export class DuckNameBubbles {
   if(!this.layer)return;
   this.layer.replaceChildren();this.labels=names.map((name,id)=>{
    const label=document.createElement('div');label.className='duck-name-bubble';label.title=name;label.dataset.duck=String(id);label.style.setProperty('--duck-color',colors[id]??'#ffcf42');
-   const text=document.createElement('span');text.textContent=name;label.appendChild(text);this.layer!.appendChild(label);return label;
+   const text=document.createElement('span');text.textContent=name;label.appendChild(text);
+   const arrow=document.createElement('b');arrow.className='duck-command-arrow';arrow.setAttribute('aria-hidden','true');label.appendChild(arrow);this.layer!.appendChild(label);return label;
   });
   this.measure();
   console.debug('[labels] names bound',{count:names.length});
  }
  measure(){this.widths=this.labels.map(label=>label.offsetWidth);}
+ command(id:number,direction:-1|1,duration=2200){
+  const label=this.labels[id];if(!label)return;
+  this.commandUntil[id]=performance.now()+duration;label.classList.add('voice-commanded');label.dataset.commandDirection=direction<0?'left':'right';
+  const arrow=label.querySelector<HTMLElement>('.duck-command-arrow');if(arrow)arrow.textContent=direction<0?'←':'→';
+  console.debug('[labels] voice command highlighted',{duck:id,direction:direction<0?'left':'right'});
+ }
  update(camera:THREE.Camera,ducks:readonly {id:number;position:THREE.Vector3}[],width:number,height:number){
   if(!this.layer)return;
   const anchors:BubbleAnchor[]=[];const anchorY=new Map<number,number>();
   for(const {id,position}of ducks){
    const label=this.labels[id];if(!label)continue;
+   if(label.classList.contains('voice-commanded')&&performance.now()>=(this.commandUntil[id]??0)){label.classList.remove('voice-commanded');delete label.dataset.commandDirection;}
    this.head.copy(position);this.head.y+=2.8;this.head.project(camera);
    const x=(this.head.x+1)*width/2,y=(1-this.head.y)*height/2;
    const visible=this.head.z>=-1&&this.head.z<=1&&x>=0&&x<=width&&y>=0&&y<=height;
