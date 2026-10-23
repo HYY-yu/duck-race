@@ -1,3 +1,4 @@
+import {courseLabel} from './track-navigation';
 import {COLORS,isDuckColor,type ColorChoice} from './duck-palette';
 // Participant identity is shuffled independently of the physical race seed.
 // A seeded race alone is reproducible, but does not make physical duck IDs equally likely to win.
@@ -63,5 +64,5 @@ export function validateHistory(raw:unknown):SavedDraw[]{
 }
 export function resultText(record:SavedDraw,lang:'zh'|'en',fallback:(id:number)=>string){
  const label=lang==='zh',k=record.winnerCount??1;
- return [label?'小鸭抽签结果':'Duck Rush draw results',record.drawId??'',record.date,record.course?(label?(record.course==='mountain'?'雪岭激流':record.course==='long'?'长赛道 · 2.15×':'标准赛道'):(record.course==='mountain'?'Snowpeak Rapids':record.course==='long'?'Long course · 2.15×':'Standard course')):'',record.mode==='ranking'?(label?'完整冲线排名':'Full finishing order'):`${label?'抽取人数':'Selected'}: ${k}/${record.results.length}`,...record.results.map((d,i)=>`${i+1}. ${record.names?.[d.id]??fallback(d.id)}${record.mode!=='ranking'&&i<k?(label?' [中签]':' [Selected]'):''}`),`Seed: ${record.seed}`,record.trackSeed!==undefined?`Track seed: ${record.trackSeed}`:'',record.controlled?(label?'包含人工拨水操作':'Includes manual steering'):'',label?'本机抽签记录，非独立审计凭证。':'Local draw record; not an independently audited proof.'].filter(Boolean).join('\n');
+ return [label?'小鸭抽签结果':'Duck Rush draw results',record.drawId??'',record.date,record.course?courseLabel(record.course,lang):'',record.mode==='ranking'?(label?'完整冲线排名':'Full finishing order'):`${label?'抽取人数':'Selected'}: ${k}/${record.results.length}`,...record.results.map((d,i)=>`${i+1}. ${record.names?.[d.id]??fallback(d.id)}${record.mode!=='ranking'&&i<k?(label?' [中签]':' [Selected]'):''}`),`Seed: ${record.seed}`,record.trackSeed!==undefined?`Track seed: ${record.trackSeed}`:'',record.controlled?(label?'包含人工拨水操作':'Includes manual steering'):'',label?'本机抽签记录，非独立审计凭证。':'Local draw record; not an independently audited proof.'].filter(Boolean).join('\n');
 }

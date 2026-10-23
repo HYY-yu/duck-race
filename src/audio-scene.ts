@@ -10,13 +10,16 @@ export function noiseSamples(size:number,seed=1949){
  return data;
 }
 type WaterLoop={source:AudioBufferSourceNode;gain:GainNode;pan:StereoPannerNode;position:THREE.Vector3;level:number};
-/** Lazy, opt-in Web Audio. The master limiter and voice cap bound busy collisions. */
+/** Lazy Web Audio, activated by a sound toggle or starting a draw.
+ * The master limiter and voice cap bound busy collisions. */
 export class AudioScene {
  enabled=false;available=true;private context?:AudioContext;private master?:GainNode;private noise?:AudioBuffer;
  private loops:WaterLoop[]=[];private voices=new Set<AudioScheduledSourceNode>();private seq=0;private generation=-1;private lastMechanical=-1;
  private direction=new THREE.Vector3();private right=new THREE.Vector3();
- async toggle(){
+ toggle(){return this.setEnabled(!this.enabled);}
+ async setEnabled(enabled:boolean){
   if(!this.available)return;
+  if(enabled===this.enabled&&(!enabled||this.context?.state==='running'))return;
   try{
    if(!this.context){
     if(!window.AudioContext){this.available=false;console.warn('[audio] Web Audio unavailable');return;}
@@ -27,8 +30,8 @@ export class AudioScene {
     for(const water of sources){const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain(),pan=context.createStereoPanner(),p=sample(water.s);
      source.buffer=noise;source.loop=true;filter.type='lowpass';filter.frequency.value=water.hz;gain.gain.value=0;source.connect(filter);filter.connect(gain);gain.connect(pan);pan.connect(master);source.start();this.loops.push({source,gain,pan,position:new THREE.Vector3(p.x,p.y,p.z),level:water.level});}
    }
-   const next=!this.enabled;if(next)await this.context.resume();this.enabled=next;
-   this.master!.gain.setTargetAtTime(next?.5:0,this.context.currentTime,.08);
+   if(enabled)await this.context.resume();this.enabled=enabled;
+   this.master!.gain.setTargetAtTime(enabled?.5:0,this.context.currentTime,.08);
    console.info('[audio] preference changed',{enabled:this.enabled,state:this.context.state});
   }catch(error){this.enabled=false;console.warn('[audio] activation failed',error);}
  }

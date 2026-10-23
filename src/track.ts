@@ -1,12 +1,14 @@
 import {mountainAnchors} from './mountain-course';
 import {FEEL,RAPIDS} from './tuning';
-// Each page loads one immutable course profile; the standard course remains available.
-const params=typeof location!=='undefined'?new URLSearchParams(location.search):new URLSearchParams({track:process.env.DUCK_TRACK??'standard',seed:process.env.DUCK_SEED??'42'});
-export const MOUNTAIN_COURSE=!['standard','long'].includes(params.get('track')??'mountain');
+import {resolveTrack} from './track-navigation';
+// Each page loads one of the two immutable course profiles.
+const params=typeof location!=='undefined'?new URLSearchParams(location.search):new URLSearchParams({track:process.env.DUCK_TRACK??'long',seed:process.env.DUCK_SEED??'42'});
+export const MOUNTAIN_COURSE=resolveTrack(params.get('track'))==='mountain';
 export const TRACK_SEED=Number(params.get('seed')??42)>>>0;
-export const LONG_COURSE=typeof location!=='undefined'?new URLSearchParams(location.search).get('track')==='long':process.env.DUCK_TRACK==='long';
-export const COURSE_SCALE=MOUNTAIN_COURSE?2.4:LONG_COURSE?2.15:1;
-export const FLOW_MULTIPLIER=LONG_COURSE?1.25:1;
+export const LONG_COURSE=!MOUNTAIN_COURSE;
+export const COURSE_SCALE=MOUNTAIN_COURSE?2.4:2.15;
+// Pinewood Valley keeps a gentler current; Snowpeak Rapids retains its own pace.
+export const FLOW_MULTIPLIER=LONG_COURSE?1.10:1;
 export const SLIDE={start:96*2.15,end:110*2.15};
 export const RAINBOWS=LONG_COURSE?[25*COURSE_SCALE,145*COURSE_SCALE]:[];
 export const WINDMILL_S=176*COURSE_SCALE;
@@ -19,7 +21,7 @@ const raw:Point[]=[];
 for(let i=0;i<=700;i++){const u=i/700*(anchors.length-1),j=Math.min(anchors.length-2,Math.floor(u)),t=u-j;const a=anchors[Math.max(0,j-1)],b=anchors[j],c=anchors[j+1],d=anchors[Math.min(anchors.length-1,j+2)];raw.push({x:cubic(a.x,b.x,c.x,d.x,t),y:cubic(a.y,b.y,c.y,d.y,t),z:cubic(a.z,b.z,c.z,d.z,t)});}
 const lengths=[0];for(let i=1;i<raw.length;i++) lengths.push(lengths[i-1]+Math.hypot(raw[i].x-raw[i-1].x,raw[i].z-raw[i-1].z));
 export const TRACK_LENGTH=lengths.at(-1)!;
-export const STANDARD_TRACK_LENGTH=TRACK_LENGTH/COURSE_SCALE;
+export const BASE_TRACK_LENGTH=TRACK_LENGTH/COURSE_SCALE;
 export const LAKE_LEVEL=1.65;
 export const RUNOUT_LENGTH=32;
 export function sample(s:number):Point & {tx:number;tz:number;width:number}{if(s>TRACK_LENGTH){const end=sample(TRACK_LENGTH),distance=s-TRACK_LENGTH,t=1-Math.exp(-distance/4);return {...end,x:end.x+end.tx*distance,z:end.z+end.tz*distance,y:end.y+(LAKE_LEVEL-end.y)*t,width:end.width+Math.min(distance*.45,16)};}s=Math.max(0,Math.min(TRACK_LENGTH,s));let lo=0,hi=lengths.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(lengths[m]<s)lo=m;else hi=m}const t=(s-lengths[lo])/(lengths[hi]-lengths[lo]);const a=raw[lo],b=raw[hi];const dx=b.x-a.x,dz=b.z-a.z,n=Math.hypot(dx,dz);const y=a.y+(b.y-a.y)*t;return {x:a.x+dx*t,y:MOUNTAIN_COURSE?mountainHeight(s):10.3+(y-2)*18.7/27-drop(s)+(LONG_COURSE?4*s/TRACK_LENGTH-4*smooth(SLIDE.start,SLIDE.end,s):0)-.35*smooth(TRACK_LENGTH-10,TRACK_LENGTH,s),z:a.z+dz*t,tx:dx/n,tz:dz/n,width:width(s)};}

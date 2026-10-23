@@ -15,7 +15,7 @@ test('cone falls once, waits for clearance, and restores upright',()=>{
 
 test('duck contact tips cone, dissipates speed, and emits contact; pause/reset preserve lifecycle',()=>{
  const r=new Race(2,42);r.state='racing';
- const d=r.ducks[0];Object.assign(d,{s:21,lane:0,v:4,lv:0,...createMotion(21,0)});
+ const d=r.ducks[0],s=r.cone.s-1;Object.assign(d,{s,lane:0,v:4,lv:0,...createMotion(s,0)});
  r.step(1/60);assert.equal(r.cone.upright,false);assert.equal(d.hits,1);assert.ok(d.v<4);
  assert.ok(r.events.some(e=>e.kind==='contact'&&e.duck===d.id));
  r.pause();const elapsed=r.cone.elapsed;for(let i=0;i<300;i++)r.step(1/60);assert.equal(r.cone.elapsed,elapsed);
@@ -24,6 +24,6 @@ test('duck contact tips cone, dissipates speed, and emits contact; pause/reset p
 
 test('airborne duck passing over cone does not knock it down',()=>{
  const r=new Race(2,42);r.state='racing';
- Object.assign(r.ducks[0],{s:21,lane:0,v:4,y:50,airborne:true,lastFall:0});
+ Object.assign(r.ducks[0],{s:r.cone.s-1,lane:0,v:4,y:50,airborne:true,lastFall:0});
  r.step(1/60);assert.equal(r.cone.upright,true);
 });

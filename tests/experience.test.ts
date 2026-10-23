@@ -9,8 +9,9 @@ import {noiseSamples,soundGain,voiceCue} from '../src/audio-scene';
 const terrain=new IslandTerrain();
 test('island terrain is finite, submerged at its boundary, and continuous across grid diagonals',()=>{
  assert.ok(terrain.heights.every(Number.isFinite));
- for(let x=-67;x<=67;x+=2){assert.ok(terrain.height(x,-82)<0);assert.ok(terrain.height(x,76)<0);}
- for(let z=-82;z<=76;z+=2){assert.ok(terrain.height(-67,z)<0);assert.ok(terrain.height(67,z)<0);}
+ const maxX=terrain.minX+terrain.cols*terrain.step,maxZ=terrain.minZ+terrain.rows*terrain.step;
+ for(let x=terrain.minX;x<=maxX;x+=terrain.step){assert.ok(terrain.height(x,terrain.minZ)<0);assert.ok(terrain.height(x,maxZ)<0);}
+ for(let z=terrain.minZ;z<=maxZ;z+=terrain.step){assert.ok(terrain.height(terrain.minX,z)<0);assert.ok(terrain.height(maxX,z)<0);}
  for(let x=-40;x<40;x+=3)for(let z=-45;z<40;z+=3){const y=terrain.height(x+.5,z+.5);assert.ok(Math.abs(terrain.height(x+.50001,z+.5)-y)<.01);assert.ok(Math.abs(terrain.height(x+.5,z+.50001)-y)<.01);}
 });
 test('terrain keeps the river centre submerged outside unsupported waterfall gaps',()=>{

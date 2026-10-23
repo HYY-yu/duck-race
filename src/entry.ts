@@ -1,10 +1,15 @@
 import './style.css';
 import {pageLanguage} from './i18n-routing';
 import {observeWebVitals, trackEvent} from './observability';
+import {resolveTrack,trackSearch} from './track-navigation';
 
 const language = pageLanguage();
 const params = new URLSearchParams(location.search);
-const course = ['standard', 'long', 'mountain'].includes(params.get('track') ?? '') ? params.get('track')! : 'mountain';
+const course = resolveTrack(params.get('track'));
+if(params.get('track')==='standard'){
+  history.replaceState(null,'',`${location.pathname}${trackSearch(location.search,'long')}${location.hash}`);
+  console.info('[navigation] retired course mapped',{from:'standard',to:course});
+}
 trackEvent('page_view', {language, course});
 observeWebVitals(language);
 

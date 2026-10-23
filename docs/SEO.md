@@ -105,6 +105,9 @@ npm run build
 - favicon：ImageGen 生成源文件保存在 `assets/brand/favicon-imagegen-v1.png`，发布使用 `public/favicon-16.png`、`favicon-32.png`、`favicon.png` 与 `apple-touch-icon.png`；均保留透明背景。
 - Open Graph 图片：`public/social/duck-rush-og.jpg`，1200×630 JPEG，来自项目真实雪山赛道截图。
 - Open Graph/Twitter absolute 图片 URL 只在 `SITE_URL` 已配置时输出。
+- Loading 预览单独使用 `public/previews/duck-rush-race-{1600,3200}.webp`：真实比赛的纯 3D 场景，分别为 1600×1000 / 3200×2000，约 47 / 119 KiB。中英文初始 HTML 使用原生 `img`、`srcset` 与 `sizes` 根据铺满区域（含纵向裁切）、侧栏断点与屏幕像素密度选择合适清晰度，避免放大含侧栏的社交分享图；图片保持居中裁切且不会遮挡左侧操作区。
+- 高清源图由开发模式 `window.__DUCK_RUSH_CAPTURE_PREVIEW__(3200,2000,view?)` 直接重新渲染导出，不放大旧截图；导出后立即恢复渲染尺寸和镜头。辅助模块只在开发构建加载，生产构建不提供该入口。用现有 cwebp（quality 82）生成 WebP，未增加运行时依赖、外部请求或付费调用。
+- 2026-10-23 验证：87 项测试和生产构建通过；实际文件尺寸为 1600×1000 / 3200×2000，构建检查 WebP 格式、下载预算及中英文引用。浏览器检查两种语言的 loading 画面，高 DPR 模拟确认选择 3200 像素版本；临时网络拦截和屏幕模拟已清除，重新加载可进入游戏。截图：`docs/screenshots/hd-loading-preview.png`。
 
 ## 性能基线与改动
 

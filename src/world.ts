@@ -10,7 +10,8 @@ import {waterWave} from './water-wave';
 import {COLORS,type Race} from './simulation';
 import {IslandTerrain,terrainNoise} from './island-terrain';
 import {BridgeAudience} from './bridge-audience';
-import {GeneratedAssets} from './generated-assets';
+import {ACCESSORIES,GeneratedAssets,type ModelId} from './generated-assets';
+import {loadSceneAssets,type AssetStage} from './asset-loading';
 import {selectTreePlacements,treeRadius,TREE_DIMENSIONS,type TreePlacement} from './tree-layout';
 const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 const mat=(color:THREE.ColorRepresentation,roughness=.82)=>new THREE.MeshStandardMaterial({color,roughness});
@@ -66,7 +67,7 @@ export class World {
  }
  scene=new THREE.Scene();duckMeshes:THREE.Group[]=[];private duckPool:THREE.Group[]=[];private duckColors:string[]=[...COLORS];water:WaterSystem;effects:ImpactEffects;moving:{kind:string;root:THREE.Group;part:THREE.Group}[]=[];birds:THREE.Group[]=[];rabbits:THREE.Group[]=[];foam:THREE.InstancedMesh;trail:THREE.InstancedMesh;private hitHalos:THREE.InstancedMesh;private springRipples:THREE.Mesh<THREE.RingGeometry,THREE.MeshBasicMaterial>[]=[];private randSeed=MOUNTAIN_COURSE?TRACK_SEED:12;
  private cameraBoxes:THREE.Box3[]=[];private movingCameraBoxes:{mesh:THREE.Mesh;box:THREE.Box3}[]=[];private cameraRay=new THREE.Ray();private cameraDirection=new THREE.Vector3();private cameraHit=new THREE.Vector3();
- readonly generatedAssets=new GeneratedAssets();generatedReady=false;private treePlacements:TreePlacement[]=[];
+ readonly generatedAssets=new GeneratedAssets();generatedReady=false;generatedStage:AssetStage|'pending'|'complete'|'degraded'='pending';private treePlacements:TreePlacement[]=[];
  private atmosphere?:ReturnType<typeof addAlpineAtmosphere>;private terrainField=new IslandTerrain();private audience?:BridgeAudience;private reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
  random(){this.randSeed=(Math.imul(this.randSeed,1664525)+1013904223)>>>0;return this.randSeed/4294967296;}
  constructor(renderer:THREE.WebGLRenderer){this.scene.background=new THREE.Color(MOUNTAIN_COURSE?'#c6dce5':'#e9eee5');this.scene.fog=new THREE.Fog(MOUNTAIN_COURSE?'#c6dce5':'#e9eee5',155*COURSE_SCALE,290*COURSE_SCALE);this.scene.add(new THREE.HemisphereLight('#fff7df','#718a77',MOUNTAIN_COURSE?1.9:2.65));const sun=new THREE.DirectionalLight('#fff3d9',MOUNTAIN_COURSE?2.7:3.4);sun.position.set(-35,70,30);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-65*COURSE_SCALE,right:65*COURSE_SCALE,top:65*COURSE_SCALE,bottom:-65*COURSE_SCALE,near:1,far:180*COURSE_SCALE});sun.shadow.bias=-.0003;sun.shadow.normalBias=.12;this.scene.add(sun);
@@ -90,24 +91,34 @@ export class World {
    const box=new THREE.Box3().setFromObject(object).expandByScalar(.35);
    if(moving)this.movingCameraBoxes.push({mesh:object,box});this.cameraBoxes.push(box);
   });
-  // Keep the procedural scene playable first; generated GLBs replace it during idle time.
-  // Metrics hook: compare first-interaction latency before and after the deferred model batch.
-  const loadGenerated=()=>void this.replaceGeneratedModels().catch(error=>{console.error('[assets] scene replacement failed',error);});
-  const browserWindow=window as Window&{requestIdleCallback?:(callback:()=>void,options?:{timeout:number})=>number};
-  if(browserWindow.requestIdleCallback)browserWindow.requestIdleCallback(loadGenerated,{timeout:2500});
-  else setTimeout(loadGenerated,700);
+  // Keep the procedural scene playable first; start the duck after the first paint,
+  // then yield between optional model batches. Metrics hook: core vs. full-scene latency.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>void this.replaceGeneratedModels().catch(error=>{
+   this.generatedStage='degraded';console.error('[assets] scene replacement failed',error);
+  })));
  }
  async replaceGeneratedModels(){
-  const assets=this.generatedAssets;await assets.load();
-  if(assets.has('duck'))for(let i=0;i<this.duckPool.length;i++){const root=this.duckPool[i],color=this.duckColors[i]??COLORS[i],model=assets.duck(color,i);root.clear();root.add(model);root.userData.color=color;}
-  if(assets.has('tree-broadleaf')&&assets.has('tree-pine')){
-   for(const object of [...this.scene.children])if(object.name==='procedural-tree')this.scene.remove(object);
-   for(const kind of ['tree-broadleaf','tree-pine'] as const){const source=assets.make(kind,{height:TREE_DIMENSIONS[kind].height}),placements=this.treePlacements.filter(p=>p.kind===kind),batch=new THREE.InstancedMesh(source.geometry,source.material,placements.length),dummy=new THREE.Object3D();batch.name=`generated-${kind}-instances`;batch.castShadow=true;batch.receiveShadow=true;placements.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.scale.setScalar(p.size);dummy.rotation.y=i*2.399;dummy.updateMatrix();batch.setMatrixAt(i,dummy.matrix);if(MOUNTAIN_COURSE){const tint=terrainNoise(p.x*.11+9,p.z*.11-3);batch.setColorAt(i,new THREE.Color().setRGB(.83+tint*.12,.91+tint*.07,.79+tint*.12));}});batch.computeBoundingSphere();this.scene.add(batch);}
-  }
-  if(assets.has('rabbit'))for(const root of this.rabbits){root.clear();root.add(assets.make('rabbit',{height:1.5}));}
-  if(assets.has('bird'))for(const root of this.birds){const bird=assets.bird();root.clear();root.add(...[...bird.children]);root.userData=bird.userData;}
-  this.audience?.setGeneratedAssets(assets);this.generatedReady=assets.diagnostics.failed.length===0;
+  const assets=this.generatedAssets;
+  await loadSceneAssets(assets,{treeKinds:this.treePlacements.map(p=>p.kind),birds:this.birds.length>0,rabbits:this.rabbits.length>0,audience:!!this.audience},id=>this.attachGeneratedModel(id),stage=>{this.generatedStage=stage;});
+  this.generatedReady=assets.diagnostics.failed.length===0&&assets.diagnostics.attachmentFailed.length===0;this.generatedStage=this.generatedReady?'complete':'degraded';
   console.info('[assets] generated scenery attached',{trees:this.treePlacements.length,ducks:this.duckPool.length,birds:this.birds.length,rabbits:this.rabbits.length});
+ }
+ private attachGeneratedModel(id:ModelId){
+  const assets=this.generatedAssets;
+  if(id==='duck'||id==='pirate-hat'||id==='knight-helmet'||id==='glasses'){
+   if(assets.has('duck'))for(let i=0;i<this.duckPool.length;i++){
+    if(id!=='duck'&&id!==ACCESSORIES[i%5-1])continue;
+    const root=this.duckPool[i],color=this.duckColors[i]??COLORS[i],model=assets.duck(color,i);root.clear();root.add(model);root.userData.color=color;
+   }
+  }else if(id==='tree-broadleaf'||id==='tree-pine'){
+   const source=assets.make(id,{height:TREE_DIMENSIONS[id].height}),placements=this.treePlacements.filter(p=>p.kind===id),batch=new THREE.InstancedMesh(source.geometry,source.material,placements.length),dummy=new THREE.Object3D();batch.name=`generated-${id}-instances`;batch.castShadow=true;batch.receiveShadow=true;
+   placements.forEach((p,i)=>{dummy.position.set(p.x,p.y,p.z);dummy.scale.setScalar(p.size);dummy.rotation.y=i*2.399;dummy.updateMatrix();batch.setMatrixAt(i,dummy.matrix);if(MOUNTAIN_COURSE){const tint=terrainNoise(p.x*.11+9,p.z*.11-3);batch.setColorAt(i,new THREE.Color().setRGB(.83+tint*.12,.91+tint*.07,.79+tint*.12));}});batch.computeBoundingSphere();
+   for(const object of [...this.scene.children])if(object instanceof THREE.InstancedMesh&&object.name===`procedural-${id}`){this.scene.remove(object);object.dispose();object.geometry.dispose();}
+   this.scene.add(batch);
+  }else if(id==='rabbit')for(const root of this.rabbits){root.clear();root.add(assets.make(id,{height:1.5}));}
+  else if(id==='bird')for(const root of this.birds){const bird=assets.bird();root.clear();root.add(...[...bird.children]);root.userData=bird.userData;}
+  else if(id.startsWith('audience-'))this.audience?.setGeneratedAssets(assets,[id]);
+  console.debug('[assets] model attached',{id});
  }
  spring(){
   const start=sample(0),root=new THREE.Group();root.name='headwater-spring';root.position.set(start.x,start.y,start.z);root.rotation.y=Math.atan2(start.tx,start.tz);
@@ -276,7 +287,7 @@ export class World {
  rocks.count=rockCount;rocks.castShadow=true;rocks.receiveShadow=true;rocks.name='river-bank-stones';this.scene.add(rocks);console.info('[world] river scenery ready',{rocks:rockCount});
  }
  decorate(){
- const trunks:THREE.Matrix4[]=[],crowns:THREE.Matrix4[]=[],rounds:THREE.Matrix4[]=[],candidates:TreePlacement[]=[];const dummy=new THREE.Object3D();
+ const pineTrunks:THREE.Matrix4[]=[],broadleafTrunks:THREE.Matrix4[]=[],crowns:THREE.Matrix4[]=[],rounds:THREE.Matrix4[]=[],candidates:TreePlacement[]=[];const dummy=new THREE.Object3D();
  // Sample clustered forest cover; retain all canopy, river and camera clearances.
  if(MOUNTAIN_COURSE)candidates.push(...alpineTreeCandidates(this.terrainField,()=>this.random()));
  else for(let i=0;i<270;i++){
@@ -291,12 +302,12 @@ export class World {
  for(const tree of this.treePlacements){
   const {x,y:h,z,size,kind}=tree,radius=treeRadius(tree),height=TREE_DIMENSIONS[kind].height*size;
   this.cameraBoxes.push(new THREE.Box3(new THREE.Vector3(x-radius,h+.9*size,z-radius),new THREE.Vector3(x+radius,h+height+.2,z+radius)));
-  dummy.position.set(x,h+1.3*size,z);dummy.scale.set(.22*size,2.6*size,.22*size);dummy.rotation.set(0,0,0);dummy.updateMatrix();trunks.push(dummy.matrix.clone());
+  dummy.position.set(x,h+1.3*size,z);dummy.scale.set(.22*size,2.6*size,.22*size);dummy.rotation.set(0,0,0);dummy.updateMatrix();(kind==='tree-pine'?pineTrunks:broadleafTrunks).push(dummy.matrix.clone());
   if(kind==='tree-broadleaf'){dummy.position.y=h+3.4*size;dummy.scale.set(1.7*size,2.3*size,1.7*size);dummy.updateMatrix();rounds.push(dummy.matrix.clone());}
   else for(let k=0;k<3;k++){dummy.position.y=h+(2.4+k*1.25)*size;dummy.scale.set((2-k*.37)*size,(3.3-k*.35)*size,(2-k*.37)*size);dummy.rotation.y=x+z;dummy.updateMatrix();crowns.push(dummy.matrix.clone());}
  }
- const batches:[THREE.BufferGeometry,THREE.Material,THREE.Matrix4[]][]=[[new THREE.CylinderGeometry(1,1,1,6),wood,trunks],[new THREE.ConeGeometry(1,1,7),mat('#427e69'),crowns],[new THREE.IcosahedronGeometry(1,1),mat('#7fa665'),rounds]];
- for(const [geo,m,arr]of batches){const o=new THREE.InstancedMesh(geo,m,arr.length);o.name='procedural-tree';arr.forEach((matrix,i)=>o.setMatrixAt(i,matrix));o.castShadow=true;o.receiveShadow=true;this.scene.add(o);}
+ const batches:[string,THREE.BufferGeometry,THREE.Material,THREE.Matrix4[]][]=[['tree-pine',new THREE.CylinderGeometry(1,1,1,6),wood,pineTrunks],['tree-broadleaf',new THREE.CylinderGeometry(1,1,1,6),wood,broadleafTrunks],['tree-pine',new THREE.ConeGeometry(1,1,7),mat('#427e69'),crowns],['tree-broadleaf',new THREE.IcosahedronGeometry(1,1),mat('#7fa665'),rounds]];
+ for(const [kind,geo,m,arr]of batches){const o=new THREE.InstancedMesh(geo,m,arr.length);o.name=`procedural-${kind}`;arr.forEach((matrix,i)=>o.setMatrixAt(i,matrix));o.castShadow=true;o.receiveShadow=true;this.scene.add(o);}
  if(MOUNTAIN_COURSE)this.understory();
 
  for(let i=0;i<(MOUNTAIN_COURSE?9:28);i++){const s=this.random()*TRACK_LENGTH,p=sample(s),v=world(s,p.width+2+this.random()*2);const r=mesh(new THREE.DodecahedronGeometry(1,0),mat(i%3?'#b3baa5':'#d2cdb5'),[v.x,this.height(v.x,v.z)+.2,v.z],[1+this.random(),.8+this.random(),1.1]);this.scene.add(r);}

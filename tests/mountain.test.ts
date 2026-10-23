@@ -28,7 +28,7 @@ test('paddling changes only lateral input and accepts bounded finite controls',(
 test('stalled duck receives an observable lateral escape without a forward teleport',()=>{
  const race=new Race(2,42);race.start();while(race.state==='countdown')race.step(1/60);
  const d=race.ducks[0];d.s=15;d.progressS=15;d.v=0;d.stuckTime=FEEL.stuckSeconds;const s=d.s;
- race.step(1/60);assert.equal(d.recoveries,1);assert.ok(Math.abs(d.lv)>1);assert.ok(d.s-s<.01);
+ race.step(1/60);assert.equal(d.recoveries,1);assert.ok(Math.abs(d.lv)>1);assert.ok(Math.abs(d.s-s-d.v/60)<1e-9);
 });
 test('history preserves track seed and manual steering in exported results',()=>{
  const records=validateHistory([{date:new Date().toISOString(),seed:917,trackSeed:42,controlled:true,course:'mountain',mode:'ranking',results:[{id:0,time:1},{id:1,time:2}]}]);

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {Race} from '../src/simulation';
-import {TRACK_LENGTH,sample,world} from '../src/track';
+import {COURSE_SCALE,TRACK_LENGTH,sample,world} from '../src/track';
 import {AudienceDirector} from '../src/audience-behavior';
 import {BridgeAudience} from '../src/bridge-audience';
 function nearFinish(){const race=new Race(6,42);race.state='racing';race.time=race.floatTime=50;race.ducks.forEach((d,i)=>{d.s=TRACK_LENGTH-4-i*4;d.y=sample(d.s).y-.19;});return race;}
@@ -18,7 +18,7 @@ test('spectators divide their attention and react with individual delays and ges
  race.reset(6,42);director.update(race);assert.ok(director.viewers.every(v=>v.action==='watch'&&v.target===null&&v.reactionAt===Infinity));
 });
 test('spectator gaze tracks moving racers, stays bounded and freezes while paused',()=>{
- const bridge=new THREE.Group();bridge.position.set(-1,3.4,40);bridge.rotation.y=-.3;
+ const bridge=new THREE.Group();bridge.position.set(-COURSE_SCALE,3.4,40*COURSE_SCALE);bridge.rotation.y=-.3;
  const audience=new BridgeAudience(bridge),race=nearFinish();audience.update(0,race);
  const heads=Array.from({length:4},(_,i)=>bridge.getObjectByName(`spectator-gaze-${i}`)!);
  const before=heads.map(h=>h.rotation.y);

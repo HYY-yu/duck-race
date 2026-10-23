@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import {Race} from '../src/simulation';
-import {TRACK_LENGTH,STANDARD_TRACK_LENGTH,LONG_COURSE,RAINBOWS,SLIDE,WINDMILL_S,LAKE_LEVEL,sample,world,FALLS,flow,FLOW_MULTIPLIER} from '../src/track';
+import {TRACK_LENGTH,BASE_TRACK_LENGTH,LONG_COURSE,RAINBOWS,SLIDE,WINDMILL_S,LAKE_LEVEL,sample,world,FALLS,flow,FLOW_MULTIPLIER} from '../src/track';
 import {IslandTerrain} from '../src/island-terrain';
 import {addLongCourseProps} from '../src/course-props';
 import * as THREE from 'three';
 console.info=()=>{};console.debug=()=>{};
-assert.ok(LONG_COURSE);assert.ok(TRACK_LENGTH>=STANDARD_TRACK_LENGTH*2);
+assert.ok(LONG_COURSE);assert.ok(TRACK_LENGTH>=BASE_TRACK_LENGTH*2);
 assert.ok(Math.abs(sample(TRACK_LENGTH).y-LAKE_LEVEL)<1e-8);
 assert.ok(sample(SLIDE.start).y-sample(SLIDE.end).y>2);
 for(let s=0;s<TRACK_LENGTH;s+=.25)assert.ok(Object.values(sample(s)).every(Number.isFinite));
@@ -24,7 +24,7 @@ assert.ok(scene.getObjectByName('waterslide-chute'));assert.ok(scene.getObjectBy
 assert.ok(moving.some(m=>m.kind==='wind-rotor'));assert.ok(WINDMILL_S<TRACK_LENGTH-10);
 // The longer route retains its course-owned current multiplier, but all ducks
 // enter that current from rest just like they do on Snowpeak Rapids.
-assert.equal(FLOW_MULTIPLIER,1.25);assert.ok(flow(0,0,0)>=14.2*1.25);
+assert.equal(FLOW_MULTIPLIER,1.10);assert.ok(flow(0,0,0)>=14.2*1.10);
 const launch=new Race(12,42),initialS=launch.ducks.map(d=>d.s);
 assert.ok(launch.ducks.every(d=>d.v===0));launch.start();launch.step(1/60);launch.pause();
 for(let i=0;i<240;i++)launch.step(1/60);
@@ -49,4 +49,4 @@ for(const count of [2,6,12])for(const seed of [1,42,917]){
 }
 assert.ok(runs.some(r=>r.windContacts>0),'windmill paddles participate in collisions');
 assert.ok(Math.max(...runs.map(r=>r.time))<25,'snowpeak current should carry every sampled long race home within 25 seconds');
-console.log(JSON.stringify({length:TRACK_LENGTH,ratio:TRACK_LENGTH/STANDARD_TRACK_LENGTH,runs}));
+console.log(JSON.stringify({length:TRACK_LENGTH,ratio:TRACK_LENGTH/BASE_TRACK_LENGTH,runs}));

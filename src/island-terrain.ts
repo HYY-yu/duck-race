@@ -1,4 +1,4 @@
-import {sample,TRACK_LENGTH,LAKE_LEVEL,COURSE_SCALE,LONG_COURSE,MOUNTAIN_COURSE,bankWidth} from './track';
+import {sample,TRACK_LENGTH,LAKE_LEVEL,COURSE_SCALE,MOUNTAIN_COURSE,bankWidth} from './track';
 import {terrainNoise,ridgedNoise,softNoise} from './noise';
 export {terrainNoise} from './noise';
 const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
@@ -75,7 +75,7 @@ export function farLandform(x:number,z:number){
 }
 
 export class IslandTerrain {
- readonly step=MOUNTAIN_COURSE?1.6:LONG_COURSE?1.6:1;readonly cols=Math.ceil(134*COURSE_SCALE/this.step);readonly rows=Math.ceil(158*COURSE_SCALE/this.step);readonly minX=-67*COURSE_SCALE;readonly minZ=-82*COURSE_SCALE;
+ readonly step=1.6;readonly cols=Math.ceil(134*COURSE_SCALE/this.step);readonly rows=Math.ceil(158*COURSE_SCALE/this.step);readonly minX=-67*COURSE_SCALE;readonly minZ=-82*COURSE_SCALE;
  readonly heights:Float32Array;readonly bankDistances:Float32Array;
  private stations=Array.from({length:Math.ceil(TRACK_LENGTH/1.8)+1},(_,i)=>{const s=Math.min(TRACK_LENGTH,i*1.8);return {s,p:sample(s)};});
  constructor(){

@@ -28,6 +28,12 @@ const enRules = await readFile('dist/en/how-to-play/index.html', 'utf8');
 const zhRules = await readFile('dist/zh/how-to-play/index.html', 'utf8');
 const socialImage = await readFile('dist/social/duck-rush-og.jpg');
 if (!socialImage.subarray(0,3).equals(Buffer.from([0xff,0xd8,0xff]))) throw new Error('Social image must contain JPEG bytes');
+for(const width of [1600,3200]){
+  const preview=await readFile(`dist/previews/duck-rush-race-${width}.webp`);
+  if(preview.toString('ascii',0,4)!=='RIFF'||preview.toString('ascii',8,12)!=='WEBP')throw new Error('Loading preview must contain WebP bytes');
+  if(preview.length>180000)throw new Error('Loading preview exceeds its 180 kB download budget');
+  for(const html of [en,zh])if(!html.includes(`/previews/duck-rush-race-${width}.webp`))throw new Error('Localized home is missing a responsive loading preview');
+}
 if (process.env.SITE_URL && (!en.includes('social/duck-rush-og.jpg') || !en.includes('content="image/jpeg"'))) throw new Error('English social metadata must reference the JPEG share image');
 if (process.env.SITE_URL && (!zh.includes('social/duck-rush-og.jpg') || !zh.includes('content="image/jpeg"'))) throw new Error('Chinese social metadata must reference the JPEG share image');
 for (const path of ['dist/en/index.html','dist/zh/index.html']) {

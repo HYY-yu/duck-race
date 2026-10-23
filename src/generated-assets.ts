@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import {duckScarf} from './duck-scarf';
 import {trackEvent} from './observability';
 
@@ -13,23 +14,36 @@ export class GeneratedAssets {
  private templates=new Map<ModelId,THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>>();
  private geometryCache=new Map<string,THREE.BufferGeometry>();
  private duckMaterials=new Map<string,THREE.MeshStandardMaterial>();
- readonly diagnostics:{loaded:ModelId[];failed:ModelId[];milliseconds:number}={loaded:[],failed:[],milliseconds:0};
- async load(){
-  const start=performance.now(),loader=new GLTFLoader();
-  const results=await Promise.allSettled(MODEL_IDS.map(async id=>{
-   const gltf=await loader.loadAsync(`${import.meta.env.BASE_URL}models/${id}.glb`);let template:THREE.Mesh|undefined;
+ private pending=new Map<ModelId,Promise<void>>();
+ readonly diagnostics:{requested:ModelId[];loaded:ModelId[];failed:ModelId[];attachmentFailed:ModelId[];milliseconds:number;modelMs:Partial<Record<ModelId,number>>}={requested:[],loaded:[],failed:[],attachmentFailed:[],milliseconds:0,modelMs:{}};
+ constructor(private readonly loadModel:(id:ModelId)=>Promise<GLTF>=(id)=>new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}models/${id}.glb`)){}
+ /** Explicit subsets support scene streaming; shared in-flight requests are reused.
+  * The full-library default is retained for the offline asset inspection page. */
+ async load(ids:readonly ModelId[]=MODEL_IDS){
+  const unique=[...new Set(ids)];
+  for(let i=0;i<unique.length;i+=2)await Promise.all(unique.slice(i,i+2).map(id=>this.loadOne(id)));
+ }
+ private loadOne(id:ModelId):Promise<void>{
+  if(this.has(id))return Promise.resolve();
+  const existing=this.pending.get(id);if(existing)return existing;
+  if(!this.diagnostics.requested.includes(id))this.diagnostics.requested.push(id);
+  const start=performance.now();
+  const task=Promise.resolve().then(async()=>{
+   const gltf=await this.loadModel(id);let template:THREE.Mesh|undefined;
    gltf.scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh&&!template)template=o;});
    if(!template)throw new Error(`Model ${id} contains no mesh`);
    const geometry=template.geometry.clone().applyMatrix4(template.matrixWorld),material=(Array.isArray(template.material)?template.material[0]:template.material).clone() as THREE.MeshStandardMaterial;
    if(!geometry.attributes.normal)geometry.computeVertexNormals();material.flatShading=false;
    const mesh=new THREE.Mesh(geometry,material);mesh.name=`generated-${id}`;mesh.castShadow=true;mesh.receiveShadow=true;
    this.templates.set(id,mesh);this.diagnostics.loaded.push(id);console.debug('[assets] model loaded',{id,vertices:geometry.attributes.position.count});
-  }));
-  results.forEach((result,i)=>{if(result.status==='rejected'){const id=MODEL_IDS[i];this.diagnostics.failed.push(id);console.error('[assets] model load failed',{id,error:result.reason});trackEvent('asset_failed',{asset:id});}});
-  this.diagnostics.milliseconds=performance.now()-start;
-  console.info('[assets] library ready',this.diagnostics);
-  trackEvent('asset_load_finished',{loaded:this.diagnostics.loaded.length,failed:this.diagnostics.failed.length,durationMs:Math.round(this.diagnostics.milliseconds)});
-  if(this.diagnostics.failed.length)console.warn('[assets] procedural fallbacks retained',{ids:this.diagnostics.failed});
+   this.diagnostics.failed=this.diagnostics.failed.filter(failed=>failed!==id);
+  }).catch(error=>{
+   if(!this.diagnostics.failed.includes(id))this.diagnostics.failed.push(id);
+   console.warn('[assets] model load failed; procedural fallback retained',{id,error});trackEvent('asset_failed',{asset:id});
+  }).finally(()=>{
+   this.diagnostics.modelMs[id]=Math.round(performance.now()-start);this.pending.delete(id);
+  });
+  this.pending.set(id,task);return task;
  }
  has(id:ModelId){return this.templates.has(id);}
  make(id:ModelId,shape:Shape={height:1}){
@@ -43,7 +57,7 @@ export class GeneratedAssets {
   const root=new THREE.Group(),mesh=this.make('duck',{height:1.9});root.name=`generated-duck-${index}`;
   let material=this.duckMaterials.get(color);
   if(!material){material=mesh.material.clone();const map=material.map;
-   if(map){const canvas=document.createElement('canvas');canvas.width=canvas.height=512;const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Duck palette canvas unavailable');ctx.drawImage(map.image,0,0,512,512);const pixels=ctx.getImageData(0,0,512,512),target=new THREE.Color(color);const rgb=[target.r,target.g,target.b].map(v=>THREE.ColorManagement.fromWorkingColorSpace(new THREE.Color(v,v,v),THREE.SRGBColorSpace).r*255);
+   if(map){const canvas=document.createElement('canvas');canvas.width=canvas.height=512;const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Duck palette canvas unavailable');ctx.drawImage(map.image,0,0,512,512);const pixels=ctx.getImageData(0,0,512,512),target=new THREE.Color(color);const rgb=[target.r,target.g,target.b].map(v=>THREE.ColorManagement.workingToColorSpace(new THREE.Color(v,v,v),THREE.SRGBColorSpace).r*255);
     for(let p=0;p<pixels.data.length;p+=4){const [r,g,b]=pixels.data.subarray(p,p+3);if(r>160&&g/r>.67&&b<r*.58){const shade=.9+.1*r/255;for(let k=0;k<3;k++)pixels.data[p+k]=Math.round(rgb[k]*shade);}}
     ctx.putImageData(pixels,0,0);const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=map.flipY;material.map=texture;}
    this.duckMaterials.set(color,material);

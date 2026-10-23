@@ -39,9 +39,9 @@ export class BridgeAudience {
   });
   console.info('[world] bridge audience ready',{count:this.spectators.length,species:['rabbit','bear','fox']});
  }
- setGeneratedAssets(assets:GeneratedAssets){
+ setGeneratedAssets(assets:GeneratedAssets,only?:readonly ModelId[]){
   const ids:ModelId[]=['audience-white-rabbit','audience-bear','audience-fox','audience-gray-rabbit'];
-  this.spectators.forEach((animal,i)=>{const id=ids[i];if(!assets.has(id))return;
+  this.spectators.forEach((animal,i)=>{const id=ids[i];if(!assets.has(id)||(only&&!only.includes(id)))return;
    const rabbit=id.includes('rabbit'),height=rabbit?2.8:2.5,neck=rabbit?1.35:1.42;
    const {mesh,bones}=assets.rig(id,{height},[new THREE.Vector3(0,neck,0),new THREE.Vector3(-.36,1.1,0),new THREE.Vector3(.36,1.1,0)],p=>{
     const head=THREE.MathUtils.smoothstep(p.y,neck-.12,neck+.12),arm=(1-head)*THREE.MathUtils.smoothstep(Math.abs(p.x),.30,.48)*THREE.MathUtils.smoothstep(p.y,.45,.8);return [1-head-arm,head,p.x<0?arm:0,p.x>=0?arm:0];
