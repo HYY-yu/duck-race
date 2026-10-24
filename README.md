@@ -13,6 +13,7 @@ A 3D duck race name picker built with TypeScript, Three.js, and Vite. Enter name
 - 全局与小鸭跟随镜头，支持暂停和音效 / Overview and follow cameras, pause controls, and sound effects
 - 完整排名、结果复制与最近 10 场本地记录 / Full rankings, copyable results, and 10 recent races stored locally
 - 中文和英文界面 / Chinese and English interfaces
+- 手机端全宽画布与抽屉菜单（≤1000px），底部快捷开始／暂停；支持横竖屏 / Full-width mobile scene and drawer menu (≤1000px), with quick start/pause in portrait and landscape
 
 ## 启动 / Getting started
 
