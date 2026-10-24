@@ -88,7 +88,7 @@
         <article><h3>透明自动模式</h3><p>姓名通过安全随机源分配给小鸭，且不参与物理计算。没有预设赢家或姓名专属加速；赛道仿真产生最终排名。</p></article>
         <article><h3>公开版本仅自动竞速</h3><p>公开版本不接受任何能够控制小鸭或改变结果的玩家输入。跟随小鸭只会切换观看镜头。</p></article>
         <article><h3>这里的公平含义</h3><p>自动模式把安全随机分配与比赛物理分开，并公开完整真实排名。它是规则透明的休闲抽签，不是认证抽签，也不证明每条赛道上的物理编号胜率完全相同。</p></article>
-        <article><h3>名单默认只在本地</h3><p>Duck Rush 没有账号、远程名单数据库、内置名单上传 API 或已配置的远程分析目的地。姓名与最近 10 场结果保存在当前浏览器，公开版本不会请求麦克风权限。</p></article>
+        <article><h3>名单默认只在本地</h3><p>Duck Rush 没有账号、远程名单数据库或内置名单上传 API。可选 PostHog 统计仅上报汇总事件。姓名与最近 10 场结果保存在当前浏览器，公开版本不会请求麦克风权限。</p></article>
       </div>
       <a class="text-link" href="/zh/privacy/">查看详细隐私说明 →</a>
     </section>
@@ -99,7 +99,7 @@
       <div class="faq-list">
         <details><summary>一场比赛支持多少人？</summary><p>每轮支持 2–12 个不重复名字。本版本不适合全校、千人活动或大型抽奖。</p></details>
         <details><summary>Duck Rush 的结果公平吗？</summary><p>公开版本只有自动竞速。浏览器安全随机源分配姓名，没有预设赢家或基于姓名的物理差异，再由赛道仿真产生实际冲线顺序。Duck Rush 不是经过独立认证的抽签系统。</p></details>
-        <details><summary>参与者姓名会上传吗？</summary><p>Duck Rush 的内置代码不会上传姓名：项目没有账号、名单上传 API、远程名单数据库或已配置的分析目的地，姓名与历史默认只在当前浏览器。</p></details>
+        <details><summary>参与者姓名会上传吗？</summary><p>Duck Rush 的内置代码不会上传姓名：项目没有账号、名单上传 API 或远程名单数据库；可选 PostHog 统计不含姓名，姓名与历史默认只在当前浏览器。</p></details>
         <details><summary>赢家会在动画开始前预先选好吗？</summary><p>不会。名字先随机分配到小鸭的物理编号，再由当前河道仿真产生真实冲线顺序。</p></details>
         <details><summary>为什么比赛中会发生超越？</summary><p>河道包含流速变化、弯道、窄道、瀑布和障碍，小鸭之间也会碰撞；这些交互会不断改变相对位置。</p></details>
         <details><summary>可以分享同一条赛道吗？</summary><p>URL 中的 <code>track</code> 与 <code>seed</code> 参数可复现赛道选择和雪山地形。它们只是页面状态，不是独立收录页面。</p></details>

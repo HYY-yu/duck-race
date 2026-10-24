@@ -12,6 +12,13 @@ export type DuckRushEvent =
 
 type EventValue = string | number | boolean;
 export type EventProperties = Readonly<Record<string, EventValue>>;
+export type EventReporter = (event: DuckRushEvent, properties: EventProperties) => void;
+const reporters = new Set<EventReporter>();
+
+export function addEventReporter(reporter: EventReporter) {
+  reporters.add(reporter);
+  return () => { reporters.delete(reporter); };
+}
 
 declare global {
   interface Window {
@@ -21,11 +28,15 @@ declare global {
 }
 
 /**
- * Privacy boundary for future analytics adapters. Callers must send aggregate state only:
+ * Privacy boundary for analytics adapters. Callers must send aggregate state only:
  * never participant names, copied results, speech transcripts, or unfiltered URLs/queries.
  */
 export function trackEvent(event: DuckRushEvent, properties: EventProperties = {}) {
   console.info('[telemetry]', event, properties);
+  for (const report of reporters) {
+    try { report(event, properties); }
+    catch (error) { console.warn('[telemetry] reporter failed', {event, errorType: error instanceof Error ? error.name : 'unknown'}); }
+  }
   try {
     window.duckRushTelemetry?.track(event, properties);
   } catch (error) {

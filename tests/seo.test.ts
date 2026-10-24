@@ -80,11 +80,13 @@ test('generated favicon assets, production privacy facts, and the visual launch 
   assert.match(privacy,/does not render microphone controls, request microphone permission/i);
   assert.match(privacy,/duckracepicker\.com/);
   assert.match(privacy,/Cloudflare Workers Static Assets/);
-  assert.match(privacy,/Google Search Console and a remote product analytics platform are not connected/i);
+  assert.match(privacy,/PostHog receives aggregate usage events/i);
+  assert.match(privacy,/session replay, person profiles and automatic error capture are disabled/i);
   assert.doesNotMatch(privacy,/production domain and hosting provider have not yet been selected/i);
   assert.match(privacyZh,/duckracepicker\.com/);
   assert.match(privacyZh,/Cloudflare Workers Static Assets/);
-  assert.match(privacyZh,/Google Search Console 与远程产品分析平台尚未接入/);
+  assert.match(privacyZh,/配置 PostHog 后会发送汇总使用统计/);
+  assert.match(privacyZh,/会话回放、用户画像与自动错误采集均关闭/);
   assert.doesNotMatch(privacyZh,/生产域名与托管供应商尚未确定/);
   assert.match(visual,/name="robots" content="noindex,nofollow"/);
   for(const id of ['market','position','architecture','performance','launch'])assert.match(visual,new RegExp(`id="${id}"`));

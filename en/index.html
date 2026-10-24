@@ -88,7 +88,7 @@
         <article><h3>Transparent automatic mode</h3><p>Names are securely randomized onto duck IDs and never influence the physics. There is no preset winner or name-based boost; the simulated course produces the finishing order.</p></article>
         <article><h3>Automatic-only public race</h3><p>The public version accepts no player input that can steer a duck or change the outcome. Following a duck changes only the camera.</p></article>
         <article><h3>What fairness means here</h3><p>Automatic mode separates secure name assignment from race physics and exposes the real full ranking. It is transparent casual selection, not a certified draw or proof of identical physical odds on every course.</p></article>
-        <article><h3>Names stay local by default</h3><p>Duck Rush has no account, remote name database, built-in name-upload API, or configured analytics destination. Names and the last 10 results stay in this browser, and the public build does not request microphone access.</p></article>
+        <article><h3>Names stay local by default</h3><p>Duck Rush has no account, remote name database, or built-in name-upload API. Optional PostHog analytics only receives aggregate events. Names and the last 10 results stay in this browser, and the public build does not request microphone access.</p></article>
       </div>
       <a class="text-link" href="/en/privacy/">Read the privacy details →</a>
     </section>
@@ -99,7 +99,7 @@
       <div class="faq-list">
         <details><summary>How many names can I add?</summary><p>Each race supports 2–12 unique names. This version is not designed for whole-school or thousand-person draws.</p></details>
         <details><summary>Is the Duck Rush result fair?</summary><p>The public version is automatic-only. The browser’s secure random source assigns names to ducks, there is no preset winner or name-based physics, and the simulated course determines the actual finish. Duck Rush is not an independently certified draw.</p></details>
-        <details><summary>Are participant names uploaded?</summary><p>Not by Duck Rush’s built-in code. There is no account, name-upload API, remote name database, or configured analytics destination; names and recent history stay in this browser by default.</p></details>
+        <details><summary>Are participant names uploaded?</summary><p>Not by Duck Rush’s built-in code. There is no account, name-upload API, or remote name database; optional PostHog analytics excludes names; names and recent history stay in this browser by default.</p></details>
         <details><summary>Is the winner selected before the animation?</summary><p>No. Names are randomly assigned to physical duck IDs, then the current river simulation produces the actual finishing order.</p></details>
         <details><summary>Why do ducks overtake each other?</summary><p>The course has changing flow, bends, narrow sections, waterfalls, obstacles, and duck collisions. Those simulated interactions can change positions throughout the race.</p></details>
         <details><summary>Can I share the same course?</summary><p>The <code>track</code> and <code>seed</code> URL parameters reproduce course choices and generated mountain geometry. They are page state, not separate indexable pages.</p></details>

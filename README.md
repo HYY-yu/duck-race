@@ -47,6 +47,43 @@ Deploy command: npx wrangler deploy --assets ./dist/ --name duckracepicker --com
 
 `SITE_URL` generates production canonical, hreflang, Open Graph URLs, `robots.txt`, and `sitemap.xml`. It is configured as a Cloudflare build variable; other deployment environments must explicitly provide their own HTTPS origin.
 
+## 产品分析 / Product analytics
+
+PostHog 通过现有 `trackEvent` 入口上报 10 类事件，统一附加 `app=duck_rush` 与 `environment=production|development`。可与 JoyfulWords 共用项目；查看 Duck Rush 时始终添加 `app = duck_rush` 过滤条件，正式指标再加 `environment = production`。其他应用的全项目报表也需要相应的应用过滤条件。
+
+PostHog receives the 10 existing event types through `trackEvent`, with `app=duck_rush` and `environment=production|development`. Shared-project reports must filter by app, and production reports should also filter by environment.
+
+在 `.env.local` 配置以下变量；Cloudflare 自动构建也必须配置相同的 Key 和 host，然后重新构建才能生效。Project API Key 是公开客户端 token，不能使用 Personal API Key。真实配置不提交 Git。
+
+Set these in `.env.local` and in Cloudflare build variables, then rebuild. Use the public project token, never a personal API key; keep real configuration out of Git.
+
+```dotenv
+VITE_POSTHOG_KEY=<public project token>
+VITE_POSTHOG_HOST=<HTTPS ingestion host from project settings>
+VITE_POSTHOG_ENABLE_DEV=false
+```
+
+开发模式默认关闭上报，临时设置 `VITE_POSTHOG_ENABLE_DEV=true` 可验证开发事件。无配置时不加载 SDK。启动队列最多保留 100 条；SDK 加载失败或发送失败会记录 Warn，比赛继续运行。
+
+Development capture is off by default; opt in temporarily with `VITE_POSTHOG_ENABLE_DEV=true`. Missing configuration skips SDK loading. Startup queues up to 100 events; failures emit Warn logs without interrupting gameplay.
+
+| 事件 / Event | 内容 / Properties |
+| --- | --- |
+| `page_view` | language, course |
+| `language_switch` | from, to |
+| `game_load_started` | language, reason, sinceNavigationMs |
+| `game_ready` | language, renderer, course, sinceNavigationMs |
+| `race_started` | language, course, entryCount |
+| `race_finished` | language, course, entryCount, durationMs, manual |
+| `asset_load_finished` | loaded, failed, attachmentFailed, durationMs |
+| `asset_stage_finished` | stage, requested, failed, durationMs |
+| `asset_failed` | asset, phase, language（按失败点提供 / where available） |
+| `web_vital` | language, metric, value |
+
+自动采集、自动页面事件、会话回放、用户画像、自动错误采集均关闭。使用内存匿名 ID，刷新后会改变，因此独立用户数不代表跨访问人数。发送前按白名单移除 URL、来源、用户输入等属性；不采集名单、结果或语音文本。过滤 `app=duck_rush` 后可在 PostHog Activity 查看事件，并用 `page_view → game_load_started → game_ready → race_started → race_finished` 建漏斗。
+
+Autocapture, automatic page events, replay, person profiles, and automatic exception capture are disabled. In-memory anonymous IDs reset on reload, so unique users do not measure returning visitors. A property allowlist excludes URLs, referrers, and user input, including names, results, and transcripts. Filter Activity by `app=duck_rush`; the event sequence above supports a launch-to-finish funnel. See [PostHog configuration](https://posthog.com/docs/libraries/js/config) and the site's bilingual privacy pages.
+
 ## 开源协议 / License
 
 [MIT](LICENSE) © 2026 HYY-yu

@@ -14,7 +14,7 @@
 - Worker 默认地址 `https://duckracepicker.feng950704.workers.dev` 仍可访问。正式页面 canonical 指向自定义域，但接入 Search Console 前仍应关闭该生产 URL，或对其增加 `X-Robots-Tag: noindex`。
 - 当前未知路径返回正确的 HTTP 404，但 Cloudflare 尚未启用 `assets.not_found_handling = "404-page"`，因此线上没有返回仓库内的品牌 `404.html` 正文。
 - Cloudflare Static Assets 当前使用默认浏览器缓存策略 `public, max-age=0, must-revalidate`；边缘缓存可命中，但尚未给带 hash 的 `/assets/` 配置 immutable 浏览器缓存。
-- 尚未接入 Google Search Console、远程产品分析、会话回放或错误追踪；没有线上真实用户排名、流量或 Core Web Vitals 数据。
+- 已实现可配置的 PostHog 汇总事件上报；Google Search Console、会话回放与自动错误追踪未启用；没有线上真实用户排名、流量或 Core Web Vitals 数据。
 
 ## 定位与首轮验证市场
 
@@ -70,9 +70,9 @@ Googlebot 与用户在英文、中文主页都应直接看到同一组可验证�
 1. **设置简单 / Simple setup**：粘贴 2–12 个名字，几秒完成；无需账号，当前代码没有内置名单上传 API。
 2. **3D 赛道刺激 / Exciting 3D course**：急流、弯道、障碍、碰撞、瀑布、腾空与落水真实改变比赛。
 3. **自动结果透明 / Transparent automatic results**：浏览器安全随机源分配姓名；无预设赢家、无基于姓名的物理差异或隐藏追赶加速；实际仿真决定冲线顺序。
-4. **名单默认本地 / Names stay local by default**：当前代码没有账号、远程名单数据库、内置名单上传接口或已配置的远程分析目的地；姓名和最近 10 场历史保存在当前浏览器。
+4. **名单默认本地 / Names stay local by default**：当前代码没有账号、远程名单数据库或内置名单上传接口；可选 PostHog 统计仅含汇总事件；姓名和最近 10 场历史保存在当前浏览器。
 
-“公平”只用于说明自动竞速的可验证规则边界，不能扩大为“所有物理编号、所有浏览器胜率完全相同”或“经过认证的公平抽签”。“所有数据永不离开设备”“绝无后门”仍不是可验证的 SEO 承诺，因为托管商会处理常规网络请求。对外使用更准确、更强的表述：**公开版本仅自动竞速、无预设赢家、无姓名偏置、名单默认不上传、当前代码无内置名单上传或远程分析目的地**。
+“公平”只用于说明自动竞速的可验证规则边界，不能扩大为“所有物理编号、所有浏览器胜率完全相同”或“经过认证的公平抽签”。“所有数据永不离开设备”“绝无后门”仍不是可验证的 SEO 承诺，因为托管商会处理常规网络请求。对外使用更准确、更强的表述：**公开版本仅自动竞速、无预设赢家、无姓名偏置、名单默认不上传、当前代码无内置名单上传，PostHog 仅接收白名单汇总事件**。
 
 人工拨水和语音控制只保留在本机专用构建：`npm run dev:manual` / `npm run build:manual` 读取 Git 忽略的 `.env.manual.local`。默认 `npm run build` 不渲染麦克风或语音日志、不请求麦克风权限、不注册拨水按键。人工模式不得出现在公开 SEO 文案、结构化数据或部署产物中。
 
@@ -173,4 +173,4 @@ npm run build
 - [ ] 接入 Search Console，提交 sitemap，检查中英文页索引、国家、查询、页面曝光和点击。
 - [ ] 把 Search Console 数据与不含姓名的开赛/完赛事件结合评估，不把曝光当作开赛，也不保证排名或流量。
 
-当前已有正式域名、Cloudflare 托管和基础线上验收；仍没有 Search Console 权限、远程产品分析、真实用户 Core Web Vitals、线上排名或流量证据，因此不得宣称已收录、已有排名或已有增长。
+当前已有正式域名、Cloudflare 托管和基础线上验收；PostHog 汇总事件接入已通过本地开发收件验证，Cloudflare 生产构建变量已配置；正式生效以对应 Git 提交的部署与生产事件收件为准。仍没有 Search Console 权限、真实用户 Core Web Vitals、线上排名或流量证据，因此不得宣称已收录、已有排名或已有增长。

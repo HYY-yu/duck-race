@@ -1,7 +1,16 @@
 import './style.css';
 import {pageLanguage} from './i18n-routing';
-import {observeWebVitals, trackEvent} from './observability';
+import {addEventReporter, observeWebVitals, trackEvent} from './observability';
+import {createPostHogReporter} from './posthog-telemetry';
 import {resolveTrack,trackSearch} from './track-navigation';
+
+const postHogReporter = createPostHogReporter({
+  key: import.meta.env.VITE_POSTHOG_KEY,
+  host: import.meta.env.VITE_POSTHOG_HOST,
+  production: import.meta.env.PROD,
+  enableInDevelopment: import.meta.env.VITE_POSTHOG_ENABLE_DEV === 'true',
+});
+if (postHogReporter) addEventReporter(postHogReporter);
 
 const language = pageLanguage();
 const params = new URLSearchParams(location.search);
