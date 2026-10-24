@@ -32,6 +32,18 @@ npm run build    # 构建到 dist/ / Build to dist/
 npm run preview  # 预览构建 / Preview the build
 ```
 
+## 手机性能 / Mobile performance
+
+触屏设备比赛目标为 60fps，待机 30fps，暂停／菜单 15fps；拖动全局镜头时恢复 60fps。比赛仿真仍使用独立的 60Hz 固定步长。页面隐藏或游戏完全离开视口时停止渲染；进行中的比赛离屏会暂停，返回后点击继续。
+
+Touch devices target 60fps during races and camera interaction, 30fps while idle, and 15fps while paused or in menus. Simulation keeps its independent 60Hz fixed timestep. Hidden/offscreen scenes stop rendering; an offscreen race pauses until resumed.
+
+森林按空间分块剔除视野外实例，保留全部树木、模型、纹理、水面与 2048px 阴影。触屏阴影更新上限为比赛 30Hz、待机／暂停 15Hz；像素比上限仍为 1.75。`window.__DUCK_RUSH__.performance` 提供本地只读诊断（实际渲染帧率、目标帧率、主线程每帧工作时间和阴影更新计数），不代表 GPU 时间或设备温度。
+
+Spatial tree batches preserve all scenery, assets, water shading, 2048px shadows and the 1.75 pixel-ratio cap. Mobile shadows update at up to 30Hz during races and 15Hz otherwise. Read-only local diagnostics in `window.__DUCK_RUSH__.performance` report render pacing and CPU work, not GPU time or temperature.
+
+[Android 模拟器测试记录 / Android emulator measurements](docs/MOBILE-PERFORMANCE.md)
+
 ## 生产部署 / Production deployment
 
 生产站点使用 Cloudflare Workers Static Assets，连接 GitHub 仓库 `HYY-yu/duck-race` 的 `main` 分支自动构建。公开构建只运行 `npm run build`，不会启用本机人工控制模式。

@@ -17,6 +17,7 @@ import {createVoiceLogStore} from './voice-diagnostics';
 import {languagePath,pageLanguage} from './i18n-routing';
 import {trackEvent} from './observability';
 import {installMobileDrawer} from './mobile-drawer';
+import {RenderBudget,type RenderActivity} from './render-budget';
 const MANUAL_MODE=import.meta.env.MODE==='manual'&&import.meta.env.VITE_ENABLE_MANUAL_MODE==='true';
 const icons:Record<string,string>={history:'<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/>',duck:'<path d="M6 13c-3-2-4 0-3 3 1 4 6 5 11 4 4-1 6-4 5-7l-1-2c3-3 1-7-2-7s-5 2-4 5l1 3c-2 2-4 2-7 1Z" fill="currentColor"/><path d="m19 8 4 2-4 1" fill="#e79136"/><circle cx="16" cy="7.5" r=".85" fill="#294b42"/>',globe:'<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c5 5 5 11 0 16-5-5-5-11 0-16Z"/>',focus:'<path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4"/><circle cx="12" cy="12" r="3"/>',arrow:'<path d="M4 12h15m-5-5 5 5-5 5"/>',pause:'<path d="M8 5v14M16 5v14"/>',play:'<path d="m8 5 11 7-11 7Z"/>',reset:'<path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/>',flag:'<path d="M5 21V4c5-5 9 5 14 0v9c-5 5-9-5-14 0"/>',wind:'<path d="M3 8h12a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h7"/>',mountain:'<path d="m2 20 8-15 5 8 3-5 5 12Z"/><path d="m7 11 3 2 3-2"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>',chevron:'<path d="m8 4 8 8-8 8"/>',mouse:'<rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/>',wheel:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6 6l12 12M6 18 18 6"/>',bars:'<path d="M5 3v18M19 3v18M5 8h14M5 16h14"/>',pendulum:'<path d="M3 4h18M12 4l4 11"/><circle cx="17" cy="18" r="3"/>'};
 function icon(name:string,size=17){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.duck}</svg>`}
@@ -83,6 +84,9 @@ const mobileDrawer=installMobileDrawer(app,lang);
 let renderer:THREE.WebGLRenderer;
 try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(error){console.error('[render] WebGL initialization failed',error);trackEvent('asset_failed',{language:lang,asset:'webgl-context'});app.insertAdjacentHTML('beforeend',`<div class="error">${t('webgl')}</div>`);throw error;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;renderer.outputColorSpace=THREE.SRGBColorSpace;
+const renderBudget=new RenderBudget(matchMedia('(pointer: coarse)').matches);
+// Retain full shadow resolution; update the mobile map less often than the color pass.
+renderer.shadowMap.autoUpdate=!renderBudget.mobile;
 const nameBubbles=new DuckNameBubbles();
 const worldView=new World(renderer);worldView.setDucks(race.ducks.length);
 const camera=new THREE.PerspectiveCamera(39,1,.1,1000);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=12;controls.maxDistance=190*COURSE_SCALE;controls.maxPolarAngle=Math.PI*.47;controls.target.set(0,15,0);
@@ -195,8 +199,9 @@ function showHistory(){
  showModal('history',`<div class="eyebrow">DUCK RUSH / LOCAL HISTORY</div><h2>${t('record')}</h2>${history.length?history.map(r=>`<div class="help-row"><b>${new Date(r.date).toLocaleString(lang==='zh'?'zh-CN':'en-GB')}</b>${!r.names?`<div class="result-meta">${dt('legacy')}</div>`:''}${r.course?`<div class="result-meta">${courseLabel(r.course,lang)}</div>`:''}${r.controlled?`<div class="result-meta">${lang==='zh'?'含人工拨水':'Manual steering'}</div>`:''}${r.trackSeed!==undefined?`<div class="result-meta">${lang==='zh'?'地图种子':'Track seed'} · ${r.trackSeed}</div>`:''}${r.drawId?`<div class="result-meta">${escapeHTML(r.drawId)}</div>`:''}<span>${r.results.map((d,i)=>`${i+1}. ${escapeHTML(r.names?.[d.id]??defaultName(d.id))}${r.mode!=='ranking'&&r.names&&i<(r.winnerCount??1)?` [${dt('selected')}]`:''} ${formatTime(d.time)}`).join(' · ')}</span></div>`).join(''):`<p>${t('noRecord')}</p>`}<p>${dt('local')}</p>${history.length?`<button class="copy-button" id="clear-history">${dt('clear')}</button>`:''}`);
  document.querySelector('#clear-history')?.addEventListener('click',()=>{try{localStorage.removeItem('duck-rush-history');console.info('[storage] Local draw history cleared');showHistory();}catch(error){console.warn('[storage] Could not clear history',error);document.querySelector('#clear-history')!.textContent=dt('clearFailed');}});
 }
+let sceneWidth=1,sceneHeight=1;
 let wasCompact=innerWidth<700;
-function resize(){if(wasCompact!==(innerWidth<700)){wasCompact=innerWidth<700;if(mode==='overview')overview();}const el=document.querySelector('#scene')!;const rect=el.getBoundingClientRect();renderer.setSize(rect.width,rect.height);nameBubbles.measure();camera.aspect=rect.width/rect.height;camera.fov=innerWidth<700?48:39;camera.updateProjectionMatrix();}
+function resize(){if(wasCompact!==(innerWidth<700)){wasCompact=innerWidth<700;if(mode==='overview')overview();}const el=document.querySelector('#scene')!;const rect=el.getBoundingClientRect();sceneWidth=rect.width;sceneHeight=rect.height;renderer.setSize(sceneWidth,sceneHeight);nameBubbles.measure();camera.aspect=rect.width/rect.height;camera.fov=innerWidth<700?48:39;camera.updateProjectionMatrix();}
 attach();overview();resize();updateUI();window.addEventListener('resize',resize);
 // Development-only reproducible inspection. This runs the real fixed-step simulation,
 // freezes at a physical event (or continues post-race lake drift) without changing normal races or production builds.
@@ -236,11 +241,26 @@ if(MANUAL_MODE){
 window.addEventListener('blur',()=>{paddleKeys.clear();race.setSteering(-1,0);});
 document.addEventListener('visibilitychange',()=>{paddleKeys.clear();voice?.visibility(document.hidden);race.setSteering(-1,0);});
 renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();if(race.state==='racing'||race.state==='countdown')race.pause();console.warn('[render] WebGL context lost');showModal('error',`<h2>${t('paused')}</h2><p>${t('webgl')}</p>`)});renderer.domElement.addEventListener('webglcontextrestored',()=>{console.info('[render] WebGL context restored');closeModal()});
-document.addEventListener('visibilitychange',()=>{void audio.visibility(!document.hidden);if(document.hidden&&(race.state==='racing'||race.state==='countdown')){race.pause();pausedByVisibility=true;}else if(!document.hidden&&pausedByVisibility){pausedByVisibility=false;updateUI();}});
+document.addEventListener('visibilitychange',()=>{void audio.visibility(!document.hidden&&gameInView);if(document.hidden&&(race.state==='racing'||race.state==='countdown')){race.pause();pausedByVisibility=true;}else if(!document.hidden&&pausedByVisibility){pausedByVisibility=false;updateUI();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalKind)closeModal();if(e.key==='Tab'&&modalKind){const focusable=Array.from(document.querySelectorAll<HTMLElement>('.modal button:not(:disabled),.modal select:not(:disabled),.modal textarea:not(:disabled)'));if(e.shiftKey&&document.activeElement===focusable[0]){e.preventDefault();focusable.at(-1)?.focus()}else if(!e.shiftKey&&document.activeElement===focusable.at(-1)){e.preventDefault();focusable[0]?.focus()}}if(e.code==='Space'&&!modalKind&&!mobileDrawer.isOpen&&e.target===document.body){e.preventDefault();if(race.state==='ready')beginDraw();else race.pause();}});
+let gameInView=true,lastInteraction=0;
+app.addEventListener('pointerdown',()=>{lastInteraction=performance.now();},{passive:true});
+controls.addEventListener('change',()=>{if(mode==='overview')lastInteraction=performance.now();});
+if('IntersectionObserver' in window){
+ const renderVisibility=new IntersectionObserver(entries=>{
+  gameInView=entries[0].isIntersecting;renderBudget.reset();
+  void audio.visibility(gameInView&&!document.hidden);
+  if(!gameInView&&(race.state==='racing'||race.state==='countdown')){race.pause();updateUI();console.info('[render] race paused outside viewport');}
+ },{threshold:0});renderVisibility.observe(app);
+}
 const reduceCameraMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let last=performance.now(),accumulator=0,elapsed=0;const followTarget=new THREE.Vector3(),cameraAim=new THREE.Vector3(),followPosition=new THREE.Vector3();
 function tick(now:number){
+ requestAnimationFrame(tick);
+ if(document.hidden||!gameInView){last=now;accumulator=0;renderBudget.reset();return;}
+ const activity:RenderActivity=modalKind||mobileDrawer.isOpen||race.state==='paused'?'paused':race.state==='ready'&&now-lastInteraction>1500?'idle':'active';
+ if(!renderBudget.shouldRender(now,activity))return;
+ const workStart=performance.now();
  const delta=Math.min((now-last)/1000,.1);last=now;elapsed+=delta;accumulator+=delta;
  const keyboardAxis=MANUAL_MODE?Number(paddleKeys.has('KeyD')||paddleKeys.has('ArrowRight'))-Number(paddleKeys.has('KeyA')||paddleKeys.has('ArrowLeft')):0;
  if(voiceSteering&&now>=voiceSteering.until)voiceSteering=null;
@@ -277,13 +297,15 @@ function tick(now:number){
   followPosition.set(followTarget.x+end.tx*distance-end.tz*distance*.6,followTarget.y+distance*.8,followTarget.z+end.tz*distance+end.tx*distance*.6);
   followCamera.moveTo(camera,followPosition,delta);controls.target.lerp(followTarget,1-Math.exp(-delta*2));stableLookAt(camera,controls.target,delta);
  }else controls.update();
- renderer.render(worldView.scene,camera);nameBubbles.update(camera,worldView.duckMeshes.map((m,id)=>({id,position:m.position})),renderer.domElement.clientWidth,renderer.domElement.clientHeight);audio.update(camera,race,!document.hidden&&!modalKind);
+ const updateShadow=renderBudget.shouldUpdateShadow(now,activity);
+ if(updateShadow)renderer.shadowMap.needsUpdate=true;
+ renderer.render(worldView.scene,camera);nameBubbles.update(camera,worldView.duckMeshes.map((m,id)=>({id,position:m.position})),sceneWidth,sceneHeight);audio.update(camera,race,!document.hidden&&!modalKind);
  if(now-lastUI>120){updateUI();voiceUI();lastUI=now;}
  if(presentation.reveal&&!modalKind){showResults();}
- requestAnimationFrame(tick);
+ renderBudget.record(now,performance.now()-workStart,updateShadow);
 }
 requestAnimationFrame(tick);
 console.info('[app] ready',{renderer:renderer.capabilities.isWebGL2?'WebGL2':'WebGL',trackLength:TRACK_LENGTH,course:MOUNTAIN_COURSE?'mountain':'long',trackSeed:TRACK_SEED,manualMode:MANUAL_MODE,controlled:race.controlled});
 trackEvent('game_ready',{language:lang,renderer:renderer.capabilities.isWebGL2?'WebGL2':'WebGL',course:currentTrack,sinceNavigationMs:Math.round(performance.now())});
 // Read-only diagnostics for automated acceptance and future observability integrations.
-Object.defineProperty(window,'__DUCK_RUSH__',{get:()=>({state:race.state,time:race.time,course:MOUNTAIN_COURSE?'mountain':'long',trackSeed:TRACK_SEED,manualMode:MANUAL_MODE,controlled:race.controlled,trackLength:TRACK_LENGTH,drawId:activeDraw?.id,entryCount:participants.length,count:race.ducks.length,seed:race.seed,results:race.results.map(d=>({id:d.id,time:d.finish})),camera:mode,selected,voiceLogs:voiceLogs?.entries??[],cameraDistance:camera.position.distanceTo(controls.target),cameraAvoided:followCamera.avoided,cameraClear:followCamera.clear,cameraStep:followCamera.lastStep,cameraRouteChanges:followCamera.routeChanges,arrivalView,arrivalSeconds:finishPresentation.age,resultsShown:finishPresentation.shown,audio:audio.diagnostics,audience:worldView.audienceState,effects:worldView.effects.diagnostics,feedback:feedback.notices,physics:race.ducks.map(d=>({id:d.id,s:d.s,x:world(d.s,d.lane).x,z:world(d.s,d.lane).z,y:d.y,airborne:d.airborne,pitch:d.pitch,roll:d.roll,yaw:d.yaw,landings:d.landings,hits:d.hits,entrySpeed:d.entrySpeed})),generatedAssets:{ready:worldView.generatedReady,coreReady:worldView.generatedAssets.has('duck')&&!worldView.generatedAssets.diagnostics.attachmentFailed.includes('duck'),stage:worldView.generatedStage,...worldView.generatedAssets.diagnostics},drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});
+Object.defineProperty(window,'__DUCK_RUSH__',{get:()=>({state:race.state,time:race.time,course:MOUNTAIN_COURSE?'mountain':'long',trackSeed:TRACK_SEED,manualMode:MANUAL_MODE,controlled:race.controlled,trackLength:TRACK_LENGTH,drawId:activeDraw?.id,entryCount:participants.length,count:race.ducks.length,seed:race.seed,results:race.results.map(d=>({id:d.id,time:d.finish})),camera:mode,selected,voiceLogs:voiceLogs?.entries??[],cameraDistance:camera.position.distanceTo(controls.target),cameraAvoided:followCamera.avoided,cameraClear:followCamera.clear,cameraStep:followCamera.lastStep,cameraRouteChanges:followCamera.routeChanges,arrivalView,arrivalSeconds:finishPresentation.age,resultsShown:finishPresentation.shown,audio:audio.diagnostics,audience:worldView.audienceState,effects:worldView.effects.diagnostics,feedback:feedback.notices,physics:race.ducks.map(d=>({id:d.id,s:d.s,x:world(d.s,d.lane).x,z:world(d.s,d.lane).z,y:d.y,airborne:d.airborne,pitch:d.pitch,roll:d.roll,yaw:d.yaw,landings:d.landings,hits:d.hits,entrySpeed:d.entrySpeed})),generatedAssets:{ready:worldView.generatedReady,coreReady:worldView.generatedAssets.has('duck')&&!worldView.generatedAssets.diagnostics.attachmentFailed.includes('duck'),stage:worldView.generatedStage,...worldView.generatedAssets.diagnostics},performance:{...renderBudget.diagnostics,pixelRatio:renderer.getPixelRatio(),inView:gameInView},drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});

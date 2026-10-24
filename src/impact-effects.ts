@@ -6,11 +6,15 @@ type Drop={x:number;y:number;z:number;vx:number;vy:number;vz:number;born:number;
 /** Gameplay emits deterministic contacts/landings; this bounded render-only pool
  * consumes them once. Reset and pause never replay a previous splash. */
 export class ImpactEffects {
+ private lastTime=NaN;
  private droplets=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshBasicMaterial({color:0xffffff}),720);private dummy=new THREE.Object3D();private tint=new THREE.Color();
  private field=new ParticleField(720);private particles:(Drop|undefined)[]=Array(720);private cursor=0;private lastSeq=0;private generation=-1;private rings:{mesh:THREE.Mesh;crown:THREE.Mesh;born:number;life:number;size:number}[]=[];private ringCursor=0;
  constructor(scene:THREE.Scene){this.droplets.name='impact-water-and-hit-droplets';this.droplets.frustumCulled=false;this.droplets.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(this.field.object,this.droplets);for(let i=0;i<24;i++){const mesh=new THREE.Mesh(new THREE.RingGeometry(.83,1,48),new THREE.MeshBasicMaterial({color:'#eafff5',transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));mesh.rotation.x=-Math.PI/2;mesh.visible=false;scene.add(mesh);const crownGeo=new THREE.CylinderGeometry(1,.4,1,28,2,true);const pos=crownGeo.attributes.position;for(let k=0;k<pos.count;k++){const y=pos.getY(k)+.5,angle=Math.atan2(pos.getZ(k),pos.getX(k));pos.setY(k,y*(.72+.28*Math.sin(angle*9.+.3)**2));}crownGeo.computeVertexNormals();const crown=new THREE.Mesh(crownGeo,new THREE.MeshBasicMaterial({color:'#ecfff6',transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));crown.visible=false;scene.add(crown);this.rings.push({mesh,crown,born:-99,life:1,size:1});}}
  get diagnostics(){return {active:this.particles.filter(Boolean).length,consumed:this.lastSeq};}
  update(race:Race){
+  // Particle transforms depend on race time only; a paused draw never changes them.
+  if(race.generation===this.generation&&race.time===this.lastTime)return;
+  this.lastTime=race.time;
   if(race.generation!==this.generation){this.generation=race.generation;this.lastSeq=0;this.particles.fill(undefined);this.rings.forEach(r=>{r.mesh.visible=false;r.crown.visible=false;});}
   for(const e of race.events){if(e.seq<=this.lastSeq)continue;this.lastSeq=e.seq;if(race.time-e.time>.15)continue;
    const p=world(e.s,e.lane),f=sample(e.s),landing=e.kind==='landing',strength=Math.min(1.8,Math.max(.65,e.strength/7)),gold=e.kind==='contact';const count=landing?110:gold?30:8;

@@ -1,0 +1,312 @@
+{
+  "date": "2026-10-24",
+  "baselineCommit": "42fd0fd",
+  "environment": {
+    "emulator": "37.2.12.0",
+    "avd": "Medium_Phone_API_37.0",
+    "api": 37,
+    "cores": 4,
+    "ramMB": 4096,
+    "display": "1080x2400 @ 420dpi",
+    "hostGPU": "Apple M4",
+    "backend": "host GLES, Vulkan and GuestAngle disabled",
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36"
+  },
+  "method": "15 second foreground samples; paired races use the same local benchmark entropy seed, 6 participants for mountain and 12 for long, sampling starts at race time >=6s. Baseline is uncapped, therefore rAF fps equals render fps; optimized render fps uses frame counter deltas. CPU TaskDuration is a main-thread proxy, not device power. Per-frame triangles exclude shadow passes, as Three resets renderer.info after shadows. Audio was suspended in paired samples.",
+  "samples": [
+    {
+      "scenario": "mountain-6",
+      "version": "baseline",
+      "durationMs": 15000.000000000002,
+      "renderFps": 43.133333333333326,
+      "rafFps": 43.133333333333326,
+      "rafP95Ms": 33.400000000001455,
+      "browser": {
+        "taskTimeMs": 2731.4629999999997,
+        "scriptTimeMs": 1798.225,
+        "layoutTimeMs": 163.50799999999998,
+        "heapUsedMB": 30.129066467285156
+      },
+      "triangles": 15307216,
+      "drawCalls": 223,
+      "seed": 110225632,
+      "raceTime": 21.100000000000083,
+      "entries": 6,
+      "audio": {
+        "enabled": false,
+        "context": "suspended",
+        "voices": 0,
+        "loops": 3
+      },
+      "viewport": {
+        "width": 411,
+        "height": 810,
+        "dpr": 2.625
+      },
+      "render": null
+    },
+    {
+      "scenario": "mountain-6",
+      "version": "optimized",
+      "durationMs": 15000.000000000004,
+      "renderFps": 60.06666666666665,
+      "rafFps": 59.999999999999986,
+      "rafP95Ms": 16.700000000000728,
+      "browser": {
+        "taskTimeMs": 3653.577,
+        "scriptTimeMs": 2622.935,
+        "layoutTimeMs": 142.089,
+        "heapUsedMB": 17.450965881347656
+      },
+      "triangles": 1806356,
+      "drawCalls": 247,
+      "seed": 110225632,
+      "raceTime": 21.100000000000083,
+      "entries": 6,
+      "audio": {
+        "enabled": false,
+        "context": "suspended",
+        "voices": 0,
+        "loops": 3
+      },
+      "viewport": {
+        "width": 411,
+        "height": 810,
+        "dpr": 2.625
+      },
+      "render": {
+        "mobile": true,
+        "targetFps": 60,
+        "frames": 1655,
+        "fps": 60,
+        "averageWorkMs": 2.8349999999976716,
+        "shadowUpdates": 832,
+        "pixelRatio": 1.75,
+        "inView": true
+      }
+    },
+    {
+      "scenario": "long-12",
+      "version": "baseline",
+      "durationMs": 15016.7,
+      "renderFps": 59.999866814946024,
+      "rafFps": 59.999866814946024,
+      "rafP95Ms": 16.700000000004366,
+      "browser": {
+        "taskTimeMs": 4412.315,
+        "scriptTimeMs": 2976.701,
+        "layoutTimeMs": 209.631,
+        "heapUsedMB": 26.25292205810547
+      },
+      "triangles": 1995938,
+      "drawCalls": 253,
+      "seed": 2146095206,
+      "raceTime": 21.11666666666675,
+      "entries": 12,
+      "audio": {
+        "enabled": false,
+        "context": "suspended",
+        "voices": 0,
+        "loops": 3
+      },
+      "viewport": {
+        "width": 411,
+        "height": 810,
+        "dpr": 2.625
+      },
+      "render": null
+    },
+    {
+      "scenario": "long-12",
+      "version": "optimized",
+      "durationMs": 15000,
+      "renderFps": 59.93333333333333,
+      "rafFps": 59.86666666666667,
+      "rafP95Ms": 16.700000000000728,
+      "browser": {
+        "taskTimeMs": 4168.26,
+        "scriptTimeMs": 2782.294,
+        "layoutTimeMs": 170.867,
+        "heapUsedMB": 55.63770294189453
+      },
+      "triangles": 1281730,
+      "drawCalls": 265,
+      "seed": 2146095206,
+      "raceTime": 21.100000000000083,
+      "entries": 12,
+      "audio": {
+        "enabled": false,
+        "context": "suspended",
+        "voices": 0,
+        "loops": 3
+      },
+      "viewport": {
+        "width": 411,
+        "height": 810,
+        "dpr": 2.625
+      },
+      "render": {
+        "mobile": true,
+        "targetFps": 60,
+        "frames": 1621,
+        "fps": 60,
+        "averageWorkMs": 3.1083333333284826,
+        "shadowUpdates": 813,
+        "pixelRatio": 1.75,
+        "inView": true
+      }
+    },
+    {
+      "scenario": "mountain-idle",
+      "version": "baseline",
+      "durationMs": 15000.099999999999,
+      "renderFps": 39.06640622395851,
+      "rafFps": 39.06640622395851,
+      "rafP95Ms": 50,
+      "browser": {
+        "taskTimeMs": 2437.2760000000003,
+        "scriptTimeMs": 2085.262,
+        "layoutTimeMs": 32.534,
+        "heapUsedMB": 14.386119842529297
+      },
+      "triangles": 15404630,
+      "drawCalls": 283,
+      "seed": 0,
+      "raceTime": 0,
+      "entries": 6,
+      "audio": {
+        "enabled": false,
+        "context": "uninitialized",
+        "voices": 0,
+        "loops": 0
+      },
+      "viewport": {
+        "width": 411,
+        "height": 810,
+        "dpr": 2.625
+      },
+      "render": null
+    },
+    {
+      "scenario": "mountain-idle",
+      "version": "optimized",
+      "durationMs": 15000,
+      "renderFps": 30.066666666666666,
+      "rafFps": 60,
+      "rafP95Ms": 16.700000000000728,
+      "browser": {
+        "taskTimeMs": 1507.222,
+        "scriptTimeMs": 1271.409,
+        "layoutTimeMs": 18.84,
+        "heapUsedMB": 18.830883026123047
+      },
+      "triangles": 11595306,
+      "drawCalls": 535,
+      "seed": 0,
+      "raceTime": 0,
+      "entries": 6,
+      "audio": {
+        "enabled": false,
+        "context": "uninitialized",
+        "voices": 0,
+        "loops": 0
+      },
+      "viewport": {
+        "width": 411,
+        "height": 810,
+        "dpr": 2.625
+      },
+      "render": {
+        "mobile": true,
+        "targetFps": 30,
+        "frames": 863,
+        "fps": 30,
+        "averageWorkMs": 2.753333333338378,
+        "shadowUpdates": 432,
+        "pixelRatio": 1.75,
+        "inView": true
+      }
+    }
+  ],
+  "paused": {
+    "durationMs": 6016.600000000002,
+    "rafFps": 60.000664827311084,
+    "renderFps": 14.95861449988365,
+    "rafP95Ms": 16.700000000000728,
+    "shadowUpdatesPerSecond": 14.95861449988365,
+    "course": "mountain",
+    "seed": 110225632,
+    "state": "paused",
+    "raceTime": 6.099999999999984,
+    "entries": 6,
+    "drawCalls": 186,
+    "triangles": 3674168,
+    "generatedAssetsReady": true,
+    "render": {
+      "mobile": true,
+      "targetFps": 15,
+      "frames": 943,
+      "fps": 15,
+      "averageWorkMs": 2.566666666655025,
+      "shadowUpdates": 523,
+      "pixelRatio": 1.75,
+      "inView": true
+    },
+    "viewport": {
+      "width": 411,
+      "height": 810,
+      "dpr": 2.625
+    },
+    "userAgent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",
+    "browser": {
+      "taskTimeMs": 383.925,
+      "scriptTimeMs": 253.776,
+      "layoutTimeMs": 14.901,
+      "heapUsedMB": 38.98442077636719
+    }
+  },
+  "offscreen": {
+    "scrollY": 1009.90478515625,
+    "appBottom": -199.61907958984375,
+    "inView": false,
+    "framesOverTwoSeconds": 0,
+    "state": "paused",
+    "timeAdvanced": 0
+  },
+  "thermalMeasurement": null,
+  "limitations": [
+    "Emulator fps does not establish physical-device fps, temperature, power, or thermal throttling.",
+    "Samples are short windows, not a long-duration thermal or memory soak.",
+    "Triangle and draw-call fields are endpoint snapshots, not averages.",
+    "Original host Vulkan, Guest ANGLE, and SwiftShader attempts were invalid and excluded.",
+    "One foreground Chrome process exited with SIGKILL (status 9) during audio follow-up; Android recorded no ANR or crash trace and the cause is unconfirmed. Chrome was reopened and audio visibility checks passed; the interrupted attempt is excluded from samples."
+  ],
+  "audioVisibility": {
+    "playing": {
+      "enabled": true,
+      "context": "running",
+      "voices": 0,
+      "loops": 3
+    },
+    "offscreen": {
+      "audio": {
+        "enabled": true,
+        "context": "suspended",
+        "voices": 0,
+        "loops": 3
+      },
+      "state": "paused",
+      "inView": false
+    },
+    "returned": {
+      "audio": {
+        "enabled": true,
+        "context": "running",
+        "voices": 0,
+        "loops": 3
+      },
+      "state": "paused",
+      "inView": true
+    }
+  }
+}
