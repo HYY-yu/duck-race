@@ -1,5 +1,18 @@
 # Duck Rush 验证记录
 
+## Cloudflare Workers 正式上线 · 2026-10-24
+
+- 正式域名为 `https://duckracepicker.com`；Cloudflare 提供权威 DNS、TLS、代理/CDN 与 Workers Static Assets 托管。GitHub `HYY-yu/duck-race` 的 `main` 分支已连接自动构建。
+- Cloudflare 生产构建运行 `npm run build`，`SITE_URL=https://duckracepicker.com`；构建与 SEO 自检通过，Wrangler 读取 46 个发布文件并上传 35 个新增或变化资源。发布 Worker 版本为 `83604a68-12f9-4050-a4db-f0022810431b`。
+- 浏览器实际访问正式根域名、`/en/` 与 `/zh/`；中英文静态正文与 3D 场景均可加载，公开页面只显示自动竞速入口。HTTPS 已生效。
+- HTTP 验收：英文页、`robots.txt`、`sitemap.xml` 与核心 `models/duck.glb` 均为 200；GLB 使用 `model/gltf-binary`；canonical、hreflang、OG 与 sitemap URL 全部指向 `https://duckracepicker.com`。
+- 未知路径返回正确的 HTTP 404，但 Cloudflare 尚未配置 `assets.not_found_handling = "404-page"`，因此线上响应正文为空，未使用仓库内的品牌 `404.html`。
+- Cloudflare Static Assets 当前保留默认 `Cache-Control: public, max-age=0, must-revalidate`；边缘缓存可命中，尚未为带 hash 的 `/assets/` 增加 immutable 浏览器缓存。
+- Worker 默认地址 `https://duckracepicker.feng950704.workers.dev` 仍可访问；正式页面 canonical 指向自定义域，接入 Search Console 前仍应关闭该生产 URL，或增加 `X-Robots-Tag: noindex`。
+- 仍未验证：真实 Android/iPhone、社交平台线上抓图、Search Console、远程产品分析、线上排名/流量和真实用户 Core Web Vitals。
+
+以下条目是各日期当时的实现与验证快照；其中“未部署”等表述描述的是对应历史轮次，不覆盖上述当前生产状态。
+
 ## 公开纯自动构建与本机人工 Flag · 2026-10-23
 
 - 默认 `npm run build` 关闭 `VITE_ENABLE_MANUAL_MODE`：不渲染麦克风、语音日志或人工控制入口，不注册 A/D 与左右方向键的拨水输入；跟随小鸭保留为纯观看镜头。
@@ -33,7 +46,7 @@
 - 390×844、4× CPU、约 1.6 Mbps/100 ms 延迟的模拟移动环境：FCP 约 568 ms、LCP 约 2.32 s、CLS 0；程序化 3D 场景约 7.66 s 可用时 GLB 批次仍未完成，点击开始后约 37 ms 进入 countdown，证明模型延迟加载不阻止开赛。此为桌面浏览器模拟，不替代真实手机、发热和 GPU 测试。
 - 浏览器分别检查英文、中文直接 URL、刷新后的语言/赛道/种子、桌面 1285×1093、手机 390×844、实际开赛、玩法页、隐私页和自定义 404。禁用 JavaScript 后，H1、产品说明、步骤、规则、FAQ 与内部链接仍可阅读。
 - 当时 `npm test`：79/79 通过；favicon 与可视化检查后为 80/80；当前公开自动模式构建边界测试后为 81/81。覆盖语言 URL、参数保留、absolute SEO 输出开关、sitemap 边界和静态正文/结构化数据测试。`npm run build` 通过并执行生产 HTML/JS 自检；保留 Three.js chunk 超过 500 kB 的提示。
-- 未验证：真实 Android/iPhone、线上域名与托管规则、Search Console、社交平台线上抓图、真实用户数据、线上排名/流量和真实用户 Core Web Vitals。完整策略与上线清单见 `docs/SEO.md`。
+- 截至 2026-10-23 该轮未验证真实 Android/iPhone、线上域名与托管规则、Search Console、社交平台线上抓图、真实用户数据、线上排名/流量和真实用户 Core Web Vitals；2026-10-24 的生产部署结果见本文顶部。完整策略与上线清单见 `docs/SEO.md`。
 
 ## 移除中签人数 · 2026-10-22
 

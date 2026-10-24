@@ -318,18 +318,18 @@
 
       <section class="section" id="launch">
         <div class="section-head reveal">
-          <div><div class="section-index">05 · 上线闸门</div><h2>代码就绪，上线还差真实环境。</h2></div>
-          <p class="section-lede">这不是“SEO 已完成”的终点，而是一套可测量的首发基线。当前不能声称已收录、已有排名、已有流量或通过线上 Core Web Vitals。</p>
+          <div><div class="section-index">05 · 上线闸门</div><h2>生产已上线，增长还差真实数据。</h2></div>
+          <p class="section-lede">正式域名与基础托管已经可用，但这不是“SEO 已完成”的终点。当前不能声称已收录、已有排名、已有流量或通过线上 Core Web Vitals。</p>
         </div>
         <div class="launch-board reveal">
-          <div class="launch-score"><div class="score-ring"><strong>4<small>/6</small></strong></div><p class="score-caption">六个上线闸门中，四个代码与本地验收项已完成；剩余两个是域名、托管、隐私主体、真机和 Search Console 等外部条件。</p></div>
+          <div class="launch-score"><div class="score-ring"><strong>4<small>/6</small></strong></div><p class="score-caption">双语内容、技术 SEO、观测适配层和正式域名基础托管已完成；品牌 404/缓存/安全头与真实增长数据仍待闭环。</p></div>
           <div>
             <ol class="gate-list">
               <li class="gate"><span class="gate-status">Ready</span><div><h3>双语静态内容</h3><p>独立 URL、title、description、H1、帮助、隐私与正常内部链接。</p></div><code>/en/ · /zh/</code></li>
               <li class="gate"><span class="gate-status">Ready</span><div><h3>技术 SEO 输出</h3><p>SITE_URL 驱动 canonical、hreflang、OG、robots 和 sitemap；参数组合不扩索引。</p></div><code>vite build</code></li>
-              <li class="gate"><span class="gate-status">Ready</span><div><h3>失败降级与 404</h3><p>WebGL/JS 失败仍可读；未知路径返回自定义页面和 HTTP 404。</p></div><code>404.html</code></li>
+              <li class="gate wait"><span class="gate-status">Partial</span><div><h3>失败降级与 404</h3><p>WebGL/JS 失败仍可读；未知路径返回 HTTP 404，但 Cloudflare 尚未返回仓库内的品牌 404 正文。</p></div><code>not_found_handling</code></li>
               <li class="gate"><span class="gate-status">Ready</span><div><h3>观测适配层</h3><p>访问、语言、加载、开赛、完赛、资源失败与 Web Vitals；不含真实名单或结果明细。</p></div><code>observability.ts</code></li>
-              <li class="gate wait"><span class="gate-status">Waiting</span><div><h3>真实域名与托管规则</h3><p>填写 HTTPS SITE_URL、目录索引、缓存、压缩、安全头和真实 404 映射。</p></div><code>SITE_URL</code></li>
+              <li class="gate"><span class="gate-status">Ready</span><div><h3>正式域名与基础托管</h3><p>duckracepicker.com 已通过 Cloudflare Workers 上线；HTTPS、目录索引、SEO URL 与模型 MIME 已验证。</p></div><code>Cloudflare Workers</code></li>
               <li class="gate wait"><span class="gate-status">Waiting</span><div><h3>线上验证闭环</h3><p>真实 Android/iPhone、运营主体信息、Search Console、分享抓图与真实用户 CWV。</p></div><code>post-launch</code></li>
             </ol>
             <div class="final-call"><h3>上线后只看两组事实。</h3><p>Search Console 的国家、查询、页面曝光与点击，结合不含姓名的开赛/完赛数据。曝光不等于使用，KD 不等于排名，搜索量不等于可获流量。</p></div>
@@ -338,7 +338,7 @@
       </section>
     </main>
 
-    <footer><strong>Duck Rush · SEO Launch Map</strong><span>数据快照 2026-10-23 · 详细规范见 docs/SEO.md · 本页 noindex</span></footer>
+    <footer><strong>Duck Rush · SEO Launch Map</strong><span>数据快照 2026-10-24 · 详细规范见 docs/SEO.md · 本页 noindex</span></footer>
   </div>
 
   <script>

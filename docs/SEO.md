@@ -1,8 +1,20 @@
 # Duck Rush SEO 上线说明
 
-更新日期：2026-10-23。当前实现以仓库根目录的 Duck Rush 为准；`archive/duck-circuit` 中的内容只作为历史研究背景。
+更新日期：2026-10-24。当前实现以仓库根目录的 Duck Rush 为准；`archive/duck-circuit` 中的内容只作为历史研究背景。
 
 图形化版本：[SEO 上线作战图](seo-launch-visual.html)。该页面是项目内的 `noindex` 可视化交付，不属于公开 SEO 页面范围。
+
+## 当前生产状态
+
+- 正式域名：`https://duckracepicker.com`，根路径为手动语言选择入口。
+- 托管：Cloudflare Workers Static Assets；Cloudflare 同时提供权威 DNS、TLS、代理与 CDN。
+- 源码与自动构建：GitHub `HYY-yu/duck-race` 的 `main` 分支；构建命令为 `npm run build`，部署命令为 `npx wrangler deploy --assets ./dist/ --name duckracepicker --compatibility-date 2026-10-24`。
+- 构建变量：`SITE_URL=https://duckracepicker.com`。2026-10-24 的线上产物已验证 canonical、hreflang、Open Graph URL、`robots.txt` 与 `sitemap.xml` 全部使用正式 origin。
+- 线上验收：`/`、`/en/`、`/zh/`、玩法页和隐私页可直接访问；英文与中文 3D 场景可加载；核心 GLB 返回 `200 model/gltf-binary`；HTTPS 已生效。
+- Worker 默认地址 `https://duckracepicker.feng950704.workers.dev` 仍可访问。正式页面 canonical 指向自定义域，但接入 Search Console 前仍应关闭该生产 URL，或对其增加 `X-Robots-Tag: noindex`。
+- 当前未知路径返回正确的 HTTP 404，但 Cloudflare 尚未启用 `assets.not_found_handling = "404-page"`，因此线上没有返回仓库内的品牌 `404.html` 正文。
+- Cloudflare Static Assets 当前使用默认浏览器缓存策略 `public, max-age=0, must-revalidate`；边缘缓存可命中，但尚未给带 hash 的 `/assets/` 配置 immutable 浏览器缓存。
+- 尚未接入 Google Search Console、远程产品分析、会话回放或错误追踪；没有线上真实用户排名、流量或 Core Web Vitals 数据。
 
 ## 定位与首轮验证市场
 
@@ -64,7 +76,7 @@ Googlebot 与用户在英文、中文主页都应直接看到同一组可验证�
 
 人工拨水和语音控制只保留在本机专用构建：`npm run dev:manual` / `npm run build:manual` 读取 Git 忽略的 `.env.manual.local`。默认 `npm run build` 不渲染麦克风或语音日志、不请求麦克风权限、不注册拨水按键。人工模式不得出现在公开 SEO 文案、结构化数据或部署产物中。
 
-公开隐私说明聚焦浏览器内存与 `localStorage`：姓名和最近 10 场历史默认留在当前浏览器。公开上线前仍需补充运营主体、托管商、联系渠道和实际分析服务。
+公开隐私说明聚焦浏览器内存与 `localStorage`：姓名和最近 10 场历史默认留在当前浏览器。页面已写明正式域名和 Cloudflare 托管边界；运营主体、公开联系渠道、服务保留周期和未来分析服务的同意要求仍待补充。
 
 ## URL、canonical 与 hreflang
 
@@ -74,11 +86,10 @@ Googlebot 与用户在英文、中文主页都应直接看到同一组可验证�
 - `SITE_URL` 是唯一生产域名配置。构建时只有设置真实 HTTPS origin 才输出 absolute canonical、hreflang、社交图片 URL 和 `sitemap.xml`。
 - 未设置 `SITE_URL` 时，构建会明确 Warn，并移除这些 absolute 标签，避免把 localhost、示例域名或占位符发布为生产 URL。
 
-示例配置不提供虚假域名：
+生产配置：
 
 ```bash
 cp .env.example .env
-# 在 .env 的 SITE_URL= 后填写实际 HTTPS origin
 npm run build
 ```
 
@@ -96,7 +107,7 @@ npm run build
 - WebGL/JavaScript 未启动时仍显示真实产品预览、H1、启动说明，并可阅读游戏下方全部说明以及独立玩法和隐私页。
 - Three.js 只替换 `#app` 游戏区域，不覆盖游戏下方的静态正文。
 - 根路径是手动语言选择页，不按 IP 强制跳转。
-- `404.html` 包含返回中英文主页的正常链接，并声明 `noindex,follow`。托管平台必须为未知地址返回该文件和 HTTP 404，不能把所有未知地址以 HTTP 200 重写到游戏主页。
+- `404.html` 包含返回中英文主页的正常链接，并声明 `noindex,follow`。Cloudflare 当前对未知地址返回 HTTP 404，但响应正文为空；启用 Workers Static Assets 的 `not_found_handling = "404-page"` 后，才会返回仓库内的品牌 404 页面。不能把所有未知地址以 HTTP 200 重写到游戏主页。
 
 结构化数据使用 `WebApplication`，只列出页面可见且已实现的能力。没有评分、评论、价格、用户数或组织信息，也不承诺任何富媒体搜索结果。
 
@@ -149,17 +160,17 @@ npm run build
 
 ## 上线检查清单
 
-- [ ] 确定真实生产域名并设置 `SITE_URL`，重新运行 `npm run build`。
-- [ ] 只部署默认 `npm run build` 的 `dist/`；不得部署 `npm run build:manual` 产物，并确认 `window.__DUCK_RUSH__.manualMode === false`。
-- [ ] 检查产物中的 canonical、hreflang、Open Graph URL、`robots.txt` 与 `sitemap.xml` 均使用同一 HTTPS origin。
-- [ ] 配置静态托管的目录索引，使 `/en/`、`/zh/`、玩法页和隐私页可直接访问并刷新。
-- [ ] 配置未知路径返回 `404.html` 且 HTTP 状态为 404；不要使用全站 SPA 200 回退。
+- [x] 使用真实生产域名 `https://duckracepicker.com` 设置 `SITE_URL` 并完成 Cloudflare 生产构建。
+- [x] 只部署默认 `npm run build` 的 `dist/`；公开页面未出现麦克风、语音日志或人工拨水入口。
+- [x] 检查线上 canonical、hreflang、Open Graph URL、`robots.txt` 与 `sitemap.xml` 均使用同一 HTTPS origin。
+- [x] 验证 `/en/`、`/zh/`、玩法页和隐私页可直接访问；中英文 3D 场景可加载。
+- [ ] 配置未知路径返回仓库内的 `404.html` 且保持 HTTP 404；当前状态码正确但响应正文为空。
 - [ ] 配置长期缓存：带 hash 的 `/assets/` 可 immutable；HTML、`robots.txt`、`sitemap.xml` 使用较短缓存并可更新。
-- [ ] 补充隐私页中的运营主体、联系渠道、托管商与实际保留策略。
+- [ ] 补充隐私页中的运营主体、联系渠道和实际保留策略；Cloudflare 托管信息已更新。
 - [ ] 在真实 Android 与 iPhone 上测量加载、开始比赛耗时、交互响应、布局稳定性、帧率、发热和声音/麦克风权限。
-- [ ] 在生产域名检查 WebGL/模型失败降级、CSP、MIME、压缩、HTTPS 和安全响应头。
+- [ ] 完成 CSP 与安全响应头检查；正式域名 HTTPS、中英文 WebGL 加载和 GLB MIME 已验证。
 - [ ] 验证分享图在常用社交平台的抓取与裁切。
 - [ ] 接入 Search Console，提交 sitemap，检查中英文页索引、国家、查询、页面曝光和点击。
 - [ ] 把 Search Console 数据与不含姓名的开赛/完赛事件结合评估，不把曝光当作开赛，也不保证排名或流量。
 
-当前没有生产域名、托管规则、Search Console 权限、线上真实用户数据或线上 Core Web Vitals，因此这些项目均未宣称已验证。
+当前已有正式域名、Cloudflare 托管和基础线上验收；仍没有 Search Console 权限、远程产品分析、真实用户 Core Web Vitals、线上排名或流量证据，因此不得宣称已收录、已有排名或已有增长。

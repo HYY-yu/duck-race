@@ -29,9 +29,9 @@
 
     <section><h2>剪贴板、声音与模型资源</h2><p>只有点击“复制结果”时，Duck Rush 才会尝试把冲线顺序写入剪贴板。声音由应用生成且默认关闭。随项目发布的 3D 模型会在可玩场景启动后从同一站点加载，不依赖第三方字体或模型 CDN。</p></section>
 
-    <section><h2>诊断与观测</h2><p>当前应用会按 Debug、Info、Warn、Error 级别向浏览器控制台记录资源加载、比赛状态、可恢复的存储问题与异常。轻量观测适配层记录页面语言、赛道、游戏加载、汇总参与人数、完赛耗时、Web Vitals 和资源失败；设计上不包含真实姓名、复制结果或未经筛选的完整 URL/查询参数。</p><p>本仓库尚未配置远程分析平台。生产运营方以后可以连接适配层；如果采集内容或发送目的地发生变化，必须在部署前同步更新本页。</p></section>
+    <section><h2>诊断与观测</h2><p>当前应用会按 Debug、Info、Warn、Error 级别向浏览器控制台记录资源加载、比赛状态、可恢复的存储问题与异常。轻量观测适配层记录页面语言、赛道、游戏加载、汇总参与人数、完赛耗时、Web Vitals 和资源失败；设计上不包含真实姓名、复制结果或未经筛选的完整 URL/查询参数。</p><p>截至 2026 年 10 月 24 日，生产站点尚未配置远程产品分析、会话回放或错误追踪目的地。如果采集范围或发送目的地发生变化，必须在上线该变化前同步更新本页。</p></section>
 
-    <section><h2>托管与未来服务</h2><p>最终托管服务商可能处理 IP 地址、请求头、安全日志等常规交付数据。当前尚未确定生产域名与托管商，因此无法在此给出对应保留周期和联系信息；Search Console 也尚未接入。</p><p>公开上线前必须补充运营主体、联系渠道、托管信息、适用的保留周期，以及任何分析或同意要求。</p></section>
+    <section><h2>生产托管与外部服务</h2><p>Duck Rush 已发布在 <a href="https://duckracepicker.com">duckracepicker.com</a>，使用 Cloudflare Workers Static Assets 托管。Cloudflare 同时提供权威 DNS、TLS、代理、CDN 分发和相关安全服务。Cloudflare 可能按照其<a href="https://www.cloudflare.com/privacypolicy/" rel="external">隐私政策</a>处理 IP 地址、请求头、网络诊断以及安全或交付日志；Duck Rush 无法控制 Cloudflare 的保留周期。</p><p>截至 2026 年 10 月 24 日，Google Search Console 与远程产品分析平台尚未接入。运营主体、公开联系渠道，以及未来服务对应的保留或同意说明，仍需在接入这些服务前公布。</p></section>
 
     <section><h2>URL 参数</h2><p><code>track</code> 与 <code>seed</code> 用于描述赛道状态。Duck Rush 不会把参与者姓名写入 URL。不要手动把个人信息添加到 URL，因为它可能出现在浏览器历史、服务器日志和分享链接中。</p><a class="text-link" href="/zh/">返回 Duck Rush →</a></section>
   </main>

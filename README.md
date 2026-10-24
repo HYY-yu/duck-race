@@ -4,6 +4,8 @@
 
 A 3D duck race name picker built with TypeScript, Three.js, and Vite. Enter names, watch the ducks race downstream, and get results in finish order.
 
+线上地址 / Live site: [https://duckracepicker.com](https://duckracepicker.com)
+
 ## 特性 / Features
 
 - 支持 2–12 位参与者与自定义鸭子颜色 / 2–12 participants with custom duck colors
@@ -29,8 +31,21 @@ npm run build    # 构建到 dist/ / Build to dist/
 npm run preview  # 预览构建 / Preview the build
 ```
 
-部署前在 `.env` 中设置 `SITE_URL=https://你的域名`，然后构建并静态托管 `dist/`。
-Before deploying, set `SITE_URL` to your HTTPS origin in `.env`, then build and serve `dist/` with a static host.
+## 生产部署 / Production deployment
+
+生产站点使用 Cloudflare Workers Static Assets，连接 GitHub 仓库 `HYY-yu/duck-race` 的 `main` 分支自动构建。公开构建只运行 `npm run build`，不会启用本机人工控制模式。
+
+The production site uses Cloudflare Workers Static Assets and builds automatically from the `main` branch of `HYY-yu/duck-race`. Production runs only `npm run build`; the local manual-control mode is never enabled.
+
+```text
+SITE_URL=https://duckracepicker.com
+Build command: npm run build
+Deploy command: npx wrangler deploy --assets ./dist/ --name duckracepicker --compatibility-date 2026-10-24
+```
+
+`SITE_URL` 负责生成正式 canonical、hreflang、Open Graph URL、`robots.txt` 和 `sitemap.xml`。Cloudflare 的构建变量中已经配置该值；其他部署环境必须显式提供自己的 HTTPS origin。
+
+`SITE_URL` generates production canonical, hreflang, Open Graph URLs, `robots.txt`, and `sitemap.xml`. It is configured as a Cloudflare build variable; other deployment environments must explicitly provide their own HTTPS origin.
 
 ## 开源协议 / License
 

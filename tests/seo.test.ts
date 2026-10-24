@@ -67,9 +67,9 @@ test('public build defaults to automatic-only while the local manual build needs
   assert.match(main, /manualMode:MANUAL_MODE/);
 });
 
-test('generated favicon assets and the visual launch map are wired without becoming indexable pages', async () => {
+test('generated favicon assets, production privacy facts, and the visual launch map stay current', async () => {
   await Promise.all(['public/favicon-16.png','public/favicon-32.png','public/favicon.png','public/apple-touch-icon.png','assets/brand/favicon-imagegen-v1.png','public/social/duck-rush-og.jpg'].map(path=>access(path)));
-  const [home,privacy,visual,socialImage]=await Promise.all([readFile('en/index.html','utf8'),readFile('en/privacy/index.html','utf8'),readFile('docs/seo-launch-visual.html','utf8'),readFile('public/social/duck-rush-og.jpg')]);
+  const [home,privacy,privacyZh,visual,socialImage]=await Promise.all([readFile('en/index.html','utf8'),readFile('en/privacy/index.html','utf8'),readFile('zh/privacy/index.html','utf8'),readFile('docs/seo-launch-visual.html','utf8'),readFile('public/social/duck-rush-og.jpg')]);
   assert.match(home,/href="\/favicon-32\.png"/);
   assert.doesNotMatch(home,/favicon\.svg/);
   assert.match(home,/social\/duck-rush-og\.jpg/);
@@ -78,6 +78,14 @@ test('generated favicon assets and the visual launch map are wired without becom
   assert.match(privacy,/no built-in account, name-upload endpoint, or remote name database/i);
   assert.match(privacy,/public build is automatic-only/i);
   assert.match(privacy,/does not render microphone controls, request microphone permission/i);
+  assert.match(privacy,/duckracepicker\.com/);
+  assert.match(privacy,/Cloudflare Workers Static Assets/);
+  assert.match(privacy,/Google Search Console and a remote product analytics platform are not connected/i);
+  assert.doesNotMatch(privacy,/production domain and hosting provider have not yet been selected/i);
+  assert.match(privacyZh,/duckracepicker\.com/);
+  assert.match(privacyZh,/Cloudflare Workers Static Assets/);
+  assert.match(privacyZh,/Google Search Console 与远程产品分析平台尚未接入/);
+  assert.doesNotMatch(privacyZh,/生产域名与托管供应商尚未确定/);
   assert.match(visual,/name="robots" content="noindex,nofollow"/);
   for(const id of ['market','position','architecture','performance','launch'])assert.match(visual,new RegExp(`id="${id}"`));
 });
