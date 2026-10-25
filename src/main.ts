@@ -16,6 +16,8 @@ import {matchVoiceDirection,VoiceControl,type VoiceDirection} from './voice-cont
 import {createVoiceLogStore} from './voice-diagnostics';
 import {languagePath,pageLanguage} from './i18n-routing';
 import {trackEvent} from './observability';
+import {createGrowthActions} from './growth-actions';
+const growthActions=createGrowthActions(trackEvent);
 import {installMobileDrawer} from './mobile-drawer';
 import {RenderBudget,type RenderActivity} from './render-budget';
 const MANUAL_MODE=import.meta.env.MODE==='manual'&&import.meta.env.VITE_ENABLE_MANUAL_MODE==='true';
@@ -135,14 +137,15 @@ function attach(){
  document.querySelector('#language')!.addEventListener('click',()=>trackEvent('language_switch',{from:lang,to:lang==='zh'?'en':'zh'}));document.querySelector('#overview')!.addEventListener('click',overview);document.querySelector('#follow')!.addEventListener('click',()=>follow(selected));document.querySelector('#duck-select')!.addEventListener('change',e=>follow(Number((e.target as HTMLSelectElement).value)));
  document.querySelector('#mobile-start')!.addEventListener('click',()=>document.querySelector<HTMLButtonElement>('#start')!.click());
  document.querySelector('#edit-entries')!.addEventListener('click',showSetup);document.querySelector('#start')!.addEventListener('click',()=>{if(race.state==='ready')beginDraw();else if(race.state==='finished')showResults();else race.pause();updateUI()});
- document.querySelector('#reset')!.addEventListener('click',()=>{if(race.state==='racing'||race.state==='paused'||race.state==='countdown'){showModal('restart',`<h2>${t('again')}</h2><p>${t('confirm')}</p><button class="start-button" id="confirm-reset">${t('ok')}</button><button class="plain" id="cancel-reset" style="width:100%;margin-top:10px">${t('cancel')}</button>`);document.querySelector('#confirm-reset')!.addEventListener('click',()=>{reset();closeModal()});document.querySelector('#cancel-reset')!.addEventListener('click',closeModal);}else reset()});
+ document.querySelector('#reset')!.addEventListener('click',()=>{if(race.state==='racing'||race.state==='paused'||race.state==='countdown'){showModal('restart',`<h2>${t('again')}</h2><p>${t('confirm')}</p><button class="start-button" id="confirm-reset">${t('ok')}</button><button class="plain" id="cancel-reset" style="width:100%;margin-top:10px">${t('cancel')}</button>`);document.querySelector('#confirm-reset')!.addEventListener('click',()=>{reset();closeModal()});document.querySelector('#cancel-reset')!.addEventListener('click',closeModal);}else reset(race.state==='finished')});
  if(MANUAL_MODE)document.querySelector('#voice-log')?.addEventListener('click',showVoiceLogs);
  document.querySelector('#help')!.addEventListener('click',showHelp);document.querySelector('#history')!.addEventListener('click',showHistory);document.querySelector('#roster')!.addEventListener('click',e=>{const row=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-duck]');if(row){follow(Number(row.dataset.duck));mobileDrawer.close();}});
  const select=document.querySelector('#duck-select')!;select.innerHTML=race.ducks.map(d=>`<option value="${d.id}">${String(d.id+1).padStart(2,'0')} · ${name(d.id)}</option>`).join('');cameraUI();
 }
-function reset(){activeDraw=null;storageFailed=false;voiceSteering=null;lastVoiceCommand=null;race.reset(participants.length||race.ducks.length,0);feedback.update(race);finishPresentation.reset(race.generation);arrivalView=false;controls.enabled=mode==='overview';followCamera.reset();if(mode==='overview')overview();worldView.setDucks(race.ducks.length,participantColors);refreshNames();updateUI();}
+function reset(replay=false){growthActions.reset(replay);activeDraw=null;storageFailed=false;voiceSteering=null;lastVoiceCommand=null;race.reset(participants.length||race.ducks.length,0);feedback.update(race);finishPresentation.reset(race.generation);arrivalView=false;controls.enabled=mode==='overview';followCamera.reset();if(mode==='overview')overview();worldView.setDucks(race.ducks.length,participantColors);refreshNames();updateUI();}
 function refreshNames(){nameBubbles.setNames(race.ducks.map(d=>rawName(d.id)),race.ducks.map(d=>duckColor(d.id)));document.querySelector('#duck-select')!.innerHTML=race.ducks.map(d=>`<option value="${d.id}">${name(d.id)}</option>`).join('');}
 function beginDraw(){
+ if(race.state!=='ready')return;
  mobileDrawer.close();
  if(!participants.length){showSetup();return;}
  let session:DrawSession;
@@ -155,6 +158,7 @@ function beginDraw(){
  // Metrics hook: draw started, entry/selection counts and ID only. Never log participant names.
  console.info('[draw] started',{drawId:session.id,count:session.names.length,mode:'ranking'});
  trackEvent('race_started',{language:lang,course:currentTrack,entryCount:session.names.length});
+ growthActions.started({language:lang,course:currentTrack,entryCount:session.names.length});
  updateUI();
 }
 function showSetup(){
@@ -191,8 +195,8 @@ function showResults(){
  finishPresentation.shown=true;console.info('[presentation] results opened',{viewingSeconds:finishPresentation.age});
  const record=currentRecord();
  showModal('results',`<div class="eyebrow">${t('results')}</div><h2>${dt('all')}</h2><div class="draw-winners">${race.results.slice(0,1).map(d=>`<div><span class="duck-dot" style="--duck:${duckColor(d.id)}">${icon('duck',20)}</span><strong>${name(d.id)}</strong></div>`).join('')}</div><div class="result-meta">${record.drawId?escapeHTML(record.drawId):''}</div><p>${dt('all')} · ${formatTime(race.time)}${race.controlled?(lang==='zh'?' · 含人工拨水':' · Manual steering'):''}</p><div class="results-list">${race.results.map((d,i)=>`<div class="result-row ${i===0?'is-selected':''}"><span>${String(i+1).padStart(2,'0')}</span><span class="result-name">${name(d.id)}</span>${i===0?`<small>${lang==='zh'?'第一名':'1st'}</small>`:''}<span class="time">${formatTime(d.finish!)}</span></div>`).join('')}</div><button class="copy-button" id="copy-results">${dt('copy')}</button><p id="copy-status" role="status">${storageFailed?dt('saveFailed'):dt('proof')}</p><button class="start-button" id="race-again">${t('again')}${icon('arrow')}</button><p>${dt('repeat')}</p>`);
- document.querySelector('#race-again')!.addEventListener('click',()=>{reset();closeModal()});
- document.querySelector('#copy-results')!.addEventListener('click',async()=>{const text=resultText(record,lang,defaultName);try{await navigator.clipboard.writeText(text);const status=document.querySelector('#copy-status');if(status)status.textContent=dt('copied');}catch(error){console.warn('[draw] Clipboard unavailable',error);const status=document.querySelector('#copy-status');if(status){status.textContent=dt('copyFailed');document.querySelector('.copy-fallback')?.remove();status.insertAdjacentHTML('afterend',`<textarea class="copy-fallback" readonly aria-label="${dt('copy')}">${escapeHTML(text)}</textarea>`);document.querySelector<HTMLTextAreaElement>('.copy-fallback')?.select();}}});
+ document.querySelector('#race-again')!.addEventListener('click',()=>{if(race.state!=='finished')return;reset(true);closeModal()});
+ document.querySelector('#copy-results')!.addEventListener('click',async()=>{const text=resultText(record,lang,defaultName);try{const success=await growthActions.copy({language:lang,course:currentTrack,entryCount:race.results.length},()=>navigator.clipboard.writeText(text));if(!success)return;const status=document.querySelector('#copy-status');if(status)status.textContent=dt('copied');}catch(error){console.warn('[draw] Clipboard unavailable',error);const status=document.querySelector('#copy-status');if(status){status.textContent=dt('copyFailed');document.querySelector('.copy-fallback')?.remove();status.insertAdjacentHTML('afterend',`<textarea class="copy-fallback" readonly aria-label="${dt('copy')}">${escapeHTML(text)}</textarea>`);document.querySelector<HTMLTextAreaElement>('.copy-fallback')?.select();}}});
 }
 function showHistory(){
  const history=readHistory();

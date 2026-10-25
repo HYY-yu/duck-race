@@ -62,9 +62,9 @@ Deploy command: npx wrangler deploy --assets ./dist/ --name duckracepicker --com
 
 ## 产品分析 / Product analytics
 
-PostHog 通过现有 `trackEvent` 入口上报 10 类事件，统一附加 `app=duck_rush` 与 `environment=production|development`。可与 JoyfulWords 共用项目；查看 Duck Rush 时始终添加 `app = duck_rush` 过滤条件，正式指标再加 `environment = production`。其他应用的全项目报表也需要相应的应用过滤条件。
+PostHog 通过现有 `trackEvent` 入口上报 12 类事件，统一附加 `app=duck_rush` 与 `environment=production|development`。可与 JoyfulWords 共用项目；查看 Duck Rush 时始终添加 `app = duck_rush` 过滤条件，正式指标再加 `environment = production`。其他应用的全项目报表也需要相应的应用过滤条件。
 
-PostHog receives the 10 existing event types through `trackEvent`, with `app=duck_rush` and `environment=production|development`. Shared-project reports must filter by app, and production reports should also filter by environment.
+PostHog receives the 12 event types through `trackEvent`, with `app=duck_rush` and `environment=production|development`. Shared-project reports must filter by app, and production reports should also filter by environment.
 
 在 `.env.local` 配置以下变量；Cloudflare 自动构建也必须配置相同的 Key 和 host，然后重新构建才能生效。Project API Key 是公开客户端 token，不能使用 Personal API Key。真实配置不提交 Git。
 
@@ -87,6 +87,8 @@ Development capture is off by default; opt in temporarily with `VITE_POSTHOG_ENA
 | `game_load_started` | language, reason, sinceNavigationMs |
 | `game_ready` | language, renderer, course, sinceNavigationMs |
 | `race_started` | language, course, entryCount |
+| `race_replayed` | language, course, entryCount · 同名单再抽真正开始，每轮最多一次 / Actual start of a requested replay, once per round |
+| `results_copied` | language, course, entryCount · 成功复制，每轮最多一次 / Successful clipboard write, once per round |
 | `race_finished` | language, course, entryCount, durationMs, manual |
 | `asset_load_finished` | loaded, failed, attachmentFailed, durationMs |
 | `asset_stage_finished` | stage, requested, failed, durationMs |
@@ -100,3 +102,19 @@ Autocapture, automatic page events, replay, person profiles, and automatic excep
 ## 开源协议 / License
 
 [MIT](LICENSE) © 2026 HYY-yu
+
+
+## 首轮渠道标签 / Launch attribution
+
+仅保留完整且唯一的固定组合：`utm_source=x|tiktok`、`utm_medium=social`、`utm_campaign=duck_rush_launch_2026_10`。source/medium/campaign 长度上限为 8/16/32，总查询字符串最多 2048 字符；未知、缺失、重复或超长的组合整体丢弃。不采集 utm_content 或任意其他 URL 参数。标签在页面入口读取一次，仅存于内存，附加到本次页面中的所有已允许事件；不读取 referrer、不更改匿名身份或写入分析存储。刷新后只重新读取当时链接，不恢复再抽/复制状态，不把刷新算重赛。
+
+The three closed launch tags above are captured once per page load and attached to allowed events. Unknown, incomplete, duplicate or oversized tuples are dropped. No arbitrary URLs, referrers, names, results, or query values are collected. Memory-only identity stays unchanged.
+
+- 再抽：完成后点“同名单再抽”只准备下一轮；用户实际点击开始且成功创建新一轮时发 `race_replayed`。普通重新开始或应用名单设置会取消待再抽标记。每轮不会因为重复开始点击重复计数。
+- 复制：`results_copied` 只在剪贴板写入成功后发出，每轮最多一次；失败不计，允许重试；并发双击只进行一次写入。重新打开同一结果不会清除去重状态。
+- 这些是匿名行为事件，不等于不同用户、跨访问留存或严格转化率。UTM 可以用来比较本次渠道标签下的事件，不能证明用户真实来自该平台。
+
+待发布链接（发布前先由运营方确认并部署本改动）：
+
+- X: `https://duckracepicker.com/en/?utm_source=x&utm_medium=social&utm_campaign=duck_rush_launch_2026_10`
+- TikTok: `https://duckracepicker.com/en/?utm_source=tiktok&utm_medium=social&utm_campaign=duck_rush_launch_2026_10`

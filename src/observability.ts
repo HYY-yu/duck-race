@@ -5,6 +5,8 @@ export type DuckRushEvent =
   | 'game_ready'
   | 'race_started'
   | 'race_finished'
+  | 'race_replayed'
+  | 'results_copied'
   | 'asset_load_finished'
   | 'asset_stage_finished'
   | 'asset_failed'

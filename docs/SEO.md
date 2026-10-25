@@ -174,3 +174,8 @@ npm run build
 - [ ] 把 Search Console 数据与不含姓名的开赛/完赛事件结合评估，不把曝光当作开赛，也不保证排名或流量。
 
 当前已有正式域名、Cloudflare 托管和基础线上验收；PostHog 汇总事件接入已通过本地开发收件验证，Cloudflare 生产构建变量已配置；正式生效以对应 Git 提交的部署与生产事件收件为准。仍没有 Search Console 权限、真实用户 Core Web Vitals、线上排名或流量证据，因此不得宣称已收录、已有排名或已有增长。
+
+
+## 2026-10-25 受控增长埋点（待发布）
+
+事件与渠道契约见 README「首轮渠道标签」。保留内存匿名身份及 app/environment 隔离；新增 `race_replayed`（实际同名单下一轮开始）与 `results_copied`（成功复制，每轮去重），并仅接受 X/TikTok 的固定首发三元组。未知标签丢弃，不采集任意 URL、referrer、名单或结果。中英文隐私页已说明。渠道 URL 状态仍 canonical 到无参数主页，不生成新 SEO 页面。没有发布、收费查询或真实 PostHog 测试流量。

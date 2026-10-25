@@ -2,12 +2,14 @@ import './style.css';
 import {pageLanguage} from './i18n-routing';
 import {addEventReporter, observeWebVitals, trackEvent} from './observability';
 import {createPostHogReporter} from './posthog-telemetry';
+import {campaignAttribution} from './campaign-attribution';
 import {resolveTrack,trackSearch} from './track-navigation';
 
 const postHogReporter = createPostHogReporter({
   key: import.meta.env.VITE_POSTHOG_KEY,
   host: import.meta.env.VITE_POSTHOG_HOST,
   production: import.meta.env.PROD,
+  attribution: campaignAttribution(location.search),
   enableInDevelopment: import.meta.env.VITE_POSTHOG_ENABLE_DEV === 'true',
 });
 if (postHogReporter) addEventReporter(postHogReporter);

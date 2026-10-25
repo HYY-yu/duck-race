@@ -1,9 +1,10 @@
 import type {PostHogConfig, PostHog} from 'posthog-js';
+import {campaignAttribution,type CampaignAttribution} from './campaign-attribution';
 import type {DuckRushEvent, EventProperties, EventReporter} from './observability';
 
 const eventNames = new Set<DuckRushEvent>([
   'page_view', 'language_switch', 'game_load_started', 'game_ready', 'race_started',
-  'race_finished', 'asset_load_finished', 'asset_stage_finished', 'asset_failed', 'web_vital',
+  'race_finished', 'race_replayed', 'results_copied', 'asset_load_finished', 'asset_stage_finished', 'asset_failed', 'web_vital',
 ]);
 // Explicit allowlist also removes SDK URL, referrer, campaign and person properties.
 const propertyNames = new Set([
@@ -14,7 +15,9 @@ const propertyNames = new Set([
   '$process_person_profile', '$time', '$geoip_disable',
 ]);
 
-export function postHogOptions(host: string): Partial<PostHogConfig> {
+export function postHogOptions(host: string, attribution:CampaignAttribution = {}): Partial<PostHogConfig> {
+  // Revalidate and copy even caller-supplied objects; SDK campaign properties are never trusted.
+  const campaign=campaignAttribution(new URLSearchParams(attribution as Record<string,string>).toString());
   return {
     api_host: host,
     autocapture: false,
@@ -38,6 +41,7 @@ export function postHogOptions(host: string): Partial<PostHogConfig> {
         propertyNames.has(key) && ['string', 'number', 'boolean'].includes(typeof value) &&
         (typeof value !== 'number' || Number.isFinite(value)),
       ));
+      Object.assign(event.properties,campaign);
       // Keep ingestion-side GeoIP enrichment off even when the service sees a request IP.
       event.properties.$geoip_disable = true;
       return event;
@@ -47,7 +51,7 @@ export function postHogOptions(host: string): Partial<PostHogConfig> {
 }
 
 type Client = Pick<PostHog, 'init' | 'capture'>;
-type Configuration = {key?: string; host?: string; production: boolean; enableInDevelopment?: boolean};
+type Configuration = {key?: string; host?: string; production: boolean; enableInDevelopment?: boolean; attribution?:CampaignAttribution};
 
 /** Start loading independently of the game, retaining early events in a bounded queue. */
 export function createPostHogReporter(
@@ -70,6 +74,7 @@ export function createPostHogReporter(
     console.warn('[telemetry] PostHog disabled: invalid HTTPS ingestion host');
     return null;
   }
+  const options=postHogOptions(host,config.attribution);
   let client: Client | null = null, failed = false, overflowWarned = false;
   const queue: {event: DuckRushEvent; properties: EventProperties}[] = [];
   const send = (event: DuckRushEvent, properties: EventProperties) => {
@@ -83,7 +88,7 @@ export function createPostHogReporter(
     }
   };
   void Promise.resolve().then(load).then(sdk => {
-    sdk.init(key, postHogOptions(host));
+    sdk.init(key, options);
     client = sdk;
     console.info('[telemetry] PostHog initialized', {environment: config.production ? 'production' : 'development'});
     for (const item of queue.splice(0)) send(item.event, item.properties);
