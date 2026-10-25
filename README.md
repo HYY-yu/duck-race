@@ -118,3 +118,12 @@ The three closed launch tags above are captured once per page load and attached 
 
 - X: `https://duckracepicker.com/en/?utm_source=x&utm_medium=social&utm_campaign=duck_rush_launch_2026_10`
 - TikTok: `https://duckracepicker.com/en/?utm_source=tiktok&utm_medium=social&utm_campaign=duck_rush_launch_2026_10`
+
+
+## 自有域名短入口 / Owned-domain short entrances
+
+待发布：`https://duckracepicker.com/x`（X）与 `https://duckracepicker.com/t`（TikTok）。
+`public/_redirects` 由 Vite 原样复制为 `dist/_redirects`，由 Cloudflare Workers Static Assets 原生处理 HTTP 302；沿用上方 main 自动发布流程，无需新服务或 Worker 脚本。
+两条规则只匹配精确路径 `/x`、`/t`（不包含尾斜杠、子路径或大小写变体），目的地固定为 `/en/` 加现有白名单三参数。目的地已有查询串会替换入口传入的查询串，不能用追加参数覆盖渠道，不传递 seed、track 或任意额外输入；浏览器片段不参与服务器路由。目的地不匹配短入口，因此无重定向循环；`/en/` 地址栏保留原有统计参数，不额外清理。
+
+These exact 302 rules use Cloudflare's native static asset redirects. Incoming query strings are replaced by the fixed destination query. No wildcard routes, new tracking fields, identity changes, or client redirects are added. Rules are checked in the built output; Vite dev and the basic `npm run preview` file server do not emulate Cloudflare redirects. For routing acceptance, use an isolated, telemetry-disabled build with local Wrangler assets mode. Deployment and production collection still require separate approval.

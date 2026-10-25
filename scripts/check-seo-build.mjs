@@ -22,6 +22,9 @@ for (const [path, ...needles] of required) {
   }
 }
 
+const redirectSource = await readFile('public/_redirects', 'utf8');
+if (await readFile('dist/_redirects', 'utf8') !== redirectSource) throw new Error('Built short entrance rules differ from public/_redirects');
+
 const en = await readFile('dist/en/index.html', 'utf8');
 const zh = await readFile('dist/zh/index.html', 'utf8');
 const enRules = await readFile('dist/en/how-to-play/index.html', 'utf8');
