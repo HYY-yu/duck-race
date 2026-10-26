@@ -48,5 +48,5 @@ for(const count of [2,6,12])for(const seed of [1,42,917]){
  runs.push({count,seed,time:race.time,windContacts});
 }
 assert.ok(runs.some(r=>r.windContacts>0),'windmill paddles participate in collisions');
-assert.ok(Math.max(...runs.map(r=>r.time))<25,'snowpeak current should carry every sampled long race home within 25 seconds');
+assert.ok(Math.max(...runs.map(r=>r.time))<40,'solid rotors may delay racers, but every sampled long race must finish within 40 seconds');
 console.log(JSON.stringify({length:TRACK_LENGTH,ratio:TRACK_LENGTH/BASE_TRACK_LENGTH,runs}));

@@ -1,8 +1,9 @@
 import {paddleTarget} from './rapids-physics';
 import {FEEL,RAPIDS} from './tuning';
-import {TRACK_LENGTH,RUNOUT_LENGTH,flow,width,obstacles,sample,FLOW_MULTIPLIER,bankWidth,blockers,TRACK_SEED,MOUNTAIN_COURSE} from './track';
+import {TRACK_LENGTH,RUNOUT_LENGTH,flow,width,obstacles,sample,world,FLOW_MULTIPLIER,bankWidth,blockers,TRACK_SEED,MOUNTAIN_COURSE} from './track';
 import {createMotion,stepMotion,contactImpulse,type Motion} from './dynamics';
 import {TrafficCone} from './traffic-cone';
+import {WHEEL,wheelContacts} from './wheel-collision';
 export {COLORS} from './duck-palette';
 export const NAMES=[['蛋黄','Sunny'],['桃桃','Peaches'],['蓝莓','Blueberry'],['薄荷','Mint'],['橘子','Mango'],['泡泡','Bubbles'],['青柠','Lime'],['葡萄','Grape'],['奶油','Cream'],['珊瑚','Coral'],['海盐','Sea Salt'],['可可','Cocoa']];
 export interface Duck extends Motion {id:number;s:number;lane:number;v:number;lv:number;finish:number|null;hits:number;cooldown:number;stuckTime:number;recoveries:number;progressS:number;}
@@ -52,7 +53,7 @@ export class Race {
    this.registerContact(d,1.7);return;
   }
   for(const o of obstacles){
-   if(Math.abs(d.s-o.s)>4||o.kind==='fan')continue;
+   if(Math.abs(d.s-o.s)>4||o.kind==='fan'||o.kind==='wheel'||o.kind==='windmill')continue;
    if(o.kind==='bars'){
     const height=.7+(1-Math.sin(this.time*1.5))*1.3;
     if(d.y+1.65<sample(o.s).y+height-.17)continue;
@@ -60,31 +61,50 @@ export class Race {
      if(Math.abs(ds)<.7&&d.v>0&&ds<.3){const impulse=-(1.38*d.v);contactImpulse(d,impulse,Math.sign(d.lane||1)*.7,.6);d.s=Math.min(d.s,o.s+offset-.7);this.registerContact(d,Math.abs(impulse));return;}
     }
    }else{
-    const wheel=o.kind==='wheel'||o.kind==='windmill';
-    const parts=wheel?4:1;
-    for(let i=0;i<parts;i++){
-     const angle=this.time*.9+i*Math.PI/2;
-     const lane=o.kind==='pendulum'?Math.sin(this.time*1.8)*2.8:-Math.sin(angle)*2.6;
-     const along=o.s+(wheel?Math.cos(angle)*2.6:0);
-     const speedL=o.kind==='pendulum'?Math.cos(this.time*1.8)*5.04:-Math.cos(angle)*2.34;
-     const speedS=wheel?-Math.sin(angle)*2.34:0;
-     const top=sample(o.s).y+(wheel?1.85:3.2);if(d.y>top)continue;
-     const ds=d.s-along,dl=d.lane-lane,r=Math.hypot(ds,dl),radius=wheel?1.18:1.73;
-     if(r>=radius)continue;
-     const ns=r>.001?ds/r:-1,nl=r>.001?dl/r:0;
-     const relative=(d.v-speedS)*ns+(d.lv-speedL)*nl;
-     if(relative>=0)continue;
-     const impulse=Math.min(8,-relative*(wheel?1.15:1.45));
-     contactImpulse(d,ns*impulse,nl*impulse,Math.min(1.4,impulse*.15));
-     const correction=Math.min(.45,radius-r+.02);d.s+=ns*correction;d.lane+=nl*correction;
-     this.registerContact(d,impulse,o.kind);return;
-    }
+    const lane=Math.sin(this.time*1.8)*2.8,speedL=Math.cos(this.time*1.8)*5.04;
+    if(d.y>sample(o.s).y+3.2)continue;
+    const ds=d.s-o.s,dl=d.lane-lane,r=Math.hypot(ds,dl),radius=1.73;
+    if(r>=radius)continue;
+    const ns=r>.001?ds/r:-1,nl=r>.001?dl/r:0;
+    const relative=d.v*ns+(d.lv-speedL)*nl;
+    if(relative>=0)continue;
+    const impulse=Math.min(8,-relative*1.45);
+    contactImpulse(d,ns*impulse,nl*impulse,Math.min(1.4,impulse*.15));
+    const correction=Math.min(.45,radius-r+.02);d.s+=ns*correction;d.lane+=nl*correction;
+    this.registerContact(d,impulse,o.kind);return;
    }
+  }
+ }
+ /** Solid contacts stay active during feedback cooldown, including separating overlaps. */
+ private wheelContact(d:Duck){
+  for(const o of obstacles){
+   if((o.kind!=='wheel'&&o.kind!=='windmill')||Math.abs(d.s-o.s)>6)continue;
+   const p=sample(o.s);let strength=0;
+   for(let pass=0;pass<8;pass++){
+    const point=world(d.s,d.lane),dx=point.x-p.x,dz=point.z-p.z;
+    const contacts=wheelContacts(dx*p.tz-dz*p.tx,dx*p.tx+dz*p.tz,d.y-p.y,this.time);
+    const hit=contacts.sort((a,b)=>b.depth-a.depth)[0];if(!hit)break;
+    const f=sample(d.s),nx=hit.nx*p.tz+hit.nz*p.tx,nz=-hit.nx*p.tx+hit.nz*p.tz;
+    const ns=nx*f.tx+nz*f.tz,nl=-nx*f.tz+nz*f.tx;
+    // Surface velocity follows the same +Y rotation as the visible rotor.
+    const vx=WHEEL.speed*hit.z,vz=-WHEEL.speed*hit.x;
+    const surface=(vx*hit.nx+vz*hit.nz),relative=d.v*ns+d.lv*nl-surface;
+    if(relative<0){const impulse=-relative*1.15;contactImpulse(d,ns*impulse,nl*impulse);strength=Math.max(strength,impulse);}
+    d.s+=ns*(hit.depth+.002);d.lane+=nl*(hit.depth+.002);
+   }
+   if(strength>.2&&d.cooldown===0)this.registerContact(d,strength,o.kind);
   }
  }
  private registerContact(d:Duck,strength:number,source?:string){d.cooldown=.35;d.hits++;this.emit(d,'contact',strength,source);}
  step(dt:number){
   if(!(dt>0)||dt>.051)throw new RangeError('Use a fixed simulation step <= 50 ms');
+  // At maximum speed each substep travels < 0.14 m near a rotor. This also
+  // resolves the blade's swept rotation and prevents a 50 ms step tunnelling.
+  const nearWheel=this.state==='racing'&&this.ducks.some(d=>d.finish===null&&obstacles.some(o=>(o.kind==='wheel'||o.kind==='windmill')&&Math.abs(d.s-o.s)<6));
+  const steps=nearWheel?Math.ceil(dt*240):1;
+  for(let i=0;i<steps;i++)this.stepFixed(dt/steps);
+ }
+ private stepFixed(dt:number){
   if(this.state==='countdown'){this.countdown-=dt;if(this.countdown<=0){this.state='racing';console.info('[race] started',{seed:this.seed,flowMultiplier:FLOW_MULTIPLIER,motionModel:'snowpeak-rapids'});}return;}
   if(this.state!=='racing'&&this.state!=='finished')return;
   this.floatTime+=dt;
@@ -128,6 +148,7 @@ export class Race {
    d.s=Math.max(0,d.s+d.v*dt);d.lane+=d.lv*dt;
    const edge=bankWidth(d.s,d.lane)-.65;
    if(Math.abs(d.lane)>edge){const side=Math.sign(d.lane);d.lane=side*edge;if(d.lv*side>0){const j=-d.lv*(1+RAPIDS.wallRestitution);contactImpulse(d,-Math.abs(d.v)*(1-RAPIDS.wallPenalty),j);if(Math.abs(j)>1.8&&d.cooldown===0)this.registerContact(d,Math.abs(j));}}
+   this.wheelContact(d);
    const motion=stepMotion(d,previousS[d.id],this.time,dt);if(motion)this.emit(d,motion.kind,motion.strength);
    if(d.s>=TRACK_LENGTH-2){d.finish=this.time-dt+dt*((TRACK_LENGTH-2-previousS[d.id])/Math.max(.0001,d.s-previousS[d.id]));crossed.push(d);}
   }

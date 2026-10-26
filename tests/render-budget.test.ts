@@ -12,7 +12,7 @@ for(const refresh of [60,90,120])for(const [activity,target]of [['active',60],['
 
 test('desktop retains native refresh cadence and activity changes respond immediately',()=>{
  const desktop=new RenderBudget(false);
- for(const activity of ['idle','paused','active']as RenderActivity[])assert.equal(desktop.targetFps(activity),0);
+ assert.equal(desktop.targetFps('active'),0);assert.equal(desktop.targetFps('idle'),30);assert.equal(desktop.targetFps('paused'),15);
  for(let frame=0;frame<240;frame++)assert.equal(desktop.shouldRender(frame*1000/120,'active'),true);
  const mobile=new RenderBudget(true);
  assert.equal(mobile.shouldRender(0,'paused'),true);
@@ -33,9 +33,20 @@ test('render pacing preserves the same fixed-step simulation time across activit
  }
 });
 
-test('shadow pacing keeps resolution-independent updates within the mobile budget',()=>{
+test('shadow pacing budgets mobile and desktop without limiting native color frames',()=>{
  const budget=new RenderBudget(true);let updates=0;
  for(let frame=0;frame<360;frame++)if(budget.shouldUpdateShadow(frame*1000/60,'active'))updates++;
  assert.ok(Math.abs(updates-180)<=1);
- assert.equal(new RenderBudget(false).shouldUpdateShadow(1,'paused'),true);
+ for(const mobile of [false,true])for(const activity of ['active','idle','paused']as const){
+  const b=new RenderBudget(mobile);let count=0;
+  for(let frame=0;frame<720;frame++)if(b.shouldUpdateShadow(frame*1000/120,activity))count++;
+  assert.ok(Math.abs(count-(activity==='active'?180:90))<=1,`${mobile} ${activity}: ${count}`);
+ }
+});
+
+for(const activity of ['idle','paused']as const)test(`desktop ${activity} scene yields GPU time and resumes native cadence immediately`,()=>{
+ const budget=new RenderBudget(false),target=activity==='idle'?30:15;let frames=0;
+ for(let i=0;i<720;i++)if(budget.shouldRender(i*1000/120,activity))frames++;
+ assert.ok(Math.abs(frames-target*6)<=1);
+ assert.equal(budget.shouldRender(6001,'active'),true);assert.equal(budget.shouldRender(6002,'active'),true);
 });

@@ -6,11 +6,13 @@ export class RenderBudget {
  private windowStart=-1;private windowFrames=0;private workMs=0;
  fps=0;averageWorkMs=0;
  constructor(readonly mobile:boolean){}
- targetFps(activity:RenderActivity){return this.mobile?(activity==='active'?60:activity==='idle'?30:15):0;}
+ targetFps(activity:RenderActivity){return activity==='active'?(this.mobile?60:0):activity==='idle'?30:15;}
  shouldRender(now:number,activity:RenderActivity){
-  // Desktop retains native requestAnimationFrame cadence, including high-refresh screens.
-  if(!this.mobile)return true;
-  const target=this.targetFps(activity),interval=1000/target;
+  // Active desktop scenes retain native cadence; idle/paused windows stop
+  // competing with another race for the GPU. Physics keeps its fixed clock.
+  const target=this.targetFps(activity);
+  if(target===0){this.target=0;return true;}
+  const interval=1000/target;
   if(target!==this.target){this.target=target;this.nextFrame=now;}
   if(now+.5<this.nextFrame)return false;
   // Preserve vsync phase rather than rounding a 33.34ms interval up to 50ms.
@@ -18,7 +20,6 @@ export class RenderBudget {
   return true;
  }
  shouldUpdateShadow(now:number,activity:RenderActivity){
-  if(!this.mobile)return true;
   if(now+.5<this.nextShadow)return false;
   this.nextShadow=now+1000/(activity==='active'?30:15);return true;
  }

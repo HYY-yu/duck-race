@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-26",
+  "environment": {
+    "browser": "Codex in-app Chromium on local macOS",
+    "cssViewport": [
+      1164,
+      970
+    ],
+    "rendererPixelRatio": 1.100000023841858,
+    "source": "local Vite development build, full assets loaded",
+    "course": "mountain",
+    "trackSeed": 42,
+    "raceSeed": 42,
+    "ducks": 6,
+    "camera": "follow duck 0",
+    "sampleSeconds": 5,
+    "begin": "first wheel contact at about 13.31 simulation seconds"
+  },
+  "method": "Within the same loaded page, reset and advance the real Race to the same first wheel contact and restore the same camera pose. Replay five seconds with original tree/shadow/refraction rendering, then with optimized rendering. The temporary profiling handle and rendering overrides were removed afterwards. The paired replay predates the final distant-color correction; the final smooth silhouette proxies were checked separately at the viewport recorded below.",
+  "before": {
+    "fps": 54.57841164877108,
+    "rafP50Ms": 13.400000000001455,
+    "rafP95Ms": 26.80000000000291,
+    "framesOver25Ms": 100,
+    "averageCpuWorkMs": 3.1290909095243973,
+    "simulationEndSeconds": 18.366666666666607,
+    "mainPassTrianglesSnapshot": 2929872
+  },
+  "after": {
+    "fps": 75.32317036622648,
+    "rafP50Ms": 13.30000000000291,
+    "rafP95Ms": 14.30000000000291,
+    "framesOver25Ms": 0,
+    "averageCpuWorkMs": 2.5893333331743875,
+    "simulationEndSeconds": 18.34999999999994,
+    "mainPassTrianglesSnapshot": 2298766
+  },
+  "finalWithoutProfilingHandle": {
+    "fps": 74.84731148483858,
+    "rafP95Ms": 14.30000000000291,
+    "framesOver25Ms": 1,
+    "simulationEndSeconds": 18.34999999999994,
+    "finishedDucks": 6
+  },
+  "limits": [
+    "Short local desktop samples, not an all-device FPS guarantee.",
+    "No physical Android/iPhone, thermal or battery acceptance in this run.",
+    "Triangle snapshots include main and transmission passes, not shadow geometry work.",
+    "CPU work and rAF times are not GPU timing or power measurements.",
+    "The earlier exploratory 41–44 FPS samples had additional test-window contention; they are not the paired baseline."
+  ],
+  "validation": {
+    "testsPassed": 131,
+    "productionBuild": "passed",
+    "collisionRegression": "passed",
+    "noNewDependencies": true,
+    "workspaceTestsPassedIncludingUncommittedSeo": 132
+  },
+  "finalSilhouetteCheck": {
+    "fps": 74.96701451352463,
+    "rafP95Ms": 14.299999999995634,
+    "framesOver25Ms": 1,
+    "cssViewport": [
+      1164,
+      818
+    ],
+    "rendererPixelRatio": 1.100000023841858,
+    "refractionScale": 0.5,
+    "simulationEndSeconds": 18.566666666666595
+  }
+}

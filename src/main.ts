@@ -86,9 +86,12 @@ const mobileDrawer=installMobileDrawer(app,lang);
 let renderer:THREE.WebGLRenderer;
 try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(error){console.error('[render] WebGL initialization failed',error);trackEvent('asset_failed',{language:lang,asset:'webgl-context'});app.insertAdjacentHTML('beforeend',`<div class="error">${t('webgl')}</div>`);throw error;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;renderer.outputColorSpace=THREE.SRGBColorSpace;
+// Refraction is blurred by the flowing surface; its offscreen color buffer can
+// use half resolution while ducks, terrain and water shading stay at native DPR.
+renderer.transmissionResolutionScale=.5;
 const renderBudget=new RenderBudget(matchMedia('(pointer: coarse)').matches);
-// Retain full shadow resolution; update the mobile map less often than the color pass.
-renderer.shadowMap.autoUpdate=!renderBudget.mobile;
+// Retain full shadow resolution, with explicit pacing on desktop and mobile.
+renderer.shadowMap.autoUpdate=false;
 const nameBubbles=new DuckNameBubbles();
 const worldView=new World(renderer);worldView.setDucks(race.ducks.length);
 const camera=new THREE.PerspectiveCamera(39,1,.1,1000);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=12;controls.maxDistance=190*COURSE_SCALE;controls.maxPolarAngle=Math.PI*.47;controls.target.set(0,15,0);
@@ -222,10 +225,10 @@ if(import.meta.env.DEV){
  if(LONG_COURSE&&inspection&&['rainbow','slide','windmill'].includes(inspection)){const s=inspection==='rainbow'?RAINBOWS[0]:inspection==='slide'?(SLIDE.start+SLIDE.end)/2:WINDMILL_S,p=sample(s);race.reset(6,42);race.start();for(let i=0;i<24000&&race.ducks[0].s<s;i++)race.step(1/60);race.pause();updateUI();camera.position.set(p.x+p.tx*18-p.tz*20,p.y+14,p.z+p.tz*18+p.tx*20);controls.target.set(p.x,p.y+1,p.z);controls.update();}
  if(inspection==='connector'){camera.position.set(-170,170,245);controls.target.set(25,45,135);controls.update();}
  if(inspection==='spring'){const p=sample(0);camera.position.set(p.x+p.tx*16+p.tz*10,p.y+11,p.z+p.tz*16-p.tx*10);controls.target.set(p.x,p.y+1,p.z);controls.update();}
- if(inspection&&['fall','landing','contact','pendulum','lake','arrival'].includes(inspection)){
+ if(inspection&&['fall','landing','contact','pendulum','wheel','lake','arrival'].includes(inspection)){
   race.reset(6,42);race.start();let found=false;
-  for(let step=0;step<15000;step++){race.step(1/60);const impact=inspection==='pendulum'?race.events.find(e=>e.source==='pendulum'):undefined;if(impact)selected=impact.duck;const d=race.ducks[selected];
-   found=inspection==='pendulum'?!!impact:inspection==='lake'||inspection==='arrival'?race.state==='finished':inspection==='fall'?d.airborne&&d.s>FALLS[1].lip+.5:inspection==='landing'?d.landings===2&&race.time-d.lastLanding>.12:d.hits>0&&Math.abs(d.roll)>.15;
+  for(let step=0;step<15000;step++){race.step(1/60);const impact=inspection==='pendulum'||inspection==='wheel'?race.events.find(e=>e.source===inspection):undefined;if(impact)selected=impact.duck;const d=race.ducks[selected];
+   found=inspection==='pendulum'||inspection==='wheel'?!!impact:inspection==='lake'||inspection==='arrival'?race.state==='finished':inspection==='fall'?d.airborne&&d.s>FALLS[1].lip+.5:inspection==='landing'?d.landings===2&&race.time-d.lastLanding>.12:d.hits>0&&Math.abs(d.roll)>.15;
    if(found)break;
   }
   if(found){if(inspection==='pendulum')for(let i=0;i<7;i++)race.step(1/60);if(inspection==='lake'){for(let i=0;i<1200;i++)race.step(1/60);finishPresentation.reset(race.generation);finishPresentation.started=true;finishPresentation.shown=true;}race.pause();const d=race.ducks[selected],p=world(d.s,d.lane),f=sample(d.s);camera.position.set(p.x+f.tx*10-f.tz*12,d.y+6,p.z+f.tz*10+f.tx*12);controls.target.set(p.x,d.y+.3,p.z);controls.update();console.info('[inspection] checkpoint',{inspection,time:race.time,duck:0,airborne:d.airborne,entrySpeed:d.entrySpeed});}
@@ -262,7 +265,8 @@ let last=performance.now(),accumulator=0,elapsed=0;const followTarget=new THREE.
 function tick(now:number){
  requestAnimationFrame(tick);
  if(document.hidden||!gameInView){last=now;accumulator=0;renderBudget.reset();return;}
- const activity:RenderActivity=modalKind||mobileDrawer.isOpen||race.state==='paused'?'paused':race.state==='ready'&&now-lastInteraction>1500?'idle':'active';
+ const interacting=now-lastInteraction<1500;
+ const activity:RenderActivity=modalKind||mobileDrawer.isOpen?'paused':race.state==='paused'&&!interacting?'paused':race.state==='ready'&&!interacting?'idle':'active';
  if(!renderBudget.shouldRender(now,activity))return;
  const workStart=performance.now();
  const delta=Math.min((now-last)/1000,.1);last=now;elapsed+=delta;accumulator+=delta;
@@ -312,4 +316,4 @@ requestAnimationFrame(tick);
 console.info('[app] ready',{renderer:renderer.capabilities.isWebGL2?'WebGL2':'WebGL',trackLength:TRACK_LENGTH,course:MOUNTAIN_COURSE?'mountain':'long',trackSeed:TRACK_SEED,manualMode:MANUAL_MODE,controlled:race.controlled});
 trackEvent('game_ready',{language:lang,renderer:renderer.capabilities.isWebGL2?'WebGL2':'WebGL',course:currentTrack,sinceNavigationMs:Math.round(performance.now())});
 // Read-only diagnostics for automated acceptance and future observability integrations.
-Object.defineProperty(window,'__DUCK_RUSH__',{get:()=>({state:race.state,time:race.time,course:MOUNTAIN_COURSE?'mountain':'long',trackSeed:TRACK_SEED,manualMode:MANUAL_MODE,controlled:race.controlled,trackLength:TRACK_LENGTH,drawId:activeDraw?.id,entryCount:participants.length,count:race.ducks.length,seed:race.seed,results:race.results.map(d=>({id:d.id,time:d.finish})),camera:mode,selected,voiceLogs:voiceLogs?.entries??[],cameraDistance:camera.position.distanceTo(controls.target),cameraAvoided:followCamera.avoided,cameraClear:followCamera.clear,cameraStep:followCamera.lastStep,cameraRouteChanges:followCamera.routeChanges,arrivalView,arrivalSeconds:finishPresentation.age,resultsShown:finishPresentation.shown,audio:audio.diagnostics,audience:worldView.audienceState,effects:worldView.effects.diagnostics,feedback:feedback.notices,physics:race.ducks.map(d=>({id:d.id,s:d.s,x:world(d.s,d.lane).x,z:world(d.s,d.lane).z,y:d.y,airborne:d.airborne,pitch:d.pitch,roll:d.roll,yaw:d.yaw,landings:d.landings,hits:d.hits,entrySpeed:d.entrySpeed})),generatedAssets:{ready:worldView.generatedReady,coreReady:worldView.generatedAssets.has('duck')&&!worldView.generatedAssets.diagnostics.attachmentFailed.includes('duck'),stage:worldView.generatedStage,...worldView.generatedAssets.diagnostics},performance:{...renderBudget.diagnostics,pixelRatio:renderer.getPixelRatio(),inView:gameInView},drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});
+Object.defineProperty(window,'__DUCK_RUSH__',{get:()=>({state:race.state,time:race.time,course:MOUNTAIN_COURSE?'mountain':'long',trackSeed:TRACK_SEED,manualMode:MANUAL_MODE,controlled:race.controlled,trackLength:TRACK_LENGTH,drawId:activeDraw?.id,entryCount:participants.length,count:race.ducks.length,seed:race.seed,results:race.results.map(d=>({id:d.id,time:d.finish})),camera:mode,selected,voiceLogs:voiceLogs?.entries??[],cameraDistance:camera.position.distanceTo(controls.target),cameraAvoided:followCamera.avoided,cameraClear:followCamera.clear,cameraStep:followCamera.lastStep,cameraRouteChanges:followCamera.routeChanges,arrivalView,arrivalSeconds:finishPresentation.age,resultsShown:finishPresentation.shown,audio:audio.diagnostics,audience:worldView.audienceState,effects:worldView.effects.diagnostics,feedback:feedback.notices,physics:race.ducks.map(d=>({id:d.id,s:d.s,x:world(d.s,d.lane).x,z:world(d.s,d.lane).z,y:d.y,airborne:d.airborne,pitch:d.pitch,roll:d.roll,yaw:d.yaw,landings:d.landings,hits:d.hits,entrySpeed:d.entrySpeed})),generatedAssets:{ready:worldView.generatedReady,coreReady:worldView.generatedAssets.has('duck')&&!worldView.generatedAssets.diagnostics.attachmentFailed.includes('duck'),stage:worldView.generatedStage,...worldView.generatedAssets.diagnostics},performance:{...renderBudget.diagnostics,pixelRatio:renderer.getPixelRatio(),refractionScale:renderer.transmissionResolutionScale,inView:gameInView},drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});
