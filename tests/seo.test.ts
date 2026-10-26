@@ -38,7 +38,7 @@ test('localized home source contains crawlable product copy and matching structu
   assert.match(en, /Simple setup\. Wild 3D racing\. Transparent results\./);
   assert.match(en, /No preset winner/);
   assert.match(en, /Automatic-only public race/);
-  assert.match(en, /no built-in endpoint that uploads the list/);
+  assert.match(en, /Names stay on this device by default/);
   assert.match(zh, /<h1>名单鸭子竞速器<\/h1>/);
   assert.match(zh, /2–12/);
   assert.match(zh, /使用方法/);
@@ -90,4 +90,23 @@ test('generated favicon assets, production privacy facts, and the visual launch 
   assert.doesNotMatch(privacyZh,/生产域名与托管供应商尚未确定/);
   assert.match(visual,/name="robots" content="noindex,nofollow"/);
   for(const id of ['market','position','architecture','performance','launch'])assert.match(visual,new RegExp(`id="${id}"`));
+});
+
+
+test('English launch page gives a free browser contract and labels its copied-ranking example without changing the game promise',async()=>{
+ const en=await readFile('en/index.html','utf8'),main=await readFile('src/main.ts','utf8');
+ const data=JSON.parse(en.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)![1]);
+ assert.equal(data['@type'],'WebApplication');
+ assert.equal(data.isAccessibleForFree,true);
+ assert.equal(data.aggregateRating,undefined);
+ assert.equal(data.review,undefined);
+ assert.match(en,/<title>Free Online Duck Race Name Picker – 2–12 Names \| Duck Rush<\/title>/);
+ assert.match(en,/2–12 unique names/);
+ assert.match(en,/Illustrative example/);
+ assert.match(en,/Made-up names and ranking, not a recorded draw/);
+ assert.match(en,/Copied result · ranking excerpt/);
+ assert.match(en,/not a certified draw or proof of identical physical odds/);
+ const intro=en.match(/<p class="game-intro">([^<]+)<\/p>/)![1];
+ assert.ok(main.includes(intro),'runtime introduction must match the readable shell');
+ assert.doesNotMatch(en,/Philippines|Filipino|Manila|aggregateRating|five.star/i);
 });

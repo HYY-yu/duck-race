@@ -64,7 +64,7 @@ function shell(){app.innerHTML=`
   <aside class="sidebar" id="race-menu" aria-label="${t('race')}">
    <button class="drawer-close" id="drawer-close" aria-label="${t('close')}">×</button>
    <h1>${lang==='zh'?'名单鸭子竞速器':'Duck Race Name Picker'}</h1>
-   <p class="game-intro">${lang==='zh'?'快速输入 2–12 个名字。观看无预设赢家的刺激 3D 障碍河道竞速。':'Add 2–12 names in seconds. Watch an exciting 3D obstacle race with no preset winner.'}</p>
+   <p class="game-intro">${lang==='zh'?'快速输入 2–12 个名字。观看无预设赢家的刺激 3D 障碍河道竞速。':'Free in your browser. Add 2–12 unique names, race in 3D, and copy the full finishing order.'}</p>
    <div class="roster-head"><div><span id="roster-title">${t('roster')}</span><span class="entry-total" id="count">0</span></div><button class="plain" id="edit-entries">${dt('edit')}</button></div>
    <div class="roster" id="roster"></div>
    <div class="draw-actions">

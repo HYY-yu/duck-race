@@ -88,3 +88,7 @@
  .no-script-note{left:12px;right:12px;bottom:16px}
 }
 @media(prefers-reduced-motion:reduce){.sidebar{transition:none}}
+
+/* The example sits below the playable viewport and reuses the editorial palette. */
+.draw-example{margin:44px 0 0;padding:28px 0 0;border-top:1px solid #bfcdbd}.draw-example .section-kicker{margin-bottom:10px}.draw-example h3{margin:0 0 10px;color:#24453d;font-size:22px;letter-spacing:-.025em}.draw-example figcaption>p:last-child,.example-note{margin:0;max-width:680px;color:#6c7f70;font-size:13px;line-height:1.75}.draw-example-flow{display:grid;grid-template-columns:1fr 1fr;gap:38px;margin-top:26px}.draw-example h4{margin:0 0 12px;color:#315e4b;font-size:12px;font-weight:700}.draw-example pre{margin:0;padding:18px 0;border-top:1px solid #dfe6dc;border-bottom:1px solid #dfe6dc;color:#284c42;font:500 15px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.draw-example .example-note{margin-top:18px}
+@media(max-width:600px){.draw-example-flow{grid-template-columns:1fr;gap:24px}.draw-example h3{font-size:20px}}

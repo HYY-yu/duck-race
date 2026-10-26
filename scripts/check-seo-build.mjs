@@ -1,7 +1,7 @@
 import {readFile, access, readdir} from 'node:fs/promises';
 
 const required = [
-  ['dist/en/index.html', 'lang="en"', '<h1>Duck Race Name Picker</h1>'],
+  ['dist/en/index.html', 'lang="en"', '<h1>Duck Race Name Picker</h1>', 'Free Online Duck Race Name Picker', 'Illustrative example', 'ranking excerpt'],
   ['dist/zh/index.html', 'lang="zh-CN"', '<h1>名单鸭子竞速器</h1>'],
   ['dist/en/how-to-play/index.html', 'How Duck Rush works'],
   ['dist/zh/how-to-play/index.html', 'Duck Rush 玩法与规则'],
