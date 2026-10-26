@@ -1,3 +1,4 @@
+import {localized, type PageLanguage} from './i18n-routing';
 import {courseLabel} from './track-navigation';
 import {COLORS,isDuckColor,type ColorChoice} from './duck-palette';
 // Participant identity is shuffled independently of the physical race seed.
@@ -62,7 +63,7 @@ export function validateHistory(raw:unknown):SavedDraw[]{
  }
  return valid;
 }
-export function resultText(record:SavedDraw,lang:'zh'|'en',fallback:(id:number)=>string){
- const label=lang==='zh',k=record.winnerCount??1;
- return [label?'小鸭抽签结果':'Duck Rush draw results',record.drawId??'',record.date,record.course?courseLabel(record.course,lang):'',record.mode==='ranking'?(label?'完整冲线排名':'Full finishing order'):`${label?'抽取人数':'Selected'}: ${k}/${record.results.length}`,...record.results.map((d,i)=>`${i+1}. ${record.names?.[d.id]??fallback(d.id)}${record.mode!=='ranking'&&i<k?(label?' [中签]':' [Selected]'):''}`),`Seed: ${record.seed}`,record.trackSeed!==undefined?`Track seed: ${record.trackSeed}`:'',record.controlled?(label?'包含人工拨水操作':'Includes manual steering'):'',label?'本机抽签记录，非独立审计凭证。':'Local draw record; not an independently audited proof.'].filter(Boolean).join('\n');
+export function resultText(record:SavedDraw,lang:PageLanguage,fallback:(id:number)=>string){
+ const l=(zh:string,en:string,vi:string)=>localized(lang,zh,en,vi),k=record.winnerCount??1;
+ return [l('小鸭抽签结果','Duck Rush draw results','Kết quả đua vịt Duck Rush'),record.drawId??'',record.date,record.course?courseLabel(record.course,lang):'',record.mode==='ranking'?l('完整冲线排名','Full finishing order','Bảng xếp hạng đầy đủ'):`${l('抽取人数','Selected','Số người được chọn')}: ${k}/${record.results.length}`,...record.results.map((d,i)=>`${i+1}. ${record.names?.[d.id]??fallback(d.id)}${record.mode!=='ranking'&&i<k?l(' [中签]',' [Selected]',' [Được chọn]'):''}`),`${l('Seed','Seed','Mã ngẫu nhiên')}: ${record.seed}`,record.trackSeed!==undefined?`${l('Track seed','Track seed','Mã tạo đường đua')}: ${record.trackSeed}`:'',record.controlled?l('包含人工拨水操作','Includes manual steering','Có điều khiển thủ công'):'',l('本机抽签记录，非独立审计凭证。','Local draw record; not an independently audited proof.','Bản ghi trên thiết bị; không phải bằng chứng đã được kiểm toán độc lập.')].filter(Boolean).join('\n');
 }

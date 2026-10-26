@@ -12,7 +12,7 @@ A 3D duck race name picker built with TypeScript, Three.js, and Vite. Enter name
 - 两条 3D 赛道，包含急流、瀑布与碰撞障碍 / Two 3D courses with rapids, waterfalls, and obstacles
 - 全局与小鸭跟随镜头，支持暂停和音效 / Overview and follow cameras, pause controls, and sound effects
 - 完整排名、结果复制与最近 10 场本地记录 / Full rankings, copyable results, and 10 recent races stored locally
-- 中文和英文界面 / Chinese and English interfaces
+- 中文、英文和越南语界面 / Chinese, English and Vietnamese interfaces
 - 手机端全宽画布与抽屉菜单（≤1000px），底部快捷开始／暂停；支持横竖屏 / Full-width mobile scene and drawer menu (≤1000px), with quick start/pause in portrait and landscape
 
 ## 启动 / Getting started
@@ -24,7 +24,7 @@ npm ci
 npm run dev
 ```
 
-打开 / Open: [中文](http://127.0.0.1:5183/zh/) · [English](http://127.0.0.1:5183/en/)
+打开 / Open: [中文](http://127.0.0.1:5183/zh/) · [English](http://127.0.0.1:5183/en/) · [Tiếng Việt](http://127.0.0.1:5183/vi/)
 
 ```bash
 npm test         # 运行测试 / Run tests
@@ -131,3 +131,7 @@ The three closed launch tags above are captured once per page load and attached 
 两条规则只匹配精确路径 `/x`、`/t`（不包含尾斜杠、子路径或大小写变体），目的地固定为 `/en/` 加现有白名单三参数。目的地已有查询串会替换入口传入的查询串，不能用追加参数覆盖渠道，不传递 seed、track 或任意额外输入；浏览器片段不参与服务器路由。目的地不匹配短入口，因此无重定向循环；`/en/` 地址栏保留原有统计参数，不额外清理。
 
 These exact 302 rules use Cloudflare's native static asset redirects. Incoming query strings are replaced by the fixed destination query. No wildcard routes, new tracking fields, identity changes, or client redirects are added. Rules are checked in the built output; Vite dev and the basic `npm run preview` file server do not emulate Cloudflare redirects. For routing acceptance, use an isolated, telemetry-disabled build with local Wrangler assets mode. Deployment and production collection still require separate approval.
+
+## 越南语入口 / Vietnamese locale
+
+`/vi/` 使用同一工具运行时，包含名单校验、完整排名、复制、再抽以及 `/vi/how-to-play/` 和 `/vi/privacy/`。语言切换保留页面路径、赛道参数和锚点；切换游戏语言仍按既有行为重新加载至待开始。只在既有 language/from/to 字段增加 vi 取值，不新增分析属性；正式 origin 保护不变。翻译尚未经过越南语母语者审校。

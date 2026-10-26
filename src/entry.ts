@@ -1,5 +1,5 @@
 import './style.css';
-import {pageLanguage} from './i18n-routing';
+import {pageLanguage,localized} from './i18n-routing';
 import {addEventReporter, observeWebVitals, trackEvent} from './observability';
 import {createPostHogReporter} from './posthog-telemetry';
 import {campaignAttribution} from './campaign-attribution';
@@ -33,7 +33,7 @@ function loadGame(reason: 'viewport' | 'interaction') {
     document.querySelector('#app')?.classList.remove('game-loading');
     console.error('[app] game module failed to load', error);
     const status = document.querySelector<HTMLElement>('[data-game-load-status]');
-    if (status) status.textContent = language === 'zh' ? '3D 游戏加载失败。下方玩法与隐私说明仍可阅读。' : 'The 3D game failed to load. The guide and privacy information below are still available.';
+    if (status) status.textContent = localized(language,'3D 游戏加载失败。下方玩法与隐私说明仍可阅读。','The 3D game failed to load. The guide and privacy information below are still available.','Không thể tải trò chơi 3D. Bạn vẫn có thể đọc hướng dẫn và thông tin quyền riêng tư bên dưới.');
   });
   return loading;
 }

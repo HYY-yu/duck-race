@@ -1,3 +1,4 @@
+import type {PageLanguage} from './i18n-routing';
 export type DuckRushEvent =
   | 'page_view'
   | 'language_switch'
@@ -46,7 +47,7 @@ export function trackEvent(event: DuckRushEvent, properties: EventProperties = {
   }
 }
 
-export function observeWebVitals(language: 'en' | 'zh') {
+export function observeWebVitals(language: PageLanguage) {
   if (!('PerformanceObserver' in window)) {
     console.debug('[performance] PerformanceObserver unavailable');
     return;

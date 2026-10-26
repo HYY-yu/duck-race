@@ -1,11 +1,12 @@
+import {localized, type PageLanguage} from './i18n-routing';
 export type TrackChoice='long'|'mountain';
 
 /** Retired standard links open Pinewood Valley; unknown links use Snowpeak Rapids. */
 export function resolveTrack(value:string|null|undefined):TrackChoice{return value==='long'||value==='standard'?'long':'mountain';}
 
-export function courseLabel(course:TrackChoice|'standard',lang:'zh'|'en'){
- if(course==='standard')return lang==='zh'?'标准赛道（已下线）':'Standard course (retired)';
- return course==='long'?(lang==='zh'?'松风山谷':'Pinewood Valley'):(lang==='zh'?'雪岭激流':'Snowpeak Rapids');
+export function courseLabel(course:TrackChoice|'standard',lang:PageLanguage){
+ if(course==='standard')return localized(lang,'标准赛道（已下线）','Standard course (retired)','Đường đua tiêu chuẩn (đã ngừng)');
+ return course==='long'?(localized(lang,'松风山谷','Pinewood Valley','Thung lũng Thông')):(localized(lang,'雪岭激流','Snowpeak Rapids','Ghềnh Tuyết'));
 }
 
 export function trackSearch(search:string,track:TrackChoice){

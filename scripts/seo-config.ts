@@ -1,10 +1,13 @@
 const PUBLIC_PATHS = [
   '/en/',
   '/zh/',
+  '/vi/',
   '/en/how-to-play/',
   '/zh/how-to-play/',
+  '/vi/how-to-play/',
   '/en/privacy/',
   '/zh/privacy/',
+  '/vi/privacy/',
 ];
 
 export function normalizeSiteUrl(value?: string) {

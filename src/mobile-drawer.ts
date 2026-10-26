@@ -1,5 +1,6 @@
+import {localized, type PageLanguage} from './i18n-routing';
 /** Mobile menus overlay the scene without resizing WebGL or changing race progress. */
-export function installMobileDrawer(app:HTMLElement,language:'zh'|'en'){
+export function installMobileDrawer(app:HTMLElement,language:PageLanguage){
  const compact=matchMedia('(max-width: 1000px)');
  const menu=app.querySelector<HTMLElement>('#race-menu')!;
  const toggle=app.querySelector<HTMLButtonElement>('#menu-toggle')!;
@@ -14,7 +15,7 @@ export function installMobileDrawer(app:HTMLElement,language:'zh'|'en'){
   app.classList.toggle('drawer-open',opened);
   backdrop.hidden=!opened;
   toggle.setAttribute('aria-expanded',String(opened));
-  toggle.setAttribute('aria-label',language==='zh'?(opened?'关闭比赛菜单':'打开比赛菜单'):(opened?'Close race menu':'Open race menu'));
+  toggle.setAttribute('aria-label',opened?localized(language,'关闭比赛菜单','Close race menu','Đóng menu cuộc đua'):localized(language,'打开比赛菜单','Open race menu','Mở menu cuộc đua'));
   menu.inert=compact.matches&&!opened;
   if(opened){
    previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';

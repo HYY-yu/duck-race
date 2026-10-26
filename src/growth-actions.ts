@@ -1,6 +1,7 @@
+import type {PageLanguage} from './i18n-routing';
 import type {EventReporter} from './observability';
 import type {TrackChoice} from './track-navigation';
-type Properties={language:'en'|'zh';course:TrackChoice;entryCount:number};
+type Properties={language:PageLanguage;course:TrackChoice;entryCount:number};
 
 /** Page-memory only. A replay is counted on actual start, not on its reset button. */
 export function createGrowthActions(report:EventReporter){

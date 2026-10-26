@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4f3e9">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="description" content="Cách Duck Rush xử lý tên, lịch sử trên thiết bị và sự kiện thống kê tổng hợp; không có tài khoản hay API tải tên lên.">
+  <title>Quyền riêng tư | Duck Rush</title>
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="canonical" href="__SITE_URL__/vi/privacy/">
+  <link rel="alternate" hreflang="en" href="__SITE_URL__/en/privacy/">
+  <link rel="alternate" hreflang="zh-CN" href="__SITE_URL__/zh/privacy/">
+  <link rel="alternate" hreflang="vi" href="__SITE_URL__/vi/privacy/">
+  <link rel="alternate" hreflang="x-default" href="__SITE_URL__/en/privacy/">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="document-page">
+<header class="document-header"><a class="brand-name" href="/vi/">duck rush<span>.</span></a><nav class="document-nav" aria-label="Điều hướng chính"><a href="/vi/">Chơi</a><a href="/vi/how-to-play/">Cách chơi</a><a href="/en/privacy/" lang="en">English</a><a href="/zh/privacy/" lang="zh-CN">中文</a></nav></header>
+<main class="document-main"><p class="section-kicker">Dữ liệu và quyền riêng tư</p><h1>Quyền riêng tư</h1><p class="document-intro">Tên và lịch sử đua mặc định lưu trong trình duyệt. Duck Rush không có tài khoản, API tải tên lên hay cơ sở dữ liệu tên từ xa. Khi được cấu hình, PostHog nhận sự kiện sử dụng tổng hợp. Phiên bản công khai chỉ đua tự động và không yêu cầu quyền micro.</p>
+<section><h2>Tên và lịch sử trên thiết bị</h2><p>Tên được xử lý trong bộ nhớ trình duyệt khi bạn thiết lập và chạy cuộc đua. Mã tích hợp không có tài khoản hoặc chức năng tải danh sách tên lên. Khi một lượt hoàn thành, tối đa 10 bản ghi gần nhất được lưu trong <code>localStorage</code>, có thể gồm tên, màu vịt, thứ hạng, thời gian, ngày, đường đua, mã tạo đường đua, mã ngẫu nhiên của cuộc đua và mã lượt đua.</p><p>Chọn <strong>Lịch sử → Xóa lịch sử trên thiết bị</strong> để xóa các lượt đã hoàn thành. Xóa dữ liệu trang trong cài đặt trình duyệt cũng xóa chúng. Danh sách chưa hoàn thành không được lưu thành lịch sử đua.</p></section>
+<section><h2>Không dùng micro hay điều khiển kết quả</h2><p>Phiên bản công khai không hiển thị nút micro, không yêu cầu quyền micro và không nhận phím điều khiển hướng vịt. Toàn cảnh và theo dõi chỉ thay đổi camera.</p></section>
+<section><h2>Bộ nhớ tạm, âm thanh và mô hình</h2><p>Chỉ khi bạn chọn <strong>Sao chép kết quả</strong>, Duck Rush mới ghi thứ hạng vào bộ nhớ tạm. Âm thanh do ứng dụng tạo và mặc định tắt. Các tệp mô hình 3D được tải từ cùng website khi cảnh bắt đầu; không cần CDN mô hình hoặc phông chữ của bên thứ ba.</p></section>
+<section><h2>Chẩn đoán và thống kê</h2><p>Ứng dụng ghi thông báo Debug, Info, Warn và Error vào bảng điều khiển trình duyệt khi tải, đổi trạng thái cuộc đua hoặc gặp lỗi lưu trữ. Các sự kiện thống kê mô tả ngôn ngữ, đường đua, tải trò chơi, tổng số người tham gia, thời gian hoàn thành, Web Vitals và lỗi tài nguyên; không chứa tên, kết quả sao chép hay URL chưa được lọc.</p><p>Khi có cấu hình PostHog, bản dựng sản xuất chỉ khởi tạo và gửi phân tích từ origin chính thức <code>https://duckracepicker.com</code>. Thu thập nhấp chuột và biểu mẫu tự động, ghi lại phiên, hồ sơ người dùng và thu thập lỗi tự động đều tắt. Danh sách thuộc tính cho phép loại bỏ URL đầy đủ, chuỗi truy vấn, nguồn giới thiệu, tên và lời nói được nhận dạng. Thống kê dùng mã ẩn danh tạm trong bộ nhớ, không dùng cookie phân tích lưu lâu dài; tải lại trang tạo mã mới.</p><p>Ứng dụng tôn trọng Do Not Track và tắt định vị theo IP cho thống kê. Tuy nhiên, dịch vụ nhận yêu cầu mạng vẫn thấy địa chỉ IP. Xem <a href="https://posthog.com/privacy" rel="external">chính sách quyền riêng tư PostHog</a>. Không có cấu hình thì không gửi phân tích.</p></section>
+<section><h2>Lưu trữ website và dịch vụ bên ngoài</h2><p>Duck Rush được cung cấp tại <a href="https://duckracepicker.com">duckracepicker.com</a> qua Cloudflare Workers Static Assets. Cloudflare cung cấp DNS, TLS, proxy, CDN và dịch vụ bảo mật liên quan, có thể xử lý IP, tiêu đề yêu cầu, chẩn đoán mạng và nhật ký bảo mật hoặc phân phối theo <a href="https://www.cloudflare.com/privacypolicy/" rel="external">chính sách của Cloudflare</a>. Duck Rush không quyết định thời hạn lưu trữ của Cloudflare.</p><p>PostHog là nơi nhận phân tích được mô tả ở trên; thời hạn lưu dữ liệu do cấu hình dự án của bên vận hành quyết định, không có cam kết thời hạn cố định tại đây. Thông tin bên vận hành và kênh liên hệ công khai chưa được công bố. Google Search Console cung cấp thông tin tìm kiếm cho chủ website, không phải mã theo dõi được cài trong trò chơi.</p></section>
+<section><h2>Nhãn giới thiệu và hành động</h2><p>Với bộ nhãn phát hành cố định đầy đủ, thống kê chỉ giữ nguồn <code>x</code> hoặc <code>tiktok</code>, phương tiện <code>social</code> và chiến dịch <code>duck_rush_launch_2026_10</code>. Bộ nhãn lạ, thiếu, trùng hoặc quá dài bị bỏ; giá trị truy vấn khác và nguồn giới thiệu không được thu thập. Nhãn chỉ ở trong bộ nhớ trang và đi cùng sự kiện được phép. Tải lại chỉ đọc lại liên kết, không khôi phục danh tính thống kê hoặc lịch sử hành động.</p><p>Ứng dụng đếm lúc thực sự bắt đầu lượt đua lại cùng danh sách và lúc sao chép kết quả thành công, mỗi loại tối đa một lần mỗi lượt. Sự kiện chỉ chứa ngôn ngữ, đường đua và tổng số người tham gia, không có tên hay nội dung sao chép. Chúng không đo việc một người quay lại trong lần truy cập khác.</p></section>
+<section><h2>Tham số URL</h2><p><code>track</code> và <code>seed</code> mô tả đường đua. Duck Rush không đưa tên người tham gia vào URL. Không tự thêm dữ liệu cá nhân vào URL vì chúng có thể xuất hiện trong lịch sử trình duyệt, nhật ký máy chủ và liên kết chia sẻ.</p><a class="text-link" href="/vi/">Quay lại Duck Rush →</a></section></main>
+</body>
+</html>

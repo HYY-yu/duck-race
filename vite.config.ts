@@ -20,13 +20,13 @@ export default defineConfig(({mode})=>{
  return {
   appType:'mpa',
   plugins:[seoOutput(siteUrl)],
-  optimizeDeps:{entries:['en/index.html','zh/index.html']},
+  optimizeDeps:{entries:['en/index.html','zh/index.html','vi/index.html']},
   build:{rollupOptions:{
    input:{
     root:resolve('index.html'),
-    en:resolve('en/index.html'),zh:resolve('zh/index.html'),
-    enHelp:resolve('en/how-to-play/index.html'),zhHelp:resolve('zh/how-to-play/index.html'),
-    enPrivacy:resolve('en/privacy/index.html'),zhPrivacy:resolve('zh/privacy/index.html'),
+    en:resolve('en/index.html'),zh:resolve('zh/index.html'),vi:resolve('vi/index.html'),
+    enHelp:resolve('en/how-to-play/index.html'),zhHelp:resolve('zh/how-to-play/index.html'),viHelp:resolve('vi/how-to-play/index.html'),
+    enPrivacy:resolve('en/privacy/index.html'),zhPrivacy:resolve('zh/privacy/index.html'),viPrivacy:resolve('vi/privacy/index.html'),
     notFound:resolve('404.html'),
    },
    output:{manualChunks(id){if(id.includes('node_modules/three'))return 'three';}},
