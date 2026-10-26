@@ -20,6 +20,11 @@ import {createGrowthActions} from './growth-actions';
 const growthActions=createGrowthActions(trackEvent);
 import {installMobileDrawer} from './mobile-drawer';
 import {RenderBudget,type RenderActivity} from './render-budget';
+import {inspectionEntry} from './inspection-navigation';
+const checkpoint=import.meta.env.DEV?inspectionEntry(location.href):null;
+const inspection=checkpoint?.inspection??null;
+let inspectionActive=!!inspection;
+if(checkpoint){history.replaceState(history.state,'',checkpoint.url);console.debug('[inspection] one-shot checkpoint consumed',{inspection});}
 const MANUAL_MODE=import.meta.env.MODE==='manual'&&import.meta.env.VITE_ENABLE_MANUAL_MODE==='true';
 const icons:Record<string,string>={history:'<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/>',duck:'<path d="M6 13c-3-2-4 0-3 3 1 4 6 5 11 4 4-1 6-4 5-7l-1-2c3-3 1-7-2-7s-5 2-4 5l1 3c-2 2-4 2-7 1Z" fill="currentColor"/><path d="m19 8 4 2-4 1" fill="#e79136"/><circle cx="16" cy="7.5" r=".85" fill="#294b42"/>',globe:'<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c5 5 5 11 0 16-5-5-5-11 0-16Z"/>',focus:'<path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4"/><circle cx="12" cy="12" r="3"/>',arrow:'<path d="M4 12h15m-5-5 5 5-5 5"/>',pause:'<path d="M8 5v14M16 5v14"/>',play:'<path d="m8 5 11 7-11 7Z"/>',reset:'<path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/>',flag:'<path d="M5 21V4c5-5 9 5 14 0v9c-5 5-9-5-14 0"/>',wind:'<path d="M3 8h12a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h7"/>',mountain:'<path d="m2 20 8-15 5 8 3-5 5 12Z"/><path d="m7 11 3 2 3-2"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>',chevron:'<path d="m8 4 8 8-8 8"/>',mouse:'<rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/>',wheel:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6 6l12 12M6 18 18 6"/>',bars:'<path d="M5 3v18M19 3v18M5 8h14M5 16h14"/>',pendulum:'<path d="M3 4h18M12 4l4 11"/><circle cx="17" cy="18" r="3"/>'};
 function icon(name:string,size=17){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.duck}</svg>`}
@@ -145,10 +150,11 @@ function attach(){
  document.querySelector('#help')!.addEventListener('click',showHelp);document.querySelector('#history')!.addEventListener('click',showHistory);document.querySelector('#roster')!.addEventListener('click',e=>{const row=(e.target as HTMLElement).closest<HTMLButtonElement>('[data-duck]');if(row){follow(Number(row.dataset.duck));mobileDrawer.close();}});
  const select=document.querySelector('#duck-select')!;select.innerHTML=race.ducks.map(d=>`<option value="${d.id}">${String(d.id+1).padStart(2,'0')} · ${name(d.id)}</option>`).join('');cameraUI();
 }
-function reset(replay=false){growthActions.reset(replay);activeDraw=null;storageFailed=false;voiceSteering=null;lastVoiceCommand=null;race.reset(participants.length||race.ducks.length,0);feedback.update(race);finishPresentation.reset(race.generation);arrivalView=false;controls.enabled=mode==='overview';followCamera.reset();if(mode==='overview')overview();worldView.setDucks(race.ducks.length,participantColors);refreshNames();updateUI();}
+function reset(replay=false){growthActions.reset(replay);inspectionActive=false;activeDraw=null;storageFailed=false;voiceSteering=null;lastVoiceCommand=null;race.reset(participants.length||race.ducks.length,0);feedback.update(race);finishPresentation.reset(race.generation);arrivalView=false;selected=0;followCamera.reset();overview();worldView.setDucks(race.ducks.length,participantColors);refreshNames();updateUI();}
 function refreshNames(){nameBubbles.setNames(race.ducks.map(d=>rawName(d.id)),race.ducks.map(d=>duckColor(d.id)));document.querySelector('#duck-select')!.innerHTML=race.ducks.map(d=>`<option value="${d.id}">${name(d.id)}</option>`).join('');}
 function beginDraw(){
  if(race.state!=='ready')return;
+ inspectionActive=false;
  mobileDrawer.close();
  if(!participants.length){showSetup();return;}
  let session:DrawSession;
@@ -214,7 +220,6 @@ attach();overview();resize();updateUI();window.addEventListener('resize',resize)
 // freezes at a physical event (or continues post-race lake drift) without changing normal races or production builds.
 if(import.meta.env.DEV){
  void import('./preview-capture').then(({installPreviewCapture})=>installPreviewCapture(renderer,worldView.scene,camera)).catch(error=>console.error('[preview] capture helper unavailable',error));
- const inspection=new URLSearchParams(location.search).get('inspect');
  if(MANUAL_MODE&&inspection==='voice'){participants=[...DEFAULT_PARTICIPANTS];participantColors=DEFAULT_PARTICIPANTS.map(()=>null);reset();race.start();for(let i=0;i<181;i++)race.step(1/60);follow(0);handleVoiceTranscript(['王者'],false);nameBubbles.command(0,-1,6000);updateUI();console.info('[inspection] corrected current follow voice direction',{state:race.state,target:0,direction:'left'});}
  if(inspection==='audience'){race.reset(6,42);race.start();for(let i=0;i<15000&&!race.results.length;i++)race.step(1/60);for(let i=0;i<68;i++)race.step(1/60);race.pause();const p=world(TRACK_LENGTH-1);camera.position.set(p.x-8,14,p.z+19);controls.target.set(-1,4.8,40);controls.update();updateUI();console.info('[inspection] bridge audience',{finishers:race.results.length,time:race.time});}
  if(inspection==='cone'||inspection==='cone-down'){
@@ -278,7 +283,7 @@ function tick(now:number){
  feedback.update(race);worldView.update(elapsed,race,feedback.hits);
  const presentation=finishPresentation.update(race,delta,!document.hidden&&!modalKind,TRACK_LENGTH+6);
  if(presentation.started){
-  if(!(import.meta.env.DEV&&new URLSearchParams(location.search).has('inspect')))saveRace();
+  if(!inspectionActive)saveRace();
   trackEvent('race_finished',{language:lang,course:currentTrack,entryCount:race.results.length,durationMs:Math.round(race.time*1000),manual:MANUAL_MODE&&race.controlled});
   arrivalView=true;controls.enabled=false;
   console.info('[presentation] lake arrival started',{delaySeconds:9});

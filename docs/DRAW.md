@@ -51,3 +51,12 @@ Duck Rush 定位为可视化抽签工具：输入名单 → 锁定并开始 → 
 Enter 2–12 distinct names, one per line, and start. Entries are locked for the round. Browser cryptographic randomness independently assigns names to physical duck IDs; results show the full finishing order. Starting another round includes everyone again. Names and the last 10 completed results stay on this device. Refresh clears unfinished setup. Copy results before closing if local storage fails. This local tool has no independent audit or tamper-proof certificate.
 
 当前模式仅展示完整排名，复制结果也不标记中签者；旧历史仍保留当时的中签标记。Legacy selection-count records remain readable; new draws return full rankings.
+
+
+## 2026-10-26 重新开始与刷新状态
+
+确认“重新开始”后，清空本轮计时、进度、结果、抽签会话和事件反馈，鸭子回到起点；保留当前参与者名单及颜色设置。镜头立即恢复全局并选中编号 0，避免跟随镜头从水车慢慢穿山返回起点，看起来像没有重置。取消确认只关闭弹窗，保留原比赛状态和进度。
+
+普通刷新始终从待开始状态进入，不从历史记录恢复暂停中的比赛。开发检查 `?inspect=wheel` 等是一次性入口：加载时移除 URL 中的 `inspect`，但保留语言、赛道、地图种子、推广参数和锚点。当前检查可继续观看；重新开始会退出检查状态，之后正常完成的新抽签仍可保存历史。重新显式访问检查 URL 才会再次进入检查点。
+
+验证：浏览器覆盖中文雪山的暂停/取消/确认重开、倒计时重开、刷新后重新开始及镜头复位；英文松风山谷同步检查。`tests/inspection-navigation.test.ts` 约束一次性参数消费、刷新幂等性、重复参数清理以及其它 URL 信息保留。
