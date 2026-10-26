@@ -80,6 +80,10 @@ VITE_POSTHOG_ENABLE_DEV=false
 
 Development capture is off by default; opt in temporarily with `VITE_POSTHOG_ENABLE_DEV=true`. Missing configuration skips SDK loading. Startup queues up to 100 events; failures emit Warn logs without interrupting gameplay.
 
+生产构建仅在浏览器真实 origin 精确为 `https://duckracepicker.com` 时初始化并发送 PostHog 分析；默认 HTTPS 443 端口等价。localhost、局域网、预览域、www、其他子域、HTTP 与非标准端口均禁用，即使带正式 token 或伪造事件环境字段也不例外。SSR/缺少 location 时同样禁用。开发构建仍须显式开启，事件固定标记为 development。本保护用于防止本应用的本地验收误报，不是阻止第三方伪造 capture 的认证机制；公开客户端 token 仍非秘密。
+
+Production builds initialize and send PostHog analytics only when the browser's actual origin is exactly `https://duckracepicker.com` (including the equivalent default HTTPS port). Local, preview and other origins are disabled before SDK loading, regardless of event properties or campaign tags. Opted-in development builds keep their development label. This prevents accidental reporting by this app; it does not authenticate third-party capture requests.
+
 | 事件 / Event | 内容 / Properties |
 | --- | --- |
 | `page_view` | language, course |

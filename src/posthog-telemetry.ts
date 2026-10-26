@@ -15,7 +15,7 @@ const propertyNames = new Set([
   '$process_person_profile', '$time', '$geoip_disable',
 ]);
 
-export function postHogOptions(host: string, attribution:CampaignAttribution = {}): Partial<PostHogConfig> {
+export function postHogOptions(host: string, attribution:CampaignAttribution = {}, canSend = () => true): Partial<PostHogConfig> {
   // Revalidate and copy even caller-supplied objects; SDK campaign properties are never trusted.
   const campaign=campaignAttribution(new URLSearchParams(attribution as Record<string,string>).toString());
   return {
@@ -36,7 +36,7 @@ export function postHogOptions(host: string, attribution:CampaignAttribution = {
     save_referrer: false,
     store_google: false,
     before_send: event => {
-      if (!event || !eventNames.has(event.event as DuckRushEvent)) return null;
+      if (!canSend() || !event || !eventNames.has(event.event as DuckRushEvent)) return null;
       event.properties = Object.fromEntries(Object.entries(event.properties).filter(([key, value]) =>
         propertyNames.has(key) && ['string', 'number', 'boolean'].includes(typeof value) &&
         (typeof value !== 'number' || Number.isFinite(value)),
@@ -58,7 +58,15 @@ export function createPostHogReporter(
   config: Configuration,
   load: () => Promise<Client> = async () => (await import('posthog-js')).default,
 ): EventReporter | null {
-  if (!config.production && !config.enableInDevelopment) {
+  const production = config.production;
+  // Use the browser's origin, never canonical metadata, event properties or URL tags.
+  // Exact equality excludes preview hosts, lookalike subdomains, HTTP and other ports.
+  const canSend = () => !production || (typeof window !== 'undefined' && window.location?.origin === 'https://duckracepicker.com');
+  if (!canSend()) {
+    console.debug('[telemetry] PostHog disabled outside the production origin');
+    return null;
+  }
+  if (!production && !config.enableInDevelopment) {
     console.debug('[telemetry] PostHog disabled in development');
     return null;
   }
@@ -74,12 +82,13 @@ export function createPostHogReporter(
     console.warn('[telemetry] PostHog disabled: invalid HTTPS ingestion host');
     return null;
   }
-  const options=postHogOptions(host,config.attribution);
+  const options=postHogOptions(host,config.attribution,canSend);
   let client: Client | null = null, failed = false, overflowWarned = false;
   const queue: {event: DuckRushEvent; properties: EventProperties}[] = [];
   const send = (event: DuckRushEvent, properties: EventProperties) => {
+    if (!canSend()) return;
     try {
-      client!.capture(event, {...properties, app: 'duck_rush', environment: config.production ? 'production' : 'development'},
+      client!.capture(event, {...properties, app: 'duck_rush', environment: production ? 'production' : 'development'},
         // Web Vitals emitted on pagehide must leave before the document is discarded.
         event === 'web_vital' && ['CLS', 'interaction-max'].includes(String(properties.metric))
           ? {transport: 'sendBeacon', send_instantly: true} : undefined);
@@ -87,10 +96,11 @@ export function createPostHogReporter(
       console.warn('[telemetry] PostHog capture failed', {event, errorType: error instanceof Error ? error.name : 'unknown'});
     }
   };
-  void Promise.resolve().then(load).then(sdk => {
+  void Promise.resolve().then(() => canSend() ? load() : null).then(sdk => {
+    if (!sdk || !canSend()) { failed = true; queue.length = 0; return; }
     sdk.init(key, options);
     client = sdk;
-    console.info('[telemetry] PostHog initialized', {environment: config.production ? 'production' : 'development'});
+    console.info('[telemetry] PostHog initialized', {environment: production ? 'production' : 'development'});
     for (const item of queue.splice(0)) send(item.event, item.properties);
   }).catch(error => {
     failed = true;
@@ -98,7 +108,7 @@ export function createPostHogReporter(
     console.warn('[telemetry] PostHog initialization failed', {errorType: error instanceof Error ? error.name : 'unknown'});
   });
   return (event, properties) => {
-    if (failed) return;
+    if (failed || !canSend()) return;
     if (client) { send(event, properties); return; }
     if (queue.length < 100) queue.push({event, properties: {...properties}});
     else if (!overflowWarned) {

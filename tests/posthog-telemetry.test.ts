@@ -1,8 +1,23 @@
-import {test} from 'node:test';
+import {test, beforeEach, afterEach} from 'node:test';
 import assert from 'node:assert/strict';
 import type {PostHog} from 'posthog-js';
+import {createServer} from 'node:http';
 import {createPostHogReporter, postHogOptions} from '../src/posthog-telemetry';
 import {addEventReporter, trackEvent} from '../src/observability';
+import {createGrowthActions} from '../src/growth-actions';
+
+let originalWindow: PropertyDescriptor | undefined;
+function browserLocation(href: string) {
+  Object.defineProperty(globalThis, 'window', {configurable: true, value: {location: new URL(href)}});
+}
+beforeEach(() => {
+  originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  browserLocation('https://duckracepicker.com/en/');
+});
+afterEach(() => {
+  if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
+  else Reflect.deleteProperty(globalThis, 'window');
+});
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const configuration = {key: 'phc_test', host: 'https://example.com', production: true};
@@ -42,11 +57,114 @@ test('early events arrive in order and later events capture immediately, with un
 });
 
 test('development requires explicit opt-in and marks its events', async () => {
+  browserLocation('http://localhost:5183/en/');
   const {client, events} = fixture();
   const report = createPostHogReporter({...configuration, production: false, enableInDevelopment: true}, async () => client)!;
   report('page_view', {});
   await tick();
   assert.equal((events[0][1] as Record<string, string>).environment, 'development');
+});
+
+test('production is denied outside the exact browser origin, including SSR and spoofed hints', async () => {
+  let loads = 0;
+  const load = async () => { loads++; return fixture().client; };
+  for (const href of [
+    'http://localhost:5184/en/', 'http://127.0.0.1:5184/en/', 'http://[::1]:5184/en/',
+    'http://192.168.1.2:5184/en/', 'file:///tmp/en/index.html',
+    'https://duckracepicker.workers.dev/en/', 'https://duckracepicker.pages.dev/en/',
+    'https://www.duckracepicker.com/en/', 'https://preview.duckracepicker.com/en/',
+    'https://duckracepicker.com.evil.example/en/', 'https://evilduckracepicker.com/en/',
+    'https://duckracepicker.com@evil.example/en/', 'https://duckracepicker.com:444/en/',
+    'http://duckracepicker.com/en/', 'https://duckracepicker.com./en/',
+    'http://localhost/?origin=https://duckracepicker.com&environment=production',
+  ]) {
+    browserLocation(href);
+    assert.equal(createPostHogReporter({...configuration, enableInDevelopment: true}, load), null, href);
+  }
+  Reflect.deleteProperty(globalThis, 'window');
+  assert.equal(createPostHogReporter(configuration, load), null, 'SSR');
+  Object.defineProperty(globalThis, 'window', {configurable: true, value: {}});
+  assert.equal(createPostHogReporter(configuration, load), null, 'missing location');
+  await tick();
+  assert.equal(loads, 0);
+});
+
+test('origin is checked again before async initialization, capture and SDK payload delivery', async () => {
+  const {client, events, initializations} = fixture();
+  let resolve!: (sdk: Pick<PostHog, 'init' | 'capture'>) => void;
+  const report = createPostHogReporter(configuration, () => new Promise(done => { resolve = done; }))!;
+  report('page_view', {});
+  await tick();
+  browserLocation('http://localhost:5184/');
+  resolve(client);
+  await tick();
+  assert.equal(initializations.length, 0);
+  assert.equal(events.length, 0);
+
+  browserLocation('https://duckracepicker.com/en/');
+  const config = {...configuration};
+  const initialized = createPostHogReporter(config, async () => client)!;
+  await tick();
+  const options = initializations[0][1] as ReturnType<typeof postHogOptions>;
+  const filter = options.before_send as (payload: unknown) => unknown;
+  browserLocation('http://localhost:5184/');
+  config.production = false;
+  initialized('race_started', {environment: 'production', entryCount: 2});
+  assert.equal(events.length, 0, 'mutating config or event fields cannot bypass the captured build mode');
+  assert.equal(filter({event: 'race_started', properties: {environment: 'production'}}), null);
+});
+
+test('formal HTTPS origin preserves page/start/finish/replay/copy through the filtered mock collector', async () => {
+  browserLocation('https://duckracepicker.com:443/en/?utm_source=x');
+  const collected: {event: string; properties: Record<string, unknown>}[] = [];
+  const server = createServer(async (request, response) => {
+    let body = '';
+    for await (const chunk of request) body += chunk;
+    collected.push(JSON.parse(body));
+    response.writeHead(204).end();
+  });
+  await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
+  const address = server.address();
+  assert.ok(address && typeof address !== 'string');
+  const pending: Promise<void>[] = [];
+  let options!: ReturnType<typeof postHogOptions>;
+  const client = {
+    init: (_key: string, config: typeof options) => { options = config; },
+    capture: (event: string, properties: Record<string, unknown>) => {
+      const filter = options.before_send as (payload: unknown) => typeof collected[number] | null;
+      const payload = filter({event, properties});
+      if (payload) pending.push(fetch(`http://127.0.0.1:${address.port}/capture`, {
+        method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(3000),
+      }).then(response => { assert.equal(response.status, 204); }));
+    },
+  } as unknown as Pick<PostHog, 'init' | 'capture'>;
+  const report = createPostHogReporter(configuration, async () => client)!;
+  const remove = addEventReporter(report);
+  const props = {language: 'en' as const, course: 'mountain' as const, entryCount: 2};
+  try {
+    trackEvent('page_view', {language: 'en', course: 'mountain', environment: 'development', names: 'discard'});
+    await tick();
+    trackEvent('race_started', props);
+    trackEvent('race_finished', {...props, durationMs: 30000, manual: false});
+    const actions = createGrowthActions(trackEvent);
+    actions.reset(true);
+    actions.started(props);
+    await actions.copy(props, async () => {});
+    await Promise.all(pending);
+    assert.deepEqual(collected.map(e => e.event), ['page_view', 'race_started', 'race_finished', 'race_replayed', 'results_copied']);
+    for (const payload of collected) {
+      assert.equal(payload.properties.app, 'duck_rush');
+      assert.equal(payload.properties.environment, 'production');
+      assert.equal(payload.properties.$geoip_disable, true);
+      assert.equal(payload.properties.names, undefined);
+    }
+    assert.equal(collected[2].properties.durationMs, 30000);
+    assert.equal(collected[2].properties.manual, false);
+  } finally {
+    remove();
+    server.closeAllConnections();
+    await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  }
 });
 
 test('SDK payload filtering drops automatic events, names, URL queries, referrers and nested profiles', () => {
