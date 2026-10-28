@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5183 --strictPort",
     "dev:manual": "vite --mode manual --host 127.0.0.1 --port 5183 --strictPort",
+    "dev:youtube": "vite --config vite.youtube.config.ts --mode youtube",
+    "build:youtube": "tsc && vite build --config vite.youtube.config.ts --mode youtube && node scripts/check-youtube-build.mjs",
+    "preview:youtube": "vite preview --config vite.youtube.config.ts --host 127.0.0.1 --port 5184 --strictPort",
     "build": "tsc && vite build && node scripts/check-seo-build.mjs",
     "build:manual": "tsc && vite build --mode manual && DUCK_RUSH_MANUAL_BUILD=true node scripts/check-seo-build.mjs",
     "preview": "node scripts/preview.mjs",

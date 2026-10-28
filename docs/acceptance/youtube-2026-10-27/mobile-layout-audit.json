@@ -1,0 +1,1878 @@
+[
+  {
+    "phase": "ready-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "01 · Yellow",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "02 · Pink",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "03 · Periwinkle",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "04 · Mint",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "05 · Orange",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "06 · Sky blue",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "07 · Lime",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "08 · Grape",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "09 · Cream",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "10 · Coral",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "11 · Teal",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "12 · Cocoa",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Start race",
+        "uncovered": true,
+        "w": 272
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "ready-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "01 · Yellow",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "02 · Pink",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "03 · Periwinkle",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "04 · Mint",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "05 · Orange",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "06 · Sky blue",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "07 · Lime",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "08 · Grape",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "09 · Cream",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "10 · Coral",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "11 · Teal",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "12 · Cocoa",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Start race",
+        "uncovered": true,
+        "w": 334
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "phase": "ready-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "01 · Yellow",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "02 · Pink",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "03 · Periwinkle",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "04 · Mint",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "05 · Orange",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "06 · Sky blue",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "07 · Lime",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "08 · Grape",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "09 · Cream",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "10 · Coral",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "11 · Teal",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "12 · Cocoa",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Start race",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "ready-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 91.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 70.6
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 75.8
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "01 · Yellow",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "02 · Pink",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "03 · Periwinkle",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "04 · Mint",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "05 · Orange",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "06 · Sky blue",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "07 · Lime",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "08 · Grape",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "09 · Cream",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "10 · Coral",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "11 · Teal",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "12 · Cocoa",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Start race",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      844,
+      390
+    ]
+  },
+  {
+    "phase": "ready-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "01 · 黄色",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "02 · 粉色",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "03 · 蓝紫",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "04 · 薄荷绿",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "05 · 橙色",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "06 · 天蓝",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "07 · 青柠绿",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "08 · 葡萄紫",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "09 · 奶油白",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "10 · 珊瑚红",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "11 · 湖蓝",
+        "uncovered": true,
+        "w": 64.2
+      },
+      {
+        "h": 56.1,
+        "inside": true,
+        "label": "12 · 可可棕",
+        "uncovered": true,
+        "w": 64.3
+      },
+      {
+        "h": 50.7,
+        "inside": true,
+        "label": "开始比赛",
+        "uncovered": true,
+        "w": 272
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "ready-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "01 · 黄色",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "02 · 粉色",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "03 · 蓝紫",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "04 · 薄荷绿",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "05 · 橙色",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "06 · 天蓝",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "07 · 青柠绿",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "08 · 葡萄紫",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "09 · 奶油白",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "10 · 珊瑚红",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "11 · 湖蓝",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 60.1,
+        "inside": true,
+        "label": "12 · 可可棕",
+        "uncovered": true,
+        "w": 51.5
+      },
+      {
+        "h": 50.7,
+        "inside": true,
+        "label": "开始比赛",
+        "uncovered": true,
+        "w": 334
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "phase": "ready-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "01 · 黄色",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "02 · 粉色",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "03 · 蓝紫",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "04 · 薄荷绿",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "05 · 橙色",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "06 · 天蓝",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "07 · 青柠绿",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "08 · 葡萄紫",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "09 · 奶油白",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "10 · 珊瑚红",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "11 · 湖蓝",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "12 · 可可棕",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "开始比赛",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "ready-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 56
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 75.8
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "01 · 黄色",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "02 · 粉色",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "03 · 蓝紫",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "04 · 薄荷绿",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "05 · 橙色",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "06 · 天蓝",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "07 · 青柠绿",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "08 · 葡萄紫",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "09 · 奶油白",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "10 · 珊瑚红",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "11 · 湖蓝",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44.2,
+        "inside": true,
+        "label": "12 · 可可棕",
+        "uncovered": true,
+        "w": 46.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "开始比赛",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      844,
+      390
+    ]
+  },
+  {
+    "phase": "racing-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "暂停",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "向左转向",
+        "uncovered": true,
+        "w": 84
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "向右转向",
+        "uncovered": true,
+        "w": 84
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "racing-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "暂停",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "向左转向",
+        "uncovered": true,
+        "w": 84
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "向右转向",
+        "uncovered": true,
+        "w": 84
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "phase": "racing-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "暂停",
+        "uncovered": true,
+        "w": 186
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "向左转向",
+        "uncovered": true,
+        "w": 72
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "向右转向",
+        "uncovered": true,
+        "w": 72
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "racing-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 56
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 75.8
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "暂停",
+        "uncovered": true,
+        "w": 186
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "向左转向",
+        "uncovered": true,
+        "w": 72
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "向右转向",
+        "uncovered": true,
+        "w": 72
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      844,
+      390
+    ]
+  },
+  {
+    "phase": "racing-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Pause",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "Steer left",
+        "uncovered": true,
+        "w": 84
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "Steer right",
+        "uncovered": true,
+        "w": 84
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "racing-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Pause",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "Steer left",
+        "uncovered": true,
+        "w": 84
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "Steer right",
+        "uncovered": true,
+        "w": 84
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "phase": "racing-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Pause",
+        "uncovered": true,
+        "w": 186
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "Steer left",
+        "uncovered": true,
+        "w": 72
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "Steer right",
+        "uncovered": true,
+        "w": 72
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "racing-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 91.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 70.6
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 75.8
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Pause",
+        "uncovered": true,
+        "w": 186
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "Steer left",
+        "uncovered": true,
+        "w": 72
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "Steer right",
+        "uncovered": true,
+        "w": 72
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      844,
+      390
+    ]
+  },
+  {
+    "phase": "paused-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Resume",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "Steer left",
+        "uncovered": true,
+        "w": 84
+      },
+      {
+        "h": 76,
+        "inside": true,
+        "label": "Steer right",
+        "uncovered": true,
+        "w": 84
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "paused-en",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Resume",
+        "uncovered": true,
+        "w": 186
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "Steer left",
+        "uncovered": true,
+        "w": 72
+      },
+      {
+        "h": 64,
+        "inside": true,
+        "label": "Steer right",
+        "uncovered": true,
+        "w": 72
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "finished-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 50.7,
+        "inside": true,
+        "label": "再来一场",
+        "uncovered": true,
+        "w": 272
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "finished-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 50.7,
+        "inside": true,
+        "label": "再来一场",
+        "uncovered": true,
+        "w": 334
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "phase": "finished-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "再来一场",
+        "uncovered": true,
+        "w": 286.4
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "finished-zh",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 56
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 88
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 75.8
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "再来一场",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      844,
+      390
+    ]
+  },
+  {
+    "phase": "finished-zh-final",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 50.7,
+        "inside": true,
+        "label": "再来一场",
+        "uncovered": true,
+        "w": 272
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "finished-zh-final",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "全局",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "预览音效",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "语言",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "再来一场",
+        "uncovered": true,
+        "w": 286.4
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "finished-en-final",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Race again",
+        "uncovered": true,
+        "w": 272
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      320,
+      568
+    ]
+  },
+  {
+    "phase": "finished-en-final",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 48,
+        "inside": true,
+        "label": "Race again",
+        "uncovered": true,
+        "w": 334
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "phase": "finished-en-final",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 44
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 64
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Race again",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      568,
+      320
+    ]
+  },
+  {
+    "phase": "finished-en-final",
+    "controls": [
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Overview",
+        "uncovered": true,
+        "w": 91.7
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Sound",
+        "uncovered": true,
+        "w": 70.6
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Language",
+        "uncovered": true,
+        "w": 75.8
+      },
+      {
+        "h": 44,
+        "inside": true,
+        "label": "Race again",
+        "uncovered": true,
+        "w": 300
+      }
+    ],
+    "overflow": false,
+    "viewport": [
+      844,
+      390
+    ]
+  }
+]

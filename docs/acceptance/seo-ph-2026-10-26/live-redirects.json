@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-10-26T04:29:55.549Z",
+  "x": [
+    {
+      "url": "https://duckracepicker.com/x?seed=discarded",
+      "status": 302,
+      "location": "/en/?utm_source=x&utm_medium=social&utm_campaign=duck_rush_launch_2026_10",
+      "to": "https://duckracepicker.com/en/?utm_source=x&utm_medium=social&utm_campaign=duck_rush_launch_2026_10"
+    }
+  ],
+  "t": [
+    {
+      "url": "https://duckracepicker.com/t?track=discarded",
+      "status": 302,
+      "location": "/en/?utm_source=tiktok&utm_medium=social&utm_campaign=duck_rush_launch_2026_10",
+      "to": "https://duckracepicker.com/en/?utm_source=tiktok&utm_medium=social&utm_campaign=duck_rush_launch_2026_10"
+    }
+  ]
+}

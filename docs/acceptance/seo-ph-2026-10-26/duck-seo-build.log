@@ -1,0 +1,31 @@
+
+> @duck-obstacle-race/duck-rush@0.2.0 build
+> tsc && vite build && node scripts/check-seo-build.mjs
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 66 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/robots.txt                   0.07 kB │ gzip:   0.09 kB
+dist/sitemap.xml                  0.73 kB │ gzip:   0.21 kB
+dist/404.html                     1.05 kB │ gzip:   0.63 kB
+dist/index.html                   1.57 kB │ gzip:   0.70 kB
+dist/zh/how-to-play/index.html    4.30 kB │ gzip:   2.27 kB
+dist/en/how-to-play/index.html    4.66 kB │ gzip:   2.12 kB
+dist/zh/privacy/index.html        5.91 kB │ gzip:   3.00 kB
+dist/en/privacy/index.html        6.40 kB │ gzip:   2.72 kB
+dist/zh/index.html                9.89 kB │ gzip:   3.78 kB
+dist/en/index.html               11.38 kB │ gzip:   3.87 kB
+dist/assets/style-BuHcxN4B.css   26.41 kB │ gzip:   6.87 kB
+dist/assets/entry-BlmYqgvJ.js     9.48 kB │ gzip:   4.10 kB
+dist/assets/main-Uuy8CtDn.js    147.64 kB │ gzip:  56.09 kB
+dist/assets/module-ZyVsxBG_.js  329.57 kB │ gzip: 108.95 kB
+dist/assets/three-drRwxJwh.js   644.72 kB │ gzip: 166.09 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.44s
+[seo] production HTML checks passed { siteUrlConfigured: true }

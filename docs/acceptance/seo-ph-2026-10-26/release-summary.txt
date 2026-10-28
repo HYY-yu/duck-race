@@ -1,0 +1,115 @@
+- link "Skip to content":
+  - /url: "#start-of-content"
+- banner:
+  - heading "Navigation Menu" [level=2]
+  - link "Homepage":
+    - /url: /
+  - navigation "Global":
+    - list:
+      - button "Platform":
+        - text: Platform
+      - button "Solutions":
+        - text: Solutions
+      - button "Resources":
+        - text: Resources
+      - button "Open Source":
+        - text: Open Source
+      - button "Enterprise":
+        - text: Enterprise
+      - link "Pricing":
+        - /url: https://github.com/pricing
+  - button "Search or jump to, type / to search":
+  - link "Sign in":
+    - /url: /login?return_to=https%3A%2F%2Fgithub.com%2FHYY-yu%2Fduck-race%2Fcommit%2F352c61aa99260c32d1d128ba3f20840e094062a5
+    - generic: Sign in
+  - link "Sign up":
+    - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E%2Fcommit%2Fshow&source=header-repo&source_repo=HYY-yu%2Fduck-race
+    - generic: Sign up
+  - button "Appearance settings":
+- main:
+  - generic "Global navigation menu":
+    - navigation "Breadcrumbs":
+      - list:
+        - link "HYY-yu":
+          - /url: /HYY-yu
+          - generic: HYY-yu
+        - link "duck-race":
+          - /url: /HYY-yu/duck-race
+          - generic: duck-race
+    - heading "Repository navigation" [level=2]
+    - navigation "Repository":
+      - list:
+        - link "Code":
+          - /url: /HYY-yu/duck-race
+          - generic: Code
+        - link "Issues":
+          - /url: /HYY-yu/duck-race/issues
+          - generic: Issues
+        - link "Pull requests":
+          - /url: /HYY-yu/duck-race/pulls
+          - generic: Pull requests
+        - link "Actions":
+          - /url: /HYY-yu/duck-race/actions
+          - generic: Actions
+        - link "Projects":
+          - /url: /HYY-yu/duck-race/projects
+          - generic: Projects
+        - link "Security and quality":
+          - /url: /HYY-yu/duck-race/security
+          - generic: Security and quality
+        - link "Insights":
+          - /url: /HYY-yu/duck-race/pulse
+          - generic: Insights
+  - heading "Improve English duck race picker homepage for PH search intent" [level=2]
+  - link "main":
+    - /url: /HYY-yu/duck-race
+  - img "@HYY-yu"
+  - code:
+    - link "352c61a":
+      - /url: /HYY-yu/duck-race/commit/352c61aa99260c32d1d128ba3f20840e094062a5
+  - complementary "Check suites":
+    - generic "Hide details Cloudflare Workers and Pages":
+      - button "Hide details":
+      - generic: Cloudflare Workers and Pages
+    - img "This check passed"
+    - 'link "Workers Builds: duckracepicker"':
+      - /url: /HYY-yu/duck-race/runs/121398096933
+  - region "Check run summary":
+    - text: "Cloudflare Workers and Pages / Workers Builds: duckracepicker"
+    - generic: succeeded Oct 26, 2026now in 0s
+    - 'heading "Workers Builds: duckracepicker" [level=2]'
+    - paragraph:
+      - text: "Build ID:"
+      - link "f4c1895d-1285-4057-913a-cff9cba949c9":
+        - /url: https://dash.cloudflare.com/24cfcc8e4a76c21639a4c186326aac7a/workers/services/view/duckracepicker/production/builds/f4c1895d-1285-4057-913a-cff9cba949c9
+      - text: "Script:"
+      - link "duckracepicker":
+        - /url: https://dash.cloudflare.com/24cfcc8e4a76c21639a4c186326aac7a/workers/services/view/duckracepicker/production
+      - text: "Version ID: 446870ee-9b68-4c29-b924-3ec57e60713f"
+    - link "View more details on Cloudflare Workers and Pages":
+      - /url: https://dash.cloudflare.com/24cfcc8e4a76c21639a4c186326aac7a/workers/services/view/duckracepicker/production/builds/f4c1895d-1285-4057-913a-cff9cba949c9
+      - text: View more details on Cloudflare Workers and Pages
+- contentinfo:
+  - heading "Footer" [level=2]
+  - link "GitHub Homepage":
+    - /url: https://github.com
+  - generic: © 2026 GitHub, Inc.
+  - navigation "Footer":
+    - heading "Footer navigation" [level=3]
+    - list "Footer navigation":
+      - link "Terms":
+        - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+      - link "Privacy":
+        - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+      - link "Security":
+        - /url: https://github.com/security
+      - link "Status":
+        - /url: https://www.githubstatus.com/
+      - link "Community":
+        - /url: https://github.community/
+      - link "Docs":
+        - /url: https://docs.github.com/
+      - link "Contact":
+        - /url: https://support.github.com?tags=dotcom-footer
+      - button "Manage cookies"
+      - button "Do not share my personal information"

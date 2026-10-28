@@ -6,6 +6,8 @@ A 3D duck race name picker built with TypeScript, Three.js, and Vite. Enter name
 
 线上地址 / Live site: [https://duckracepicker.com](https://duckracepicker.com)
 
+YouTube 专用版本 / YouTube version: [独立构建与验收说明 / Separate build and acceptance](docs/YOUTUBE.md)。使用 `npm run dev:youtube` 与 `npm run build:youtube`，输出 `dist-youtube/`；官网构建和部署命令不变。
+
 ## 特性 / Features
 
 - 支持 2–12 位参与者与自定义鸭子颜色 / 2–12 participants with custom duck colors
