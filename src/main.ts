@@ -63,8 +63,8 @@ function shell(){app.innerHTML=`
   <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
   <aside class="sidebar" id="race-menu" aria-label="${t('race')}">
    <button class="drawer-close" id="drawer-close" aria-label="${t('close')}">×</button>
-   <h1>${l('名单鸭子竞速器','Duck Race Name Picker','Đua vịt chọn tên')}</h1>
-   <p class="game-intro">${l('快速输入 2–12 个名字。观看无预设赢家的刺激 3D 障碍河道竞速。','Free in your browser. Add 2–12 unique names, race in 3D, and copy the full finishing order.','Miễn phí trên trình duyệt. Nhập 2–12 tên khác nhau, xem đua vịt 3D và sao chép toàn bộ thứ hạng.')}</p>
+   <h1>${l('3D 名单鸭子竞速器','3D Duck Race Name Picker','Đua vịt 3D chọn tên')}</h1>
+   <p class="game-intro">${l('免费输入 2–12 个名字，看小鸭穿过弯道、瀑布与动态障碍，按实际冲线顺序排名。','Free for 2–12 names. Bends, waterfalls and moving obstacles shape the finishing order.','Miễn phí cho 2–12 tên. Khúc cua, thác nước và chướng ngại vật chuyển động tạo nên diễn biến cuộc đua.')}</p>
    <div class="roster-head"><div><span id="roster-title">${t('roster')}</span><span class="entry-total" id="count">0</span></div><button class="plain" id="edit-entries">${dt('edit')}</button></div>
    <div class="roster" id="roster"></div>
    <div class="draw-actions">

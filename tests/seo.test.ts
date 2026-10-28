@@ -4,6 +4,26 @@ import test from 'node:test';
 import {buildRobots, buildSitemap, normalizeSiteUrl, PUBLIC_PATHS, renderAbsoluteSeo} from '../scripts/seo-config';
 import {languagePath, pageLanguage} from '../src/i18n-routing';
 
+test('three-language source explains existing obstacle courses without implying a new map on replay',async()=>{
+ const runtime=await readFile('src/main.ts','utf8');
+ for(const [language,courses,boundary] of [
+  ['en',['Pinewood Valley','Snowpeak Rapids'],'Racing again keeps the selected course layout; it does not generate a new map.'],
+  ['zh',['松风山谷','雪岭激流'],'再抽保留当前赛道布局，不会自动生成一张新地图。'],
+  ['vi',['Thung lũng Thông','Ghềnh Tuyết'],'Đua lại giữ nguyên bố cục đường đua đã chọn, không tạo bản đồ mới.'],
+ ] as const){
+  const home=await readFile(`${language}/index.html`,'utf8');
+  const guide=await readFile(`${language}/how-to-play/index.html`,'utf8');
+  const courseSection=home.match(/<section[^>]+aria-labelledby="courses-title">([\s\S]*?)<\/section>/)![1];
+  for(const course of courses)assert.ok(courseSection.includes(`<h3>${course}</h3>`));
+  assert.ok(courseSection.includes(boundary));assert.ok(guide.includes(boundary));
+  const intro=home.match(/<p class="game-intro">([^<]+)<\/p>/)![1];
+  const h1=home.match(/<h1>([^<]+)<\/h1>/)![1];
+  assert.ok(runtime.includes(intro));assert.ok(runtime.includes(h1));
+  const schema=JSON.parse(home.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/)![1]);
+  assert.equal(schema.description,home.match(/<meta name="description" content="([^"]+)"/)?.[1]);
+ }
+});
+
 test('language URLs are independently addressable and preserve game state parameters', () => {
   assert.equal(pageLanguage('/en/'), 'en');
   assert.equal(pageLanguage('/zh/how-to-play/'), 'zh');
@@ -31,7 +51,7 @@ test('sitemap includes only intentional language and help pages, never state par
 
 test('localized home source contains crawlable product copy and matching structured data', async () => {
   const [en, zh] = await Promise.all([readFile('en/index.html', 'utf8'), readFile('zh/index.html', 'utf8')]);
-  assert.match(en, /<h1>Duck Race Name Picker<\/h1>/);
+  assert.match(en, /<h1>3D Duck Race Name Picker<\/h1>/);
   assert.match(en, /2–12/);
   assert.match(en, /How it works/);
   assert.match(en, /application\/ld\+json/);
@@ -39,7 +59,7 @@ test('localized home source contains crawlable product copy and matching structu
   assert.match(en, /No preset winner/);
   assert.match(en, /Automatic-only public race/);
   assert.match(en, /Names stay on this device by default/);
-  assert.match(zh, /<h1>名单鸭子竞速器<\/h1>/);
+  assert.match(zh, /<h1>3D 名单鸭子竞速器<\/h1>/);
   assert.match(zh, /2–12/);
   assert.match(zh, /使用方法/);
   assert.match(zh, /application\/ld\+json/);
@@ -100,7 +120,7 @@ test('English launch page gives a free browser contract and labels its copied-ra
  assert.equal(data.isAccessibleForFree,true);
  assert.equal(data.aggregateRating,undefined);
  assert.equal(data.review,undefined);
- assert.match(en,/<title>Free Online Duck Race Name Picker – 2–12 Names \| Duck Rush<\/title>/);
+ assert.match(en,/<title>3D Obstacle Duck Race Name Picker – Free \| Duck Rush<\/title>/);
  assert.match(en,/2–12 unique names/);
  assert.match(en,/Illustrative example/);
  assert.match(en,/Made-up names and ranking, not a recorded draw/);

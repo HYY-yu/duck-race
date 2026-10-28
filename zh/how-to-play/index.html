@@ -30,7 +30,7 @@
 
     <section><h2>3. 镜头、暂停与结果</h2><ul><li><strong>全局：</strong>拖动旋转，滚轮或双指缩放。</li><li><strong>跟随：</strong>纯观看镜头位于选中小鸭后方，并尝试避开地形和场景物体，不会改变比赛。</li><li><strong>暂停：</strong>冻结仿真、动画、已完赛小鸭的漂流和入湖展示计时。</li><li><strong>结果：</strong>完赛后查看完整排名并复制文本，或使用同一名单再来一轮；上一轮第一名不会自动移除。</li></ul></section>
 
-    <section><h2>4. 赛道与可分享状态</h2><p>赛道菜单会设置 URL 中的 <code>track</code> 参数，生成雪山地形使用 <code>seed</code>。这些参数只是同一语言页的状态；canonical 与 sitemap 不会为每种组合创建独立收录 URL。仅用于开发的 <code>debug</code>、<code>inspect</code> 也不会进入 sitemap。</p></section>
+    <section><h2>4. 赛道与可分享状态</h2><p>每轮重新打乱名字和起跑位置。再抽保留当前赛道布局，不会自动生成一张新地图。 赛道菜单会设置 URL 中的 <code>track</code> 参数，生成雪山地形使用 <code>seed</code>。这些参数只是同一语言页的状态；canonical 与 sitemap 不会为每种组合创建独立收录 URL。仅用于开发的 <code>debug</code>、<code>inspect</code> 也不会进入 sitemap。</p></section>
 
     <section><h2>5. 浏览器要求</h2><p>3D 比赛需要 JavaScript、WebGL 和足够的 GPU 内存来加载场景与模型。即使 WebGL 或资源加载失败，首页的可读说明和本页文档仍然可用。声音默认关闭，公开版本不会请求麦克风权限。</p><a class="text-link" href="/zh/">返回名单鸭子竞速器 →</a></section>
   </main>

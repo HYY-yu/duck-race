@@ -1,13 +1,13 @@
 import {readFile, access, readdir} from 'node:fs/promises';
 
 const required = [
-  ['dist/en/index.html', 'lang="en"', '<h1>Duck Race Name Picker</h1>', 'Free Online Duck Race Name Picker', 'Illustrative example', 'ranking excerpt'],
-  ['dist/zh/index.html', 'lang="zh-CN"', '<h1>名单鸭子竞速器</h1>'],
+  ['dist/en/index.html', 'lang="en"', '<h1>3D Duck Race Name Picker</h1>', '3D Obstacle Duck Race Name Picker', 'Illustrative example', 'ranking excerpt'],
+  ['dist/zh/index.html', 'lang="zh-CN"', '<h1>3D 名单鸭子竞速器</h1>'],
   ['dist/en/how-to-play/index.html', 'How Duck Rush works'],
   ['dist/zh/how-to-play/index.html', 'Duck Rush 玩法与规则'],
   ['dist/en/privacy/index.html', 'Privacy'],
   ['dist/zh/privacy/index.html', '隐私说明'],
-  ['dist/vi/index.html', 'lang="vi"', '<h1>Đua vịt chọn tên</h1>', 'Ví dụ minh họa'],
+  ['dist/vi/index.html', 'lang="vi"', '<h1>Đua vịt 3D chọn tên</h1>', 'Ví dụ minh họa'],
   ['dist/vi/how-to-play/index.html', 'Cách chơi Duck Rush'],
   ['dist/vi/privacy/index.html', 'Quyền riêng tư'],
   ['dist/404.html', 'Page not found'],
